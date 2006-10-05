@@ -1,5 +1,5 @@
 /*
- * $Id: IWPortalContext.java,v 1.1 2006/10/05 17:52:26 tryggvil Exp $
+ * $Id: IWPortalContext.java,v 1.2 2006/10/05 22:23:24 tryggvil Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -16,6 +16,7 @@ import javax.faces.context.FacesContext;
 import javax.portlet.PortalContext;
 import javax.portlet.PortletMode;
 import javax.portlet.WindowState;
+import javax.servlet.ServletContext;
 import com.idega.idegaweb.IWMainApplication;
 
 
@@ -23,10 +24,10 @@ import com.idega.idegaweb.IWMainApplication;
  * <p>
  * TODO tryggvil Describe Type IWPortalContext
  * </p>
- *  Last modified: $Date: 2006/10/05 17:52:26 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2006/10/05 22:23:24 $ by $Author: tryggvil $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IWPortalContext implements PortalContext {
 
@@ -40,6 +41,13 @@ public class IWPortalContext implements PortalContext {
 		portalModes.add(PortletMode.VIEW);
 		
 		windowStates.add(WindowState.NORMAL);
+	}
+	
+	/**
+	 * 
+	 */
+	public IWPortalContext(ServletContext context) {
+		iwma = IWMainApplication.getIWMainApplication(context);
 	}
 	
 	/**
