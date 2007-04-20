@@ -1,5 +1,5 @@
 /*
- * $Id: PortletUtils.java,v 1.3 2007/04/20 23:40:43 eiki Exp $
+ * $Id: PortletUtils.java,v 1.4 2007/04/20 23:45:20 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -50,10 +50,10 @@ import com.idega.portal.pluto.PortletContainerService;
  * <p>
  * TODO tryggvil Describe Type PortletUtils
  * </p>
- *  Last modified: $Date: 2007/04/20 23:40:43 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/04/20 23:45:20 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class PortletUtils {
 
@@ -154,7 +154,9 @@ public class PortletUtils {
 	//		 Step 3) Initialize the Container with the embedding application's ServletContext
 	
 			container.init(servletContext);
+		//TODO DON'T FORGET TO DESTROY IT WHEN THE APP ENDS
 		}
+		
 		
 		return container;
 	}
