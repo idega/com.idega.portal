@@ -1,5 +1,5 @@
 /*
- * $Id: PortletUtils.java,v 1.2 2007/04/20 23:31:08 eiki Exp $
+ * $Id: PortletUtils.java,v 1.3 2007/04/20 23:40:43 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -50,13 +50,14 @@ import com.idega.portal.pluto.PortletContainerService;
  * <p>
  * TODO tryggvil Describe Type PortletUtils
  * </p>
- *  Last modified: $Date: 2007/04/20 23:31:08 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/04/20 23:40:43 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PortletUtils {
 
+	private static final String IW_PORTLET_CONTAINER = null;
 	private static RequiredContainerServices containerServices;
 
 	/**
@@ -131,31 +132,29 @@ public class PortletUtils {
 
 	/**
 	 * <p>
-	 * TODO tryggvil describe method getPortletContainer
+	 * http://www.developer.com/java/web/article.php/3563411
 	 * </p>
 	 * @param servletContext
 	 * @return
 	 * @throws PortletContainerException
 	 */
 	public static PortletContainer getPortletContainer(ServletContext servletContext) throws PortletContainerException {
-		//PortletContainer container = PortletContainerService.getPortletContainer(config);
 		
-		//TODO STORE the container it's not supposed to be created everytime
-		//
-//		 Step 1) Create an instance of the PortletContainerService
-		//
-		PortletContainerService impl = new PortletContainerService();
-		//RequiredContainerServices impl = getPortletContainerServices(servletContext);
-		//
-//		 Step 2) Request a new container from the container factory
-		//
-		PortletContainerFactory factory = PortletContainerFactory.getInstance();
-		PortletContainer container = factory.createContainer("IdegaWeb Portlets", impl);
-		//
-//		 Step 3) Initialize the Container with the embedding
-//		         application's ServletContext
-		//
-		container.init(servletContext);
+		
+		PortletContainer container = (PortletContainer) servletContext.getAttribute(IW_PORTLET_CONTAINER);
+		if(container==null){
+		
+	//		 Step 1) Create an instance of the PortletContainerService
+			//
+			PortletContainerService impl = new PortletContainerService();
+			//RequiredContainerServices impl = getPortletContainerServices(servletContext);
+	//		 Step 2) Request a new container from the container factory
+			PortletContainerFactory factory = PortletContainerFactory.getInstance();
+			container = factory.createContainer("IdegaWeb Portlets", impl);
+	//		 Step 3) Initialize the Container with the embedding application's ServletContext
+	
+			container.init(servletContext);
+		}
 		
 		return container;
 	}
