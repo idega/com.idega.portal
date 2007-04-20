@@ -1,5 +1,5 @@
 /*
- * $Id: IWPortalContext.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: IWPortalContext.java,v 1.2 2007/04/20 23:31:09 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -12,11 +12,13 @@ package com.idega.portal.util;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+
 import javax.faces.context.FacesContext;
 import javax.portlet.PortalContext;
 import javax.portlet.PortletMode;
 import javax.portlet.WindowState;
 import javax.servlet.ServletContext;
+
 import com.idega.idegaweb.IWMainApplication;
 
 
@@ -24,10 +26,10 @@ import com.idega.idegaweb.IWMainApplication;
  * <p>
  * TODO tryggvil Describe Type IWPortalContext
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/20 23:31:09 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IWPortalContext implements PortalContext {
 

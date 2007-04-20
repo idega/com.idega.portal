@@ -1,5 +1,5 @@
 /*
- * $Id: PortletContainerService.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: PortletContainerService.java,v 1.2 2007/04/20 23:31:09 eiki Exp $
  * Created on 13.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -11,9 +11,11 @@ package com.idega.portal.pluto;
 
 import javax.portlet.PortalContext;
 import javax.servlet.ServletContext;
+
 import org.apache.pluto.PortletContainer;
 import org.apache.pluto.RequiredContainerServices;
 import org.apache.pluto.spi.PortalCallbackService;
+
 import com.idega.portal.pluto.util.IWPortalCallbackService;
 import com.idega.portal.util.IWPortalContext;
 
@@ -22,10 +24,10 @@ import com.idega.portal.util.IWPortalContext;
  * <p>
  * TODO tryggvil Describe Type PortletContainerService
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/20 23:31:09 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PortletContainerService implements RequiredContainerServices{//PortletContainerEnvironment{
 
@@ -50,6 +52,10 @@ public class PortletContainerService implements RequiredContainerServices{//Port
 			context = new IWPortalContext(this.servletContext);
 		}
 		return context;
+	}
+
+	public PortletContainerService() {
+		super();
 	}
 	
 	/*
