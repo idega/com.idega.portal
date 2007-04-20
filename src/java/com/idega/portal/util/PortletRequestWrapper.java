@@ -1,5 +1,5 @@
 /*
- * $Id: PortletRequestWrapper.java,v 1.1 2006/10/05 17:52:26 tryggvil Exp $
+ * $Id: PortletRequestWrapper.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -7,7 +7,7 @@
  * This software is the proprietary information of Idega hf.
  * Use is subject to license terms.
  */
-package com.idega.portlet.util;
+package com.idega.portal.util;
 
 import java.security.Principal;
 import java.util.Enumeration;
@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p>
  * TODO tryggvil Describe Type PortletRequestWrapper
  * </p>
- *  Last modified: $Date: 2006/10/05 17:52:26 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
  * @version $Revision: 1.1 $

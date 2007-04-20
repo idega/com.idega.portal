@@ -102,7 +102,7 @@
 	</servlet-mapping>
 
 
-	<taglib>
+	<!-- taglib>
 		<taglib-uri>http://java.sun.com/portlet</taglib-uri>
 		<taglib-location>/WEB-INF/tld/portlet.tld</taglib-location>
 	</taglib>
@@ -110,7 +110,7 @@
 	<taglib>
 		<taglib-uri>http://portals.apache.org/pluto</taglib-uri>
 		<taglib-location>/WEB-INF/tld/pluto.tld</taglib-location>
-	</taglib>
+	</taglib-->
 
 	<security-constraint>
 		<web-resource-collection>

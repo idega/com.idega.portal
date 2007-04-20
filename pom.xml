@@ -10,7 +10,7 @@
   <packaging>jar</packaging>
   <groupId>com.idega.block.experimental</groupId>
   <name>Portlet Extensions</name>
-  <artifactId>com.idega.portlet</artifactId>
+  <artifactId>com.idega.portal</artifactId>
   <inceptionYear>2006</inceptionYear>
   <description>idegaWeb Portal Extensions</description>
   <developers>
@@ -95,12 +95,12 @@
       <version>1.0</version>
       <type>jar</type>
     </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>org.apache.portals.bridges</groupId>
       <artifactId>portals-bridges-jsf</artifactId>
       <version>1.0</version>
       <type>jar</type>
-    </dependency>    
+    </dependency-->    
     
   </dependencies>
 </project>

@@ -1,5 +1,5 @@
 /**
- * $Id: IWPortletRegistryService.java,v 1.1 2006/10/05 22:23:24 tryggvil Exp $
+ * $Id: IWPortletRegistryService.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
  * Created in 2006 by tryggvil
  * 
  * Copyright (C) 2000-2006 Idega Software hf. All Rights Reserved.
@@ -7,16 +7,20 @@
  * This software is the proprietary information of Idega hf. Use is subject to
  * license terms.
  */
-package com.idega.portlet.pluto;
+package com.idega.portal.pluto;
 
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Set;
 import javax.servlet.ServletContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.pluto.PortletContainer;
 import org.apache.pluto.PortletContainerException;
 import org.apache.pluto.descriptors.portlet.PortletAppDD;
 import org.apache.pluto.descriptors.portlet.PortletDD;
 import org.apache.pluto.driver.config.DriverConfigurationException;
+import org.apache.pluto.driver.services.impl.resource.PortletRegistryServiceImpl;
 import org.apache.pluto.driver.services.impl.resource.ResourceConfig;
 import org.apache.pluto.driver.services.impl.resource.ResourceConfigReader;
 import org.apache.pluto.driver.services.portal.PortletApplicationConfig;
@@ -25,20 +29,25 @@ import org.apache.pluto.driver.services.portal.PortletWindowConfig;
 import org.apache.pluto.driver.services.portal.admin.DriverAdministrationException;
 import org.apache.pluto.driver.services.portal.admin.PortletRegistryAdminService;
 import org.apache.pluto.internal.PortletDescriptorRegistry;
+import com.idega.portal.pluto.util.ConfigUtil;
 
 /**
  * <p>
  * TODO tryggvil Describe Type IWPortletRegistryService
  * </p>
- * Last modified: $Date: 2006/10/05 22:23:24 $ by $Author: tryggvil $
+ * Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
  * @version $Revision: 1.1 $
  */
 public class IWPortletRegistryService implements PortletRegistryService, PortletRegistryAdminService {
 
-	private ResourceConfig config;
-	private ServletContext servletContext;
+
+
+    private static final Log LOG = LogFactory.getLog(PortletRegistryServiceImpl.class);
+    private ResourceConfig config;
+    private ServletContext servletContext;
+    private PortletContainer container;
 
 	// Constructor -------------------------------------------------------------
 	/**
@@ -62,7 +71,7 @@ public class IWPortletRegistryService implements PortletRegistryService, Portlet
 	public void init(ServletContext servletContext) throws DriverConfigurationException {
 		try {
 			this.servletContext = servletContext;
-			InputStream in = servletContext.getResourceAsStream(ResourceConfigReader.CONFIG_FILE);
+			InputStream in = ConfigUtil.getConfigFileInputStream();
 			this.config = ResourceConfigReader.getFactory().parse(in);
 		}
 		catch (Exception ex) {

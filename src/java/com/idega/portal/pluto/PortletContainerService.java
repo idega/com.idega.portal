@@ -1,5 +1,5 @@
 /*
- * $Id: PortletContainerService.java,v 1.2 2006/10/05 22:23:24 tryggvil Exp $
+ * $Id: PortletContainerService.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
  * Created on 13.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -7,25 +7,25 @@
  * This software is the proprietary information of Idega hf.
  * Use is subject to license terms.
  */
-package com.idega.portlet.pluto;
+package com.idega.portal.pluto;
 
 import javax.portlet.PortalContext;
 import javax.servlet.ServletContext;
 import org.apache.pluto.PortletContainer;
 import org.apache.pluto.RequiredContainerServices;
 import org.apache.pluto.spi.PortalCallbackService;
-import com.idega.portlet.pluto.util.IWPortalCallbackService;
-import com.idega.portlet.util.IWPortalContext;
+import com.idega.portal.pluto.util.IWPortalCallbackService;
+import com.idega.portal.util.IWPortalContext;
 
 
 /**
  * <p>
  * TODO tryggvil Describe Type PortletContainerService
  * </p>
- *  Last modified: $Date: 2006/10/05 22:23:24 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
 public class PortletContainerService implements RequiredContainerServices{//PortletContainerEnvironment{
 
