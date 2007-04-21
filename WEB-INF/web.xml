@@ -131,6 +131,8 @@ limitations under the License.
         <servlet-name>PlutoPageAdmin</servlet-name>
         <url-pattern>/PlutoInvoker/PlutoPageAdmin</url-pattern>
     </servlet-mapping>
+    
+    <!--  Read from the jars
     <taglib>
         <taglib-uri>http://java.sun.com/portlet</taglib-uri>
         <taglib-location>/WEB-INF/tld/portlet.tld</taglib-location>
@@ -145,8 +147,10 @@ limitations under the License.
         <taglib-uri>http://portals.apache.org/pluto</taglib-uri>
         <taglib-location>/WEB-INF/tld/pluto.tld</taglib-location>
     </taglib>
+    
+    -->
 
-    <security-constraint>
+    <!-- Not used security-constraint>
         <web-resource-collection>
             <web-resource-name>portal</web-resource-name>
             <url-pattern>/portal</url-pattern>
@@ -170,7 +174,7 @@ limitations under the License.
 
     <security-role>
         <role-name>pluto</role-name>
-    </security-role>
+    </security-role -->
 
 </web-app>
 
