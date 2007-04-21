@@ -22,9 +22,9 @@ limitations under the License.
 -->
 <taglib>
     <tlibversion>1.0</tlibversion>
-    <jspversion>1.1</jspversion>
+    <jspversion>1.2</jspversion>
     <shortname>portlet</shortname>
-    <uri>http://java.sun.com/portlet</uri>
+    <uri>http://portals.apache.org/pluto/portlet-el</uri>
     <tag>
         <name>defineObjects</name>
         <tagclass>org.apache.pluto.tags.DefineObjectsTag</tagclass>
@@ -33,17 +33,17 @@ limitations under the License.
     </tag>
     <tag>
         <name>param</name>
-        <tagclass>org.apache.pluto.tags.ParamTag</tagclass>
+        <tagclass>org.apache.pluto.tags.el.ParamTag</tagclass>
         <bodycontent>empty</bodycontent>
         <attribute>
             <name>name</name>
             <required>true</required>
-            <rtexprvalue>true</rtexprvalue>
+            <rtexprvalue>false</rtexprvalue>
         </attribute>
         <attribute>
             <name>value</name>
             <required>true</required>
-            <rtexprvalue>true</rtexprvalue>
+            <rtexprvalue>false</rtexprvalue>
         </attribute>
     </tag>
     <tag>
