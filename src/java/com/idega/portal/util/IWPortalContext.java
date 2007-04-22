@@ -1,5 +1,5 @@
 /*
- * $Id: IWPortalContext.java,v 1.2 2007/04/20 23:31:09 eiki Exp $
+ * $Id: IWPortalContext.java,v 1.3 2007/04/22 14:59:25 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -26,24 +26,25 @@ import com.idega.idegaweb.IWMainApplication;
  * <p>
  * TODO tryggvil Describe Type IWPortalContext
  * </p>
- *  Last modified: $Date: 2007/04/20 23:31:09 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IWPortalContext implements PortalContext {
 
 	private String portalInfo = "idegaWeb Portal";
 	private IWMainApplication iwma;
 
-	private static Vector portalModes;
-	private static Vector windowStates;
+	private static Vector portalModes = new Vector();
+	private static Vector windowStates = new Vector();
 	
 	static{
 		portalModes.add(PortletMode.VIEW);
 		
 		windowStates.add(WindowState.NORMAL);
 	}
+
 	
 	/**
 	 * 

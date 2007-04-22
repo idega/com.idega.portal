@@ -26,7 +26,7 @@ limitations under the License.
     version="1.1">
 
   <portal-name>pluto-portal-driver</portal-name>
-  <portal-version>1.1.2</portal-version>
+  <portal-version>1.1.3</portal-version>
   <container-name>Pluto Portal Driver</container-name>
 
   <supports>
@@ -50,9 +50,6 @@ limitations under the License.
     <page name="Secondary Page" uri="/WEB-INF/themes/pluto-default-theme.jsp">
       <portlet context="/testsuite" name="TestPortlet1"/>
       <portlet context="/testsuite" name="TestPortlet2"/>
-    </page>
-    <page name="About Pluto" uri="/WEB-INF/themes/pluto-default-theme.jsp">
-      <portlet context="/pluto" name="AboutPortlet"/>
     </page>
     <page name="Pluto Admin" uri="/WEB-INF/themes/pluto-default-theme.jsp">
       <portlet context="/pluto" name="PlutoPageAdmin"/>

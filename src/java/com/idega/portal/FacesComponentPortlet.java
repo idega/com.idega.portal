@@ -1,5 +1,5 @@
 /*
- * $Id: FacesComponentPortlet.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: FacesComponentPortlet.java,v 1.2 2007/04/22 14:59:25 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.faces.component.UIComponent;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -24,15 +25,18 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import com.idega.idegaweb.IWMainApplication;
+import com.idega.presentation.IWContext;
+
 
 /**
  * <p>
  * A Portlet that wraps a simple instance of a JSF UIComponent
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 
@@ -43,14 +47,12 @@ public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 	 */
 	public FacesComponentPortlet() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * @param text
 	 */
 	public FacesComponentPortlet(UIComponent wrappedcomponent) {
-		// TODO Auto-generated constructor stub
 		this.wrappedComponent=wrappedcomponent;
 	}
 
@@ -58,7 +60,6 @@ public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 	 * @see javax.portlet.GenericPortlet#destroy()
 	 */
 	public void destroy() {
-		// TODO Auto-generated method stub
 		super.destroy();
 	}
 
@@ -66,7 +67,7 @@ public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 	 * @see javax.portlet.GenericPortlet#doDispatch(javax.portlet.RenderRequest, javax.portlet.RenderResponse)
 	 */
 	protected void doDispatch(RenderRequest arg0, RenderResponse arg1) throws PortletException, IOException {
-		// TODO Auto-generated method stub
+	
 		super.doDispatch(arg0, arg1);
 	}
 
@@ -89,9 +90,15 @@ public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 	/* (non-Javadoc)
 	 * @see javax.portlet.GenericPortlet#doView(javax.portlet.RenderRequest, javax.portlet.RenderResponse)
 	 */
-	protected void doView(RenderRequest arg0, RenderResponse arg1) throws PortletException, IOException {
+	protected void doView(RenderRequest renderRequest, RenderResponse renderResponse) throws PortletException, IOException {
 		// TODO Auto-generated method stub
-		super.doView(arg0, arg1);
+		//super.doView(arg0, arg1);
+		//HERE WE PRINT
+		IWContext iwc = IWContext.getInstance();
+//		IWContext iwc = new IWContext(renderRequest.,renderResponse,IWMainApplication.getDefaultIWMainApplication().getServletContext());
+		wrappedComponent.encodeChildren(iwc);
+//		
+		
 	}
 
 	/* (non-Javadoc)
@@ -146,8 +153,9 @@ public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 	 * @see javax.portlet.GenericPortlet#getTitle(javax.portlet.RenderRequest)
 	 */
 	protected String getTitle(RenderRequest arg0) {
-		// TODO Auto-generated method stub
-		return super.getTitle(arg0);
+		
+		return "test";
+		//return super.getTitle(arg0);
 	}
 
 	/* (non-Javadoc)
@@ -170,8 +178,9 @@ public class FacesComponentPortlet extends GenericPortlet implements Portlet {
 	 * @see javax.portlet.GenericPortlet#processAction(javax.portlet.ActionRequest, javax.portlet.ActionResponse)
 	 */
 	public void processAction(ActionRequest arg0, ActionResponse arg1) throws PortletException, IOException {
-		// TODO Auto-generated method stub
-		super.processAction(arg0, arg1);
+		
+		
+		//super.processAction(arg0, arg1);
 	}
 
 	/* (non-Javadoc)

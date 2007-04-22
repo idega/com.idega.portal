@@ -1,5 +1,5 @@
 /*
- * $Id: PortletUtils.java,v 1.4 2007/04/20 23:45:20 eiki Exp $
+ * $Id: PortletUtils.java,v 1.5 2007/04/22 14:59:24 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -43,21 +43,21 @@ import org.apache.pluto.driver.url.PortalURLParser;
 import org.apache.pluto.driver.url.impl.PortalURLParserImpl;
 import org.apache.pluto.spi.PortalCallbackService;
 
-import com.idega.portal.pluto.PortletContainerService;
+import com.idega.portal.pluto.IWPortletContainerService;
 
 
 /**
  * <p>
  * TODO tryggvil Describe Type PortletUtils
  * </p>
- *  Last modified: $Date: 2007/04/20 23:45:20 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/04/22 14:59:24 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class PortletUtils {
 
-	private static final String IW_PORTLET_CONTAINER = null;
+	private static final String IW_PORTLET_CONTAINER = "IWPortalContainer";
 	private static RequiredContainerServices containerServices;
 
 	/**
@@ -146,15 +146,19 @@ public class PortletUtils {
 		
 	//		 Step 1) Create an instance of the PortletContainerService
 			//
-			PortletContainerService impl = new PortletContainerService();
+			IWPortletContainerService impl = new IWPortletContainerService(servletContext);
 			//RequiredContainerServices impl = getPortletContainerServices(servletContext);
 	//		 Step 2) Request a new container from the container factory
 			PortletContainerFactory factory = PortletContainerFactory.getInstance();
 			container = factory.createContainer("IdegaWeb Portlets", impl);
 	//		 Step 3) Initialize the Container with the embedding application's ServletContext
-	
 			container.init(servletContext);
-		//TODO DON'T FORGET TO DESTROY IT WHEN THE APP ENDS
+			
+			//just could be handy
+			impl.setPortletContainer(container);
+			
+			servletContext.setAttribute(IW_PORTLET_CONTAINER, container);
+			
 		}
 		
 		

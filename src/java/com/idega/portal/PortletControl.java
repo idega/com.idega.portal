@@ -1,5 +1,5 @@
 /*
- * $Id: PortletControl.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: PortletControl.java,v 1.2 2007/04/22 14:59:25 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -10,12 +10,22 @@
 package com.idega.portal;
 
 import java.io.IOException;
+import java.util.Iterator;
+
 import javax.faces.context.FacesContext;
 import javax.portlet.Portlet;
+import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import com.idega.presentation.text.Text;
+
+import org.apache.pluto.PortletContainer;
+import org.apache.pluto.PortletContainerException;
+
+import com.idega.portal.util.PortletRequestWrapper;
+import com.idega.portal.util.PortletResponseWrapper;
+import com.idega.portal.util.PortletUtils;
+import com.idega.presentation.IWContext;
 import com.idega.webface.WFBlock;
 
 
@@ -23,10 +33,10 @@ import com.idega.webface.WFBlock;
  * <p>
  * JSF Component to control a wrapped Portlet instance.
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PortletControl extends WFBlock {
 
@@ -59,7 +69,8 @@ public class PortletControl extends WFBlock {
 	
 	public Portlet getPortlet(){
 		if(portlet==null){
-			portlet = new FacesComponentPortlet(new Text("my test portlet"));
+			portlet = new HelloWorld();
+//			portlet = new FacesComponentPortlet(new Text("my test portlet"));
 		}
 		return portlet;
 	}
@@ -67,25 +78,63 @@ public class PortletControl extends WFBlock {
 	
 	public void encodeChildren(FacesContext context){
 		
-		Portlet portlet = getPortlet();
+		IWContext iwc = IWContext.getIWContext(context);
 		
-		RenderRequest rRequest = null;
-		RenderResponse rResponse = null;
-		
-		/*PortletRenderInfo info = PortletUtils.createRenderInfo(context);
-		rRequest = info.getRequest();
-		rResponse = info.getResponse();
-		*/
+	
 		try {
+			PortletContainer container = PortletUtils.getPortletContainer(iwc.getServletContext());
+			Portlet portlet = getPortlet();
+
+			Iterator iter = container.getOptionalContainerServices().getPortletRegistryService().getRegisteredPortletApplications();
+			while (iter.hasNext()) {
+				PortletContext app = (PortletContext) iter.next();
+				System.out.println(app.getClass());				
+				//container.getOptionalContainerServices().getPortletRegistryService().
+				//PortletAppDD appDD = container.getOptionalContainerServices().getPortletRegistryService().getPortletApplicationDescriptor(app.getPortletContextName());
+//				System.out.println(app.getPortletContextName());
+//				
+//				List portlets = appDD.getPortlets();
+//				for (Iterator iterator = portlets.iterator(); iterator
+//						.hasNext();) {
+//					Portlet port = (Portlet) iterator.next();
+//					System.out.println(port.getClass());
+//				}
+			}
+			
+			
+			
+			
+			//			portlet.init(container.getRequiredContainerServices().
+	
+			
+//		Iterator iterator = container.getOptionalContainerServices().getPortletRegistryService().getRegisteredPortletApplicationIds();
+//		while (iterator.hasNext()) {
+//			System.out.println(iterator.next());
+//		}
+//		
+			
+//		PortletWindow window = new PortletWindowImpl(new PortletWindowConfig(),new PortalURLImpl());
+		
+//		RenderRequest req = new RenderRequestImpl(container,);
+		RenderRequest rRequest = new PortletRequestWrapper(context,portlet);
+		RenderResponse rResponse = new PortletResponseWrapper(context);
+		
+		try {
+			//must call processaction first
+		//	portlet.processAction(new ActionRequestImpl(container,null,iwc.getRequest()), new ActionResponseImpl(container,null,iwc.getRequest(),iwc.getResponse()));
 			portlet.render(rRequest,rResponse);
 		}
 		catch (PortletException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		catch (IOException e) {
+		catch (IOException e) { 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		} catch (PortletContainerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
 	}

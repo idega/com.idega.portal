@@ -1,5 +1,5 @@
 /*
- * $Id: PortletRequestWrapper.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: PortletRequestWrapper.java,v 1.2 2007/04/22 14:59:25 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -24,15 +24,20 @@ import javax.portlet.RenderRequest;
 import javax.portlet.WindowState;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.pluto.PortletContainerException;
+import org.apache.pluto.internal.impl.RenderRequestImpl;
+
+import com.idega.idegaweb.IWMainApplication;
+
 
 /**
  * <p>
  * TODO tryggvil Describe Type PortletRequestWrapper
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PortletRequestWrapper implements RenderRequest {
 
@@ -46,23 +51,27 @@ public class PortletRequestWrapper implements RenderRequest {
 	/**
 	 * @param context
 	 */
-	public PortletRequestWrapper	(FacesContext context,Portlet portlet) {
+	public PortletRequestWrapper(FacesContext context,Portlet portlet) {
 		// TODO Auto-generated constructor stub
 		facesContext = context;
 		servletRequest = (HttpServletRequest) context.getExternalContext().getRequest();
-		portalContext = new IWPortalContext(context);
+		try {
+			portalContext = PortletUtils.getPortletContainer(IWMainApplication.getIWMainApplication(context).getServletContext()).getRequiredContainerServices().getPortalContext();
+		} catch (PortletContainerException e) {
+			e.printStackTrace();
+		}
 		portletPreferences = new IWPortletPreferenes(context,portlet);
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.portlet.PortletRequest#isWindowStateAllowed(javax.portlet.WindowState)
 	 */
-	public boolean isWindowStateAllowed(WindowState arg0) {
+	public boolean isWindowStateAllowed(WindowState windowState) {
 		// TODO Auto-generated method stub
 		Enumeration states = getPortalContext().getSupportedWindowStates();
 		while(states.hasMoreElements()){
 			WindowState state = (WindowState) states.nextElement();
-			if(state.equals(arg0)){
+			if(state.equals(windowState)){
 				return true;
 			}
 		}
@@ -72,11 +81,11 @@ public class PortletRequestWrapper implements RenderRequest {
 	/* (non-Javadoc)
 	 * @see javax.portlet.PortletRequest#isPortletModeAllowed(javax.portlet.PortletMode)
 	 */
-	public boolean isPortletModeAllowed(PortletMode arg0) {
+	public boolean isPortletModeAllowed(PortletMode portletMode) {
 		Enumeration modes = getPortalContext().getSupportedPortletModes();
 		while(modes.hasMoreElements()){
 			PortletMode mode = (PortletMode) modes.nextElement();
-			if(mode.equals(arg0)){
+			if(mode.equals(portletMode)){
 				return true;
 			}
 		}
@@ -87,16 +96,16 @@ public class PortletRequestWrapper implements RenderRequest {
 	 * @see javax.portlet.PortletRequest#getPortletMode()
 	 */
 	public PortletMode getPortletMode() {
-		// TODO Auto-generated method stub
-		return null;
+		//todo  always set to view for now
+		return PortletMode.VIEW;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.portlet.PortletRequest#getWindowState()
 	 */
 	public WindowState getWindowState() {
-		// TODO Auto-generated method stub
-		return null;
+		//todo just set to normal now so we won't get a nullpointer
+		return WindowState.NORMAL;
 	}
 
 	/* (non-Javadoc)
@@ -153,8 +162,7 @@ public class PortletRequestWrapper implements RenderRequest {
 	 * @see javax.portlet.PortletRequest#getPortalContext()
 	 */
 	public PortalContext getPortalContext() {
-		// TODO Auto-generated method stub
-		return null;
+		return portalContext;
 	}
 
 	/* (non-Javadoc)

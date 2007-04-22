@@ -1,5 +1,5 @@
 /*
- * $Id: PortletContainerService.java,v 1.2 2007/04/20 23:31:09 eiki Exp $
+ * $Id: IWPortletContainerService.java,v 1.1 2007/04/22 14:59:25 eiki Exp $
  * Created on 13.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -24,21 +24,21 @@ import com.idega.portal.util.IWPortalContext;
  * <p>
  * TODO tryggvil Describe Type PortletContainerService
  * </p>
- *  Last modified: $Date: 2007/04/20 23:31:09 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
-public class PortletContainerService implements RequiredContainerServices{//PortletContainerEnvironment{
+public class IWPortletContainerService implements RequiredContainerServices{//PortletContainerEnvironment{
 
-	private static PortletContainer portletContainer;
+	private PortletContainer container;
 	PortalContext context;
 	private ServletContext servletContext;
 	
 	/**
 	 * 
 	 */
-	public PortletContainerService(ServletContext servletContext) {
+	public IWPortletContainerService(ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 
@@ -54,8 +54,16 @@ public class PortletContainerService implements RequiredContainerServices{//Port
 		return context;
 	}
 
-	public PortletContainerService() {
+	public IWPortletContainerService() {
 		super();
+	}
+	
+	public void setPortletContainer(PortletContainer container){
+		this.container = container;
+	}
+	
+	public PortletContainer getPortletContainer(){
+		return this.container;
 	}
 	
 	/*

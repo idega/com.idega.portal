@@ -1,5 +1,5 @@
 /*
- * $Id: IWPortletPreferenes.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: IWPortletPreferenes.java,v 1.2 2007/04/22 14:59:25 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
+
 import javax.faces.context.FacesContext;
 import javax.portlet.Portlet;
 import javax.portlet.PortletPreferences;
@@ -24,10 +25,10 @@ import javax.portlet.ValidatorException;
  * <p>
  * TODO tryggvil Describe Type IWPortletPreferenes
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IWPortletPreferenes implements PortletPreferences {
 

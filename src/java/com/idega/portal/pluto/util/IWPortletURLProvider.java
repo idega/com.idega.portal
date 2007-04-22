@@ -1,5 +1,5 @@
 /**
- * $Id: IWPortletURLProvider.java,v 1.1 2007/04/20 22:25:39 tryggvil Exp $
+ * $Id: IWPortletURLProvider.java,v 1.2 2007/04/22 14:59:25 eiki Exp $
  * Created in 2006 by tryggvil
  *
  * Copyright (C) 2000-2006 Idega Software hf. All Rights Reserved.
@@ -19,10 +19,10 @@ import org.apache.pluto.spi.PortletURLProvider;
  * <p>
  * TODO tryggvil Describe Type IWPortletURLProvider
  * </p>
- *  Last modified: $Date: 2007/04/20 22:25:39 $ by $Author: tryggvil $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IWPortletURLProvider implements PortletURLProvider {
 
@@ -66,5 +66,10 @@ public class IWPortletURLProvider implements PortletURLProvider {
 	 */
 	public void setWindowState(WindowState state) {
 		// TODO Auto-generated method stub
+	}
+
+	public boolean isSecureSupported() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

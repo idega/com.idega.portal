@@ -1,5 +1,5 @@
 /**
- * $Id: IWPortalCallbackService.java,v 1.2 2007/04/20 23:31:10 eiki Exp $
+ * $Id: IWPortalCallbackService.java,v 1.3 2007/04/22 14:59:25 eiki Exp $
  * Created in 2006 by tryggvil
  *
  * Copyright (C) 2000-2006 Idega Software hf. All Rights Reserved.
@@ -14,7 +14,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.pluto.PortletWindow;
-import org.apache.pluto.driver.core.ResourceURLProviderImpl;
+import org.apache.pluto.driver.services.container.ResourceURLProviderImpl;
 import org.apache.pluto.spi.PortalCallbackService;
 import org.apache.pluto.spi.PortletURLProvider;
 import org.apache.pluto.spi.ResourceURLProvider;
@@ -24,10 +24,10 @@ import org.apache.pluto.spi.ResourceURLProvider;
  * <p>
  * TODO tryggvil Describe Type IWPortalCallbackService
  * </p>
- *  Last modified: $Date: 2007/04/20 23:31:10 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IWPortalCallbackService implements PortalCallbackService {
 
