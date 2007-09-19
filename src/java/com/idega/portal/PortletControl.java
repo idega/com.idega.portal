@@ -1,5 +1,5 @@
 /*
- * $Id: PortletControl.java,v 1.2 2007/04/22 14:59:25 eiki Exp $
+ * $Id: PortletControl.java,v 1.3 2007/09/19 10:34:48 eiki Exp $
  * Created on 12.4.2006 in project com.idega.portal
  *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
@@ -33,10 +33,10 @@ import com.idega.webface.WFBlock;
  * <p>
  * JSF Component to control a wrapped Portlet instance.
  * </p>
- *  Last modified: $Date: 2007/04/22 14:59:25 $ by $Author: eiki $
+ *  Last modified: $Date: 2007/09/19 10:34:48 $ by $Author: eiki $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PortletControl extends WFBlock {
 
@@ -83,12 +83,14 @@ public class PortletControl extends WFBlock {
 	
 		try {
 			PortletContainer container = PortletUtils.getPortletContainer(iwc.getServletContext());
-			Portlet portlet = getPortlet();
-
+			
 			Iterator iter = container.getOptionalContainerServices().getPortletRegistryService().getRegisteredPortletApplications();
 			while (iter.hasNext()) {
 				PortletContext app = (PortletContext) iter.next();
-				System.out.println(app.getClass());				
+				
+				
+				System.out.println(app.getPortletContextName());
+				
 				//container.getOptionalContainerServices().getPortletRegistryService().
 				//PortletAppDD appDD = container.getOptionalContainerServices().getPortletRegistryService().getPortletApplicationDescriptor(app.getPortletContextName());
 //				System.out.println(app.getPortletContextName());
@@ -115,12 +117,13 @@ public class PortletControl extends WFBlock {
 			
 //		PortletWindow window = new PortletWindowImpl(new PortletWindowConfig(),new PortalURLImpl());
 		
-//		RenderRequest req = new RenderRequestImpl(container,);
+		Portlet portlet = getPortlet();
+
 		RenderRequest rRequest = new PortletRequestWrapper(context,portlet);
 		RenderResponse rResponse = new PortletResponseWrapper(context);
 		
 		try {
-			//must call processaction first
+			//must xall processaction first
 		//	portlet.processAction(new ActionRequestImpl(container,null,iwc.getRequest()), new ActionResponseImpl(container,null,iwc.getRequest(),iwc.getResponse()));
 			portlet.render(rRequest,rResponse);
 		}
