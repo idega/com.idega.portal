@@ -1,5 +1,5 @@
 /**
- * $Id: IWDriverConfiguration.java,v 1.2 2007/04/20 23:31:10 eiki Exp $
+ * $Id: IWDriverConfiguration.java,v 1.3 2008/01/30 14:32:04 tryggvil Exp $
  * Created in 2006 by tryggvil
  *
  * Copyright (C) 2000-2006 Idega Software hf. All Rights Reserved.
@@ -17,6 +17,7 @@ import org.apache.pluto.driver.config.DriverConfiguration;
 import org.apache.pluto.driver.config.DriverConfigurationException;
 import org.apache.pluto.driver.services.portal.PageConfig;
 import org.apache.pluto.driver.services.portal.PortletWindowConfig;
+import org.apache.pluto.driver.services.portal.RenderConfigService;
 import org.apache.pluto.driver.url.PortalURLParser;
 import org.apache.pluto.driver.url.impl.PortalURLParserImpl;
 import org.apache.pluto.spi.PortalCallbackService;
@@ -27,10 +28,10 @@ import org.apache.pluto.spi.optional.PortletPreferencesService;
  * <p>
  * TODO tryggvil Describe Type IWDriverConfiguration
  * </p>
- *  Last modified: $Date: 2007/04/20 23:31:10 $ by $Author: eiki $
+ *  Last modified: $Date: 2008/01/30 14:32:04 $ by $Author: tryggvil $
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IWDriverConfiguration implements DriverConfiguration {
 
@@ -193,5 +194,10 @@ public class IWDriverConfiguration implements DriverConfiguration {
 	public boolean isWindowStateSupportedByPortlet(String arg0, String arg1) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public RenderConfigService getRenderConfigService() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
