@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.idega.portal.PortalConstants;
-import com.idega.portal.gateway.Gateway;
 import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.Filter;
 import com.idega.portal.model.PortalMenu;
@@ -38,7 +37,7 @@ import com.sun.jersey.multipart.FormDataParam;
 @Path(PortalGateway.PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class PortalGatewayImpl extends DefaultRestfulService implements PortalGateway, Gateway {
+public class PortalGatewayImpl extends DefaultRestfulService implements PortalGateway {
 
 	@Autowired
 	@Qualifier(PortalConstants.QUALIFIER_PORTAL)
