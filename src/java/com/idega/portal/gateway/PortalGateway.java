@@ -5,7 +5,7 @@ import com.idega.portal.service.UserService;
 
 public interface PortalGateway extends PortalService, UserService {
 
-	public static final String	PATH = "/api",
+	public static final String	PATH = "/api/portal/",
 
 								PORTAL = "/portal",
 								SETTINGS = "/settings",

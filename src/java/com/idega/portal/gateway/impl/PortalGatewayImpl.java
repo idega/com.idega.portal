@@ -51,28 +51,28 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	/* WS for dashboard */
 	@Override
 	@GET
-	@Path(PORTAL + SETTINGS)
+	@Path(SETTINGS)
 	public PortalSettings getDashboardSettings() {
 		return portalService.getDashboardSettings();
 	}
 
 	@Override
 	@POST
-	@Path(PORTAL + ACCOUNT)
+	@Path(ACCOUNT)
 	public UserAccount doCreateAccount(UserAccount account) {
 		return portalService.doCreateAccount(account);
 	}
 
 	@Override
 	@GET
-	@Path(PORTAL + MENUS)
+	@Path(MENUS)
 	public List<PortalMenu> getPortalMenus() {
 		return portalService.getPortalMenus();
 	}
 
 	@Override
 	@GET
-	@Path(PORTAL + AUTHORIZE)
+	@Path(AUTHORIZE)
 	public String doAuthorizeViaGateway(
 			@Context HttpServletRequest httpRequest,
 			@Context HttpServletResponse httpResponse,
@@ -83,7 +83,7 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 
 	@Override
 	@GET
-	@Path(PORTAL + LANGUAGE)
+	@Path(LANGUAGE)
 	public String setLanguage(@QueryParam("language") String language) {
 		return portalService.setLanguage(language);
 	}
