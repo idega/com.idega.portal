@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID"
+	version="2.5">
+
+	<display-name>WebServices</display-name>
+
+	<!-- API WS -->
+	<servlet>
+		<servlet-name>Portal API</servlet-name>
+		<servlet-class>com.idega.portal.servlet.PortalServlet</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.idega.portal.gateway</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.idega.portal.service</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.idega.portal.model</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.idega.cases.management.data</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<filter>
+		<filter-name>Portal API Filter</filter-name>
+		<filter-class>com.idega.portal.servlet.PortalServlet</filter-class>
+		<init-param>
+	       <param-name>allowedOrigins</param-name>
+	       <param-value>*</param-value>
+	   	</init-param>
+	   	<init-param>
+	       <param-name>allowedMethods</param-name>
+	       <param-value>*</param-value>
+	   	</init-param>
+	   	<init-param>
+	       <param-name>allowedHeaders</param-name>
+	       <param-value>*</param-value>
+	   	</init-param>
+	</filter>
+	
+	<!-- Portal Media servlet -->
+	<servlet>
+		<servlet-name>Portal Media servlet</servlet-name>
+		<servlet-class>com.idega.portal.servlet.PortalMediaServlet</servlet-class>
+		<load-on-startup>10</load-on-startup>
+	</servlet>
+	<filter>
+		<filter-name>Portal Media filter</filter-name>
+		<filter-class>com.idega.portal.servlet.PortalMediaServlet</filter-class>
+		<init-param>
+	       <param-name>allowedOrigins</param-name>
+	       <param-value>*</param-value>
+	   	</init-param>
+	   	<init-param>
+	       <param-name>allowedMethods</param-name>
+	       <param-value>*</param-value>
+	   	</init-param>
+	   	<init-param>
+	       <param-name>allowedHeaders</param-name>
+	       <param-value>*</param-value>
+	   	</init-param>
+	</filter>
+	
+	<servlet-mapping>
+		<servlet-name>Portal API</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+	<filter-mapping>
+		<filter-name>Portal API Filter</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
+	<servlet-mapping>
+		<servlet-name>Portal API</servlet-name>
+		<url-pattern>/portal/*</url-pattern>
+	</servlet-mapping>
+	<filter-mapping>
+		<filter-name>Portal API Filter</filter-name>
+		<url-pattern>/portal/*</url-pattern>
+	</filter-mapping>
+	<servlet-mapping>
+		<servlet-name>Portal API</servlet-name>
+		<url-pattern>/app/*</url-pattern>
+	</servlet-mapping>
+	<filter-mapping>
+		<filter-name>Portal API Filter</filter-name>
+		<url-pattern>/app/*</url-pattern>
+	</filter-mapping>
+	<servlet-mapping>
+		<servlet-name>Portal Media servlet</servlet-name>
+		<url-pattern>/iw_cache/*</url-pattern>
+	</servlet-mapping>
+	<filter-mapping>
+		<filter-name>Portal Media filter</filter-name>
+		<url-pattern>/iw_cache/*</url-pattern>
+	</filter-mapping>
+	
+</web-app>

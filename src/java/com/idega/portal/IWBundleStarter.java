@@ -9,6 +9,8 @@
  */
 package com.idega.portal;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +23,9 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWBundleStartable;
 import com.idega.idegaweb.IWMainApplicationSettings;
+import com.idega.portal.gateway.PortalGateway;
+import com.idega.portal.model.Property;
+import com.idega.portal.security.SecurityUtil;
 import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.StringHandler;
@@ -110,9 +115,33 @@ public class IWBundleStarter implements IWBundleStartable {
 		}
 	}
 
+	private void doRegisterAccessArtifacts() {
+		//	Portal
+		SecurityUtil.getInstance().doRegisterAccessArtifact(
+				PortalGateway.PORTAL,
+				Arrays.asList(
+						new Property<String, List<String>>(PortalGateway.SETTINGS, SecurityUtil.getInstance().getAllRoles()),
+						new Property<String, List<String>>(PortalGateway.ACCOUNT, SecurityUtil.getInstance().getAllRoles()),
+						new Property<String, List<String>>(PortalGateway.MENUS, SecurityUtil.getInstance().getAllRoles())
+				)
+		);
+
+		//	User
+		SecurityUtil.getInstance().doRegisterAccessArtifact(
+				PortalGateway.USER,
+				Arrays.asList(
+						new Property<String, List<String>>(PortalGateway.PROFILE,SecurityUtil.getInstance().getAllRoles()),
+						new Property<String, List<String>>(PortalGateway.PROFILE + PortalGateway.UPDATE, SecurityUtil.getInstance().getAllRoles()),
+						new Property<String, List<String>>(PortalGateway.PROFILE + PortalGateway.PICTURE + PortalGateway.UPDATE, SecurityUtil.getInstance().getAllRoles())
+				)
+		);
+	}
+
 	@Override
 	public void start(IWBundle starterBundle) {
 		doCreateOAuthClients(starterBundle.getApplication().getSettings());
+
+		doRegisterAccessArtifacts();
 	}
 
 	@Override
