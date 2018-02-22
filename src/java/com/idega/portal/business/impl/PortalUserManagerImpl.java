@@ -6,6 +6,8 @@ import java.util.logging.Level;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.idega.block.login.bean.OAuthToken;
@@ -33,6 +35,7 @@ import com.idega.util.WebUtil;
 import com.idega.util.expression.ELUtil;
 
 @Service
+@Scope(BeanDefinition.SCOPE_SINGLETON)
 public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUserManager {
 
 	@Autowired
