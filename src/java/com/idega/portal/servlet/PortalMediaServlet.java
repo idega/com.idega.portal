@@ -97,7 +97,7 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 					source = new FileInputStream(tmp);
 				}
 			}
-			if (source == null) {
+			if (source == null && fileId != null && fileId > 0) {
 				ICFileHome fileHome = (ICFileHome) IDOLookup.getHome(ICFile.class);
 				ICFile file = fileHome.findByPrimaryKey(fileId);
 				name = file.getName();
@@ -105,6 +105,9 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 				size = sizeTmp == null ? null : sizeTmp.longValue();
 				source = file.getFileValue();
 				type = file.getMimeType();
+			}
+			if (source == null) {
+				return;
 			}
 
 			if (size != null) {
