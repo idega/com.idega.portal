@@ -25,7 +25,9 @@ public class PortalConstants {
 								PROPERTY_FOOTER_ADDRESS = "footer.address",
 								PROPERTY_FOOTER_PHONE_NUMBER = "footer.phone_number",
 								PROPERTY_FOOTER_FAX_NUMBER = "footer.fax_number",
-								PROPERTY_FOOTER_EMAIL_ADDRESS = "footer.email_address";
+								PROPERTY_FOOTER_EMAIL_ADDRESS = "footer.email_address",
+
+								PROPERTY_PORTAL_OAUTH_CLIENTS = "portal_oauth_clients";
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 

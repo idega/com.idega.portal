@@ -84,7 +84,7 @@ public class IWBundleStarter implements IWBundleStartable {
 
 		String clientsInfo = null;
 		try {
-			clientsInfo = settings.getProperty("portal_oauth_clients");	//	i.e. portal_oauth_clients=egov_dashboard,egov_dashboard,30000,30000;egov_portal,egov_portal;
+			clientsInfo = settings.getProperty(PortalConstants.PROPERTY_PORTAL_OAUTH_CLIENTS);	//	i.e. portal_oauth_clients=egov_dashboard,egov_dashboard,30000,30000;egov_portal,egov_portal;
 			if (StringUtil.isEmpty(clientsInfo)) {
 				return;
 			}
