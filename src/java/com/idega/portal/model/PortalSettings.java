@@ -224,4 +224,12 @@ public class PortalSettings implements Serializable {
 		this.oauthInfo = oauthInfo;
 	}
 
+	public List<String> getCssFiles() {
+		return cssFiles;
+	}
+
+	public void setCssFiles(List<String> cssFiles) {
+		this.cssFiles = cssFiles;
+	}
+
 }
