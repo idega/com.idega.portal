@@ -91,6 +91,14 @@
 		<filter-name>Portal API Filter</filter-name>
 		<url-pattern>/portal/*</url-pattern>
 	</filter-mapping>
+    <servlet-mapping>
+        <servlet-name>Portal API</servlet-name>
+        <url-pattern>/dashboard/*</url-pattern>
+    </servlet-mapping>
+    <filter-mapping>
+        <filter-name>Portal API Filter</filter-name>
+        <url-pattern>/dashboard/*</url-pattern>
+    </filter-mapping>
 	<servlet-mapping>
 		<servlet-name>Portal API</servlet-name>
 		<url-pattern>/app/*</url-pattern>
