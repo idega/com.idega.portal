@@ -97,7 +97,11 @@ public class SecurityUtil {
 	}
 
 	public User getAuthorizedUser() {
-		String methodName = getCurrentMethodName();
+		return getAuthorizedUser(3);
+	}
+
+	public User getAuthorizedUser(int index) {
+		String methodName = getCurrentMethodName(index);
 		String uri = getURI(methodName);
 		if (StringUtil.isEmpty(uri)) {
 			return null;
@@ -106,15 +110,16 @@ public class SecurityUtil {
 		return getAuthorizedUser(uri);
 	}
 
-	private String getCurrentMethodName() {
+	private String getCurrentMethodName(Integer index) {
 		try {
+			int defaultIndex = 3;
 			final StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
-			if (ArrayUtil.isEmpty(stElements) || stElements.length < 4) {
+			if (ArrayUtil.isEmpty(stElements) || stElements.length < (index == null || index < 0 ? defaultIndex + 1 : index + 1)) {
 				LOGGER.warning("Stack trace is not available");
 				return null;
 			}
 
-			StackTraceElement ste = stElements[3];
+			StackTraceElement ste = stElements[index == null || index < 0 ? defaultIndex : index];
 			return ste.getMethodName();
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Error getting current method's name", e);
