@@ -97,12 +97,9 @@ public class SecurityUtil {
 	}
 
 	public User getAuthorizedUser() {
-		return getAuthorizedUser(3);
-	}
-
-	public User getAuthorizedUser(int index) {
-		String methodName = getCurrentMethodName(index);
-		String uri = getURI(methodName);
+		Map<String, Gateway> gateways = WebApplicationContextUtils.getWebApplicationContext(IWMainApplication.getDefaultIWMainApplication().getServletContext()).getBeansOfType(Gateway.class);
+		String methodName = getCurrentMethodName(gateways);
+		String uri = getURI(methodName, gateways);
 		if (StringUtil.isEmpty(uri)) {
 			return null;
 		}
@@ -110,29 +107,51 @@ public class SecurityUtil {
 		return getAuthorizedUser(uri);
 	}
 
-	private String getCurrentMethodName(Integer index) {
+	private String getCurrentMethodName(Map<String, Gateway> gateways) {
 		try {
-			int defaultIndex = 3;
+			if (MapUtil.isEmpty(gateways)) {
+				LOGGER.warning("There are no gateways with type " + Gateway.class.getName());
+				return null;
+			}
+
 			final StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
-			if (ArrayUtil.isEmpty(stElements) || stElements.length < (index == null || index < 0 ? defaultIndex + 1 : index + 1)) {
+			if (ArrayUtil.isEmpty(stElements)) {
 				LOGGER.warning("Stack trace is not available");
 				return null;
 			}
 
-			StackTraceElement ste = stElements[index == null || index < 0 ? defaultIndex : index];
-			return ste.getMethodName();
+			for (Gateway gateway: gateways.values()) {
+				if (gateway == null) {
+					continue;
+				}
+
+				String gatewayClassName = gateway.getClass().getName();
+				for (StackTraceElement ste: stElements) {
+					if (ste == null) {
+						continue;
+					}
+
+					String className = ste.getClassName();
+					if (StringUtil.isEmpty(className)) {
+						continue;
+					}
+
+					if (gatewayClassName.equals(className)) {
+						return ste.getMethodName();
+					}
+				}
+			}
 		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, "Error getting current method's name", e);
+			LOGGER.log(Level.WARNING, "Error getting current method's name for " + gateways, e);
 		}
 		return null;
 	}
 
-	private String getURI(String methodName) {
+	private String getURI(String methodName, Map<String, Gateway> gateways) {
 		if (StringUtil.isEmpty(methodName)) {
 			return null;
 		}
 
-		Map<String, Gateway> gateways = WebApplicationContextUtils.getWebApplicationContext(IWMainApplication.getDefaultIWMainApplication().getServletContext()).getBeansOfType(Gateway.class);
 		if (MapUtil.isEmpty(gateways)) {
 			LOGGER.warning("There are no gateways with type " + Gateway.class.getName());
 			return null;
