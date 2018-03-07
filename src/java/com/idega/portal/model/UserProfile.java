@@ -8,6 +8,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.FinderException;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import com.idega.block.oauth2.server.authentication.bean.User;
 import com.idega.business.IBOLookup;
@@ -28,6 +31,8 @@ import com.idega.util.EmailValidator;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class UserProfile extends User {
 
 	private static final long serialVersionUID = -7263530675290796371L;
