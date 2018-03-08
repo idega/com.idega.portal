@@ -153,7 +153,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	private Map<String, LanguageData> getLocalizations() {
 		Map<String, LanguageData> localizations = new HashMap<String, LanguageData>();
 
-		String bundleIdentifier = getApplicationProperty("portal.localizer_bundle_id", PortalConstants.IW_BUNDLE_IDENTIFIER);
+		String bundleIdentifier = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
 
 		List<ICLocale> icLocales = ICLocaleBusiness.listOfLocales(true);
 		if (!ListUtil.isEmpty(icLocales)) {

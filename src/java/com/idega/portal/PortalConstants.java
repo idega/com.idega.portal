@@ -27,7 +27,8 @@ public class PortalConstants {
 								PROPERTY_FOOTER_FAX_NUMBER = "footer.fax_number",
 								PROPERTY_FOOTER_EMAIL_ADDRESS = "footer.email_address",
 
-								PROPERTY_PORTAL_OAUTH_CLIENTS = "portal_oauth_clients";
+								PROPERTY_PORTAL_OAUTH_CLIENTS = "portal_oauth_clients",
+								PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID = "portal.localizer_bundle_id";
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 
