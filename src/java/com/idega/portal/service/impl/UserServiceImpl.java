@@ -83,6 +83,7 @@
 package com.idega.portal.service.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -120,6 +121,8 @@ import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.EmailValidator;
+import com.idega.util.FileUtil;
+import com.idega.util.IOUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.StringHandler;
@@ -463,10 +466,11 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			success = false;
 		}
 
+		Integer fileId = null;
 		if (userIDO == null) {
 			success = false;
 		} else {
-			Integer fileId = saveImage(stream, info);
+			fileId = saveImage(stream, info);
 			if (fileId != null) {
 				userIDO.setSystemImageID(fileId);
 				userIDO.store();
@@ -477,6 +481,9 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		if (success) {
 			result.setStatus(Status.OK.getStatusCode());
 			result.setName(Boolean.TRUE.toString());
+			if (fileId != null) {
+				result.setValue(String.valueOf(fileId));
+			}
 		} else {
 			result.setStatus(Status.OK.getStatusCode());
 			result.setName(Boolean.FALSE.toString());
@@ -506,11 +513,17 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		return null;
 	}
 
-	private Integer saveImage(InputStream stream, FormDataContentDisposition info) {
-		if (stream != null && info != null && !StringUtil.isEmpty(info.getFileName())) {
+	private Integer saveImage(InputStream stream,
+			FormDataContentDisposition info) {
+		if (stream != null && info != null
+				&& !StringUtil.isEmpty(info.getFileName())) {
 			try {
-				String mimeType = "image/" + info.getFileName().substring(info.getFileName().lastIndexOf(CoreConstants.DOT) + 1);
-				ICFile file = ((com.idega.core.file.data.ICFileHome) com.idega.data.IDOLookup.getHome(ICFile.class)).create();
+				String mimeType = "image/"
+						+ info.getFileName().substring(
+								info.getFileName().lastIndexOf(
+										CoreConstants.DOT) + 1);
+				ICFile file = ((com.idega.core.file.data.ICFileHome) com.idega.data.IDOLookup
+						.getHome(ICFile.class)).create();
 				file.setName(info.getFileName());
 				file.setCreationDate(IWTimestamp.getTimestampRightNow());
 				file.setMimeType(mimeType);
@@ -519,7 +532,12 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				Integer fileId = ((Integer) file.getPrimaryKey()).intValue();
 				return fileId;
 			} catch (Exception e) {
-				getLogger().log(Level.WARNING, "Could not save the picture/image: " + e.getLocalizedMessage(), e);
+				getLogger().log(
+						Level.WARNING,
+						"Could not save the picture/image: "
+								+ e.getLocalizedMessage(), e);
+			} finally {
+				IOUtil.close(stream);
 			}
 		}
 		return null;
