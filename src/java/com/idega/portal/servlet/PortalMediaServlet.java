@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -30,7 +31,9 @@ import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.portal.service.MediaResolver;
+import com.idega.presentation.IWContext;
 import com.idega.util.CoreConstants;
+import com.idega.util.CoreUtil;
 import com.idega.util.FileUtil;
 import com.idega.util.IOUtil;
 import com.idega.util.StringUtil;
@@ -75,6 +78,29 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 		super.doGet(req, resp);
 	}
 
+	private FileInfo getFileInfo(IWMainApplication iwma, Integer fileId) {
+		if (fileId == null || fileId <= 0) {
+			return null;
+		}
+
+		FileInfo fileInfo = null;
+		try {
+			IWContext iwc = CoreUtil.getIWContext();
+			ServletContext context = iwc == null ? null : iwc.getServletContext();
+			context = context == null ? iwma.getServletContext() : context;
+			Map<String, MediaResolver> mediaResolvers = WebApplicationContextUtils.getWebApplicationContext(context).getBeansOfType(MediaResolver.class);
+			if (!MapUtil.isEmpty(mediaResolvers)) {
+				for (Iterator<MediaResolver> mediaResolversIter = mediaResolvers.values().iterator(); (fileInfo == null && mediaResolversIter.hasNext());) {
+					fileInfo = mediaResolversIter.next().getFileInfo(fileId);
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting file info: " + fileId, e);
+		}
+
+		return fileInfo;
+	}
+
 	private void writeFileToResponse(String requestURI, HttpServletResponse response) throws Exception {
 		Integer fileId = MediaBusiness.getMediaId(requestURI);
 
@@ -91,17 +117,7 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 				url = ICFileSystemFactory.getFileSystem(iwma.getIWApplicationContext()).getFileURI(fileId);
 			}
 
-			FileInfo fileInfo = null;
-			if (fileId != null && fileId > 0) {
-				Map<String, MediaResolver> mediaResolvers = WebApplicationContextUtils.getWebApplicationContext(iwma.getServletContext()).getBeansOfType(MediaResolver.class);
-				if (!MapUtil.isEmpty(mediaResolvers)) {
-
-					for (Iterator<MediaResolver> mediaResolversIter = mediaResolvers.values().iterator(); (fileInfo == null && mediaResolversIter.hasNext());) {
-						fileInfo = mediaResolversIter.next().getFileInfo(fileId);
-					}
-				}
-			}
-
+			FileInfo fileInfo = getFileInfo(iwma, fileId);
 			if (fileInfo == null) {
 				String realPath = iwma.getApplicationRealPath();
 
