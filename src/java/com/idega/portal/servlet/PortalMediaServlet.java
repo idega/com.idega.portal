@@ -93,7 +93,7 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 
 			FileInfo fileInfo = null;
 			if (fileId != null && fileId > 0) {
-				Map<String, MediaResolver> mediaResolvers = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBeansOfType(MediaResolver.class);
+				Map<String, MediaResolver> mediaResolvers = WebApplicationContextUtils.getWebApplicationContext(iwma.getServletContext()).getBeansOfType(MediaResolver.class);
 				if (!MapUtil.isEmpty(mediaResolvers)) {
 
 					for (Iterator<MediaResolver> mediaResolversIter = mediaResolvers.values().iterator(); (fileInfo == null && mediaResolversIter.hasNext());) {
