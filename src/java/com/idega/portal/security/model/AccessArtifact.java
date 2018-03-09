@@ -127,7 +127,9 @@ public class AccessArtifact {
 				if (uri.equals(accessName) && !ListUtil.isEmpty(access.getValue())) {
 					accesses.addAll(access.getValue());
 
-					if (artifactsNames.indexOf(artifactName) == -1) {
+					if (artifactsNames.indexOf(uri) == -1) {
+						artifactsNames = artifactsNames.concat(uri);
+					} else if (artifactsNames.indexOf(artifactName) == -1) {
 						artifactsNames = artifactsNames.concat(artifactName);
 					}
 				}
@@ -144,11 +146,8 @@ public class AccessArtifact {
 		}
 
 		Property<String, List<String>> accesses = getAccesses(uri);
-		if (accesses == null) {
+		if (accesses == null || ListUtil.isEmpty(accesses.getValue())) {
 			LOGGER.warning("Failed to find accesses for URI " + uri);
-			return null;
-		}
-		if (ListUtil.isEmpty(accesses.getValue())) {
 			return null;
 		}
 
