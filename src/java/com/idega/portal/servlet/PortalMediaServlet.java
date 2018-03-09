@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,17 +19,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
 import com.idega.block.media.business.MediaBusiness;
 import com.idega.core.file.business.ICFileSystemFactory;
 import com.idega.core.file.data.ICFile;
 import com.idega.core.file.data.ICFileHome;
+import com.idega.core.file.util.FileInfo;
 import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWMainApplication;
+import com.idega.portal.service.MediaResolver;
 import com.idega.util.CoreConstants;
 import com.idega.util.FileUtil;
 import com.idega.util.IOUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.datastructures.map.MapUtil;
 
 public class PortalMediaServlet extends HttpServlet implements Filter {
 
@@ -84,28 +91,48 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 				url = ICFileSystemFactory.getFileSystem(iwma.getIWApplicationContext()).getFileURI(fileId);
 			}
 
-			String realPath = iwma.getApplicationRealPath();
+			FileInfo fileInfo = null;
+			if (fileId != null && fileId > 0) {
+				Map<String, MediaResolver> mediaResolvers = WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBeansOfType(MediaResolver.class);
+				if (!MapUtil.isEmpty(mediaResolvers)) {
 
-			if (realPath != null) {
-				if (realPath.endsWith(CoreConstants.SLASH)) {
-					realPath = realPath.substring(0, realPath.length() - 1);
-				}
-				File tmp = new File(realPath.concat(url));
-				if (tmp.exists() && tmp.canRead()) {
-					name = tmp.getName();
-					size = tmp.length();
-					source = new FileInputStream(tmp);
+					for (Iterator<MediaResolver> mediaResolversIter = mediaResolvers.values().iterator(); (fileInfo == null && mediaResolversIter.hasNext());) {
+						fileInfo = mediaResolversIter.next().getFileInfo(fileId);
+					}
 				}
 			}
-			if (source == null && fileId != null && fileId > 0) {
-				ICFileHome fileHome = (ICFileHome) IDOLookup.getHome(ICFile.class);
-				ICFile file = fileHome.findByPrimaryKey(fileId);
-				name = file.getName();
-				Integer sizeTmp = file.getFileSize();
-				size = sizeTmp == null ? null : sizeTmp.longValue();
-				source = file.getFileValue();
-				type = file.getMimeType();
+
+			if (fileInfo == null) {
+				String realPath = iwma.getApplicationRealPath();
+
+				if (realPath != null) {
+					if (realPath.endsWith(CoreConstants.SLASH)) {
+						realPath = realPath.substring(0, realPath.length() - 1);
+					}
+					File tmp = new File(realPath.concat(url));
+					if (tmp.exists() && tmp.canRead()) {
+						name = tmp.getName();
+						size = tmp.length();
+						source = new FileInputStream(tmp);
+					}
+				}
+				if (source == null && fileId != null && fileId > 0) {
+					ICFileHome fileHome = (ICFileHome) IDOLookup.getHome(ICFile.class);
+					ICFile file = fileHome.findByPrimaryKey(fileId);
+					name = file.getName();
+					Integer sizeTmp = file.getFileSize();
+					size = sizeTmp == null ? null : sizeTmp.longValue();
+					source = file.getFileValue();
+					type = file.getMimeType();
+				}
+
+			} else {
+				source = fileInfo.getSource();
+				size = fileInfo.getContentLength();
+				name = fileInfo.getFileName();
+				type = fileInfo.getType();
 			}
+
 			if (source == null) {
 				return;
 			}
