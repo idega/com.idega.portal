@@ -288,6 +288,15 @@ public class SecurityUtil {
 			}
 		}
 
+		Map<String, SecurityResolver> resolvers = WebApplicationContextUtils.getWebApplicationContext(iwc.getServletContext()).getBeansOfType(SecurityResolver.class);
+		if (!MapUtil.isEmpty(resolvers)) {
+			for (SecurityResolver resolver: resolvers.values()) {
+				if (resolver.hasAccess(iwc, user, roles)) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 
