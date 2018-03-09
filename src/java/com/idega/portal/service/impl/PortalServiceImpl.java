@@ -125,6 +125,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				settings.setMenus(getMenus(user));
 
 				settings.setRoles(SecurityUtil.getInstance().getAllRoles(user));
+
+				Name nameUtil = new Name(user.getName());
+				settings.setFirstName(nameUtil.getFirstName());
+				settings.setMiddleName(nameUtil.getMiddleName());
+				settings.setLastName(nameUtil.getLastName());
 			}
 
 			FooterData footerData = getFooterData();

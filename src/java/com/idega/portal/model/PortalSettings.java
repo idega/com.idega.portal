@@ -20,7 +20,7 @@ public class PortalSettings implements Serializable {
 
 	private static final long serialVersionUID = -2750061914031027789L;
 
-	private String name, logo, locale, favicon, mainPortalPage;
+	private String name, firstName, middleName, lastName, logo, locale, favicon, mainPortalPage;
 
 	private List<String> cssFiles;
 
@@ -230,6 +230,30 @@ public class PortalSettings implements Serializable {
 
 	public void setCssFiles(List<String> cssFiles) {
 		this.cssFiles = cssFiles;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getMiddleName() {
+		return middleName;
+	}
+
+	public void setMiddleName(String middleName) {
+		this.middleName = middleName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 }
