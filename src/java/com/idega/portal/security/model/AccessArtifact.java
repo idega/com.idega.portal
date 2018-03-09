@@ -116,7 +116,7 @@ public class AccessArtifact {
 				}
 
 				String accessName = access.getName();
-				if (StringUtil.isEmpty(accessName)) {
+				if (accessName == null) {
 					continue;
 				}
 
