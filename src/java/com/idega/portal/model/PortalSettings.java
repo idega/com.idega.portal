@@ -44,6 +44,8 @@ public class PortalSettings implements Serializable {
 
 	private List<OAuthInfo> oauthInfo;
 
+	private String datePattern, timePattern;
+
 	public String getName() {
 		return name;
 	}
@@ -254,6 +256,22 @@ public class PortalSettings implements Serializable {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getDatePattern() {
+		return datePattern;
+	}
+
+	public void setDatePattern(String datePattern) {
+		this.datePattern = datePattern;
+	}
+
+	public String getTimePattern() {
+		return timePattern;
+	}
+
+	public void setTimePattern(String timePattern) {
+		this.timePattern = timePattern;
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.idega.portal.service.impl;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -139,6 +141,21 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			settings.setMainPortalLink(appSettings.getProperty("portal.main_portal_url"));
 			settings.setMainPortalLabel(appSettings.getProperty("portal.main_portal_label"));
+
+			Locale locale = getCurrentLocale();
+			if (locale != null) {
+				DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+				if (dateFormatter instanceof SimpleDateFormat) {
+					String datePattern = ((SimpleDateFormat) dateFormatter).toPattern();
+					settings.setDatePattern(datePattern);
+				}
+
+				DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
+				if (timeFormatter instanceof SimpleDateFormat) {
+					String timePattern = ((SimpleDateFormat) timeFormatter).toPattern();
+					settings.setTimePattern(timePattern);
+				}
+			}
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting settings", e);
 		}
