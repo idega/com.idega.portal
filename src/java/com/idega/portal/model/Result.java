@@ -36,6 +36,14 @@ public class Result implements Serializable {
 		this.value = value;
 	}
 
+	public Result(Integer status, String name, String value) {
+		this();
+
+		this.status = status;
+		this.name = name;
+		this.value	= value;
+	}
+
 	public Integer getStatus() {
 		return status;
 	}
