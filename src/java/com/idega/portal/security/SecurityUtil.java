@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import com.idega.portal.gateway.Gateway;
 import com.idega.portal.model.Property;
 import com.idega.portal.security.model.AccessArtifact;
 import com.idega.presentation.IWContext;
+import com.idega.servlet.filter.RequestResponseProvider;
 import com.idega.user.data.bean.User;
 import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
@@ -101,6 +103,7 @@ public class SecurityUtil {
 		String methodName = getCurrentMethodName(gateways);
 		String uri = getURI(methodName, gateways);
 		if (StringUtil.isEmpty(uri)) {
+			LOGGER.warning("Did not find URI for " + methodName + " in " + gateways);
 			return null;
 		}
 
@@ -206,6 +209,20 @@ public class SecurityUtil {
 		return value;
 	}
 
+	public HttpServletRequest getRequest() {
+		RequestResponseProvider requestProvider = null;
+		try {
+			requestProvider = ELUtil.getInstance().getBean(RequestResponseProvider.class);
+			return requestProvider == null ? null : requestProvider.getRequest();
+		} catch (Exception e) {}
+		return null;
+	}
+
+	public String getRequestURI() {
+		HttpServletRequest request = getRequest();
+		return request == null ? null : request.getRequestURI();
+	}
+
 	public User getCurrentUser() {
 		User user = null;
 		try {
@@ -222,8 +239,9 @@ public class SecurityUtil {
 	}
 
 	public User getAuthorizedUser(String uri) {
+		User user = null;
 		try {
-			User user = getCurrentUser();
+			user = getCurrentUser();
 			if (user == null) {
 				LOGGER.warning("Not authorized for WS '" + uri + "' because not logged in");
 				return null;
@@ -255,6 +273,7 @@ public class SecurityUtil {
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Error getting authorized user. URI: " + uri, e);
 		}
+
 		return null;
 	}
 
@@ -277,21 +296,21 @@ public class SecurityUtil {
 			return true;
 		}
 
+		Map<String, SecurityResolver> resolvers = WebApplicationContextUtils.getWebApplicationContext(iwc.getServletContext()).getBeansOfType(SecurityResolver.class);
+		if (!MapUtil.isEmpty(resolvers)) {
+			for (SecurityResolver resolver: resolvers.values()) {
+				if (resolver.hasAccess(iwc, user, roles)) {
+					return true;
+				}
+			}
+		}
+
 		AccessController accessController = iwc.getAccessController();
 
 		Set<String> userRoles = accessController.getAllRolesForUser(user);
 		if (!ListUtil.isEmpty(userRoles)) {
 			for (String role: roles) {
 				if (userRoles.contains(role)) {
-					return true;
-				}
-			}
-		}
-
-		Map<String, SecurityResolver> resolvers = WebApplicationContextUtils.getWebApplicationContext(iwc.getServletContext()).getBeansOfType(SecurityResolver.class);
-		if (!MapUtil.isEmpty(resolvers)) {
-			for (SecurityResolver resolver: resolvers.values()) {
-				if (resolver.hasAccess(iwc, user, roles)) {
 					return true;
 				}
 			}
