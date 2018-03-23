@@ -103,7 +103,9 @@ public class SecurityUtil {
 		String methodName = getCurrentMethodName(gateways);
 		String uri = getURI(methodName, gateways);
 		if (StringUtil.isEmpty(uri)) {
-			LOGGER.warning("Did not find URI for " + methodName + " in " + gateways);
+			if (!StringUtil.isEmpty(methodName) && !MapUtil.isEmpty(gateways)) {
+				LOGGER.warning("Did not find URI for " + methodName + " in " + gateways + ". WS: " + getRequestURI());
+			}
 			return null;
 		}
 
