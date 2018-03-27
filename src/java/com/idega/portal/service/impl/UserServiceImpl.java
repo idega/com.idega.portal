@@ -93,6 +93,7 @@ import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -511,21 +512,17 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		return null;
 	}
 
-	private Integer saveImage(InputStream stream,
-			FormDataContentDisposition info) {
-		if (stream != null && info != null
-				&& !StringUtil.isEmpty(info.getFileName())) {
+	private Integer saveImage(InputStream stream, FormDataContentDisposition info) {
+		if (stream != null && info != null && !StringUtil.isEmpty(info.getFileName())) {
 			try {
-				String mimeType = "image/"
-						+ info.getFileName().substring(
-								info.getFileName().lastIndexOf(
-										CoreConstants.DOT) + 1);
-				ICFile file = ((com.idega.core.file.data.ICFileHome) com.idega.data.IDOLookup
-						.getHome(ICFile.class)).create();
+				InputStream newStream = new ByteArrayInputStream(IOUtils.toByteArray(stream));
+
+				String mimeType = "image/" + info.getFileName().substring(info.getFileName().lastIndexOf(CoreConstants.DOT) + 1);
+				ICFile file = ((com.idega.core.file.data.ICFileHome) com.idega.data.IDOLookup.getHome(ICFile.class)).create();
 				file.setName(info.getFileName());
 				file.setCreationDate(IWTimestamp.getTimestampRightNow());
 				file.setMimeType(mimeType);
-				file.setFileValue(stream);
+				file.setFileValue(newStream);
 				file.store();
 				Integer fileId = ((Integer) file.getPrimaryKey()).intValue();
 				return fileId;
