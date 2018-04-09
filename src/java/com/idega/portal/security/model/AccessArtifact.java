@@ -147,6 +147,12 @@ public class AccessArtifact {
 
 		Property<String, List<String>> accesses = getAccesses(uri);
 		if (accesses == null || ListUtil.isEmpty(accesses.getValue())) {
+			if (uri.endsWith(CoreConstants.SLASH)) {
+				uri = uri.substring(0, uri.length() - 1);
+				accesses = getAccesses(uri);
+			}
+		}
+		if (accesses == null || ListUtil.isEmpty(accesses.getValue())) {
 			LOGGER.warning("Failed to find accesses for URI " + uri);
 			return null;
 		}
