@@ -27,6 +27,10 @@
 		</init-param>
 		<init-param>
 			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.idega.block.news.model</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
 			<param-value>com.idega.cases.management.data</param-value>
 		</init-param>
 		<init-param>
