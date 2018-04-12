@@ -45,9 +45,10 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 	@Path(AppGateway.ACCESS_TOKEN)
 	public AccessToken getAccessToken(
 			@QueryParam("uuid") String uuid,
-			@QueryParam("clientId") String clientId
+			@QueryParam("clientId") String clientId,
+			@QueryParam("type") String type
 	) {
-		return portalUserManager.getAccessToken(uuid, clientId);
+		return portalUserManager.getAccessToken(uuid, clientId, type);
 	}
 
 	@Override

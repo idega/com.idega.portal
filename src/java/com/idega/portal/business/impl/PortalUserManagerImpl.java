@@ -27,6 +27,7 @@ import com.idega.portal.model.Result;
 import com.idega.presentation.IWContext;
 import com.idega.user.dao.UserDAO;
 import com.idega.user.data.bean.User;
+import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.RequestUtil;
@@ -45,7 +46,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 	private OAuth2Service oauth2Service;
 
 	@Override
-	public AccessToken getAccessToken(String uuid, String clientId) {
+	public AccessToken getAccessToken(String uuid, String clientId, String type) {
 		try {
 			if (StringUtil.isEmpty(uuid)) {
 				getLogger().warning("UUID is not provided");
@@ -84,7 +85,14 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 				return new AccessToken();
 			}
 
-			getLogger().info("Created new token (" + token + ", refresh token: " + token.getRefresh_token() + ") for user name: '" + userName + "', UUID: " + uuid + " and client ID: " + clientId);
+			getLogger().info("Created new token (" + token + ", refresh token: " + token.getRefresh_token() + ") for user name: '" + userName + "', UUID: " + uuid + ", client ID: " + clientId + " and type: " + type);
+
+			if (StringUtil.isEmpty(type)) {
+				getLogger().warning("Unknown login type for UUID " + uuid);
+			} else {
+				iwc.setSessionAttribute(LoggedInUserCredentials.LOGIN_TYPE, type.concat(CoreConstants.AT).concat(LoginType.AUTHENTICATION_GATEWAY.toString()));
+			}
+
 			return new AccessToken(token, userName);
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting access token for UUID: " + uuid, e);
