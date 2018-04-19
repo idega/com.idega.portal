@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.idega.block.oauth2.server.authentication.bean.User;
 import com.idega.block.sso.model.AuthorizationSettings;
+import com.idega.core.location.data.bean.Location;
 import com.idega.util.StringUtil;
 
 @XmlRootElement
@@ -45,6 +46,8 @@ public class PortalSettings implements Serializable {
 	private List<OAuthInfo> oauthInfo;
 
 	private String datePattern, timePattern;
+
+	private Location location;
 
 	public String getName() {
 		return name;
@@ -272,6 +275,14 @@ public class PortalSettings implements Serializable {
 
 	public void setTimePattern(String timePattern) {
 		this.timePattern = timePattern;
+	}
+
+	public final Location getLocation() {
+		return location;
+	}
+
+	public final void setLocation(Location location) {
+		this.location = location;
 	}
 
 }
