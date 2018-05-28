@@ -52,7 +52,7 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 	}
 
 	@Override
-	@Path(PortalGateway.LOGGOUT)
+	@Path(PortalGateway.LOGOUT)
 	public String logout() {
 		return appService.logout();
 	}
