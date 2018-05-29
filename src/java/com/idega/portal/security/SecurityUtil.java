@@ -227,11 +227,17 @@ public class SecurityUtil {
 
 	public User getCurrentUser() {
 		User user = null;
+		IWContext iwc = null;
 		try {
+			iwc = CoreUtil.getIWContext();
+			if (iwc != null && iwc.isLoggedOn()) {
+				return iwc.getLoggedInUser();
+			}
+
 			user = getOAuth2Service().getAuthenticatedUser();
 		} catch (Exception e) {}
 		if (user == null) {
-			IWContext iwc = CoreUtil.getIWContext();
+			iwc = iwc == null ? CoreUtil.getIWContext() : iwc;
 			user = iwc == null ? null : iwc.isLoggedOn() ? iwc.getLoggedInUser() : null;
 			if (user != null) {
 				LOGGER.info("User was unknown from OAuth, but known in IWContext: " + user);
