@@ -51,6 +51,7 @@ import com.idega.util.ListUtil;
 import com.idega.util.LocaleUtil;
 import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
+import com.idega.util.WebUtil;
 import com.idega.util.datastructures.map.MapUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.util.messages.MessageResource;
@@ -64,6 +65,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private MessageResourceFactory messageResourceFactory;
+
+	@Autowired
+	private WebUtil webUtil;
 
 	private MessageResourceFactory getMessageResourceFactory() {
 		if (this.messageResourceFactory == null) {
@@ -414,6 +418,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			getLogger().log(Level.WARNING, "Error getting OAuth settings", e);
 		}
 		return info;
+	}
+
+	@Override
+	public String logout() {
+		return webUtil.logOut();
 	}
 
 }

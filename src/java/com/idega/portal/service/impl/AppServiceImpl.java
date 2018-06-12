@@ -11,7 +11,6 @@ import com.idega.portal.PortalConstants;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.service.AppService;
 import com.idega.portal.service.PortalService;
-import com.idega.util.WebUtil;
 
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -22,9 +21,6 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 	@Qualifier(PortalConstants.QUALIFIER_PORTAL)
 	private PortalService portalService;
 
-	@Autowired
-	private WebUtil webUtil;
-
 	@Override
 	public PortalSettings getDashboardSettings() {
 		return portalService.getDashboardSettings();
@@ -32,7 +28,7 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 
 	@Override
 	public String logout(){
-		return webUtil.logOut();
+		return portalService.logout();
 	}
 
 }

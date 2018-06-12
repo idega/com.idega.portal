@@ -21,4 +21,6 @@ public interface PortalService {
 
 	public String setLanguage(String language);
 
+	public String logout();
+
 }

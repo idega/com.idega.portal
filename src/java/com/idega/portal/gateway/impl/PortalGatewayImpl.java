@@ -114,4 +114,11 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 		return userService.setProfilePicture(stream, info, personalId);
 	}
 
+	@Override
+	@GET
+	@Path(PortalGateway.LOGOUT)
+	public String logout() {
+		return portalService.logout();
+	}
+
 }
