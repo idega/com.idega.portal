@@ -93,9 +93,20 @@ public class UserProfile extends User {
 				setAddress(new com.idega.block.oauth2.server.authentication.bean.Address(address, locale));
 				this.streetAndNumber = address.getAddress();
 				this.city = address.getCity();
-				PostalCode postalCodeFull = address.getPostalCode();
-				if (postalCodeFull != null) {
-					this.postalCode = address.getPostalCode().getPostalCode();
+				try {
+					com.idega.core.location.data.PostalCode postalCode = userIDO.getUsersMainAddress().getPostalCode();
+					if (postalCode != null) {
+						this.postalCode = postalCode.getPostalCode();
+					}
+				} catch (Exception e) {}
+				if (StringUtil.isEmpty(this.postalCode)) {
+					PostalCode postalCode = address.getPostalCode();
+					if (postalCode != null) {
+						this.postalCode = postalCode.getPostalCode();
+					}
+				}
+				if (StringUtil.isEmpty(this.postalCode)) {
+					Logger.getLogger(getClass().getName()).warning("Postal code is unknown for " + user + " and address " + address);
 				}
 			}
 		}
