@@ -46,6 +46,8 @@ public class PortalMenu implements Serializable {
 
 	private Badge badge;
 
+	private Boolean openInNewWindow;
+
 	public PortalMenu() {
 		super();
 	}
@@ -75,7 +77,7 @@ public class PortalMenu implements Serializable {
 	public void setDefaultName(String defaultName) {
 		this.defaultName = defaultName;
 	}
-	
+
 	public List<PortalMenu> getChildren() {
 		return children;
 	}
@@ -143,4 +145,14 @@ public class PortalMenu implements Serializable {
 	public void setUrl(String url) {
 		this.url = url;
 	}
+
+	public Boolean getOpenInNewWindow() {
+		return openInNewWindow;
+	}
+
+	public void setOpenInNewWindow(Boolean openInNewWindow) {
+		this.openInNewWindow = openInNewWindow;
+	}
+
+
 }
