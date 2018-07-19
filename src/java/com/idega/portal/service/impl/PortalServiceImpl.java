@@ -336,11 +336,42 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				return account;
 			}
 
-			user = getUserBusiness().createUserWithLogin(firstName, middleName,
-					lastName, account.getPersonalId(), displayName, null, null,
-					null, null, account.getUsername(), account.getPassword(),
-					Boolean.TRUE, IWTimestamp.RightNow(), 5000, Boolean.FALSE,
-					Boolean.TRUE, Boolean.FALSE, null);
+			if (!StringUtil.isEmpty(account.getUuid())) {
+				user = getUserBusiness().update(
+						null,
+						account.getUuid(),
+						null,
+						firstName,
+						middleName,
+						lastName,
+						displayName,
+						account.getPersonalId(),
+						account.getEmail(),
+						null,
+						account.getUsername(),
+						account.getPassword());
+			} else {
+				user = getUserBusiness().createUserWithLogin(
+						firstName, 
+						middleName,
+						lastName, 
+						account.getPersonalId(), 
+						displayName, 
+						null, 
+						null,
+						null, 
+						null, 
+						account.getUsername(), 
+						account.getPassword(),
+						Boolean.TRUE, 
+						IWTimestamp.RightNow(), 
+						5000, 
+						Boolean.FALSE,
+						Boolean.TRUE, 
+						Boolean.FALSE, 
+						null);
+			}
+
 			if (user == null) {
 				account.setErrorMessage(iwrb.getLocalizedString("account.failed_to_create_account", "Sorry, some error occurred - failed to create account. Please try later"));
 				return account;
