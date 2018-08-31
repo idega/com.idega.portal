@@ -1,14 +1,17 @@
 package com.idega.portal.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.idega.core.contact.data.bean.Phone;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.UserApplicationEngine;
 import com.idega.util.CoreConstants;
+import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
 
@@ -43,6 +46,22 @@ public class User implements Serializable {
 		this.phone = phone;
 		this.name = name;
 		this.address = address;
+	}
+
+	public User(com.idega.user.data.bean.User user) {
+		if (user == null) {
+			return;
+		}
+
+		id = String.valueOf(user.getId());
+		personalId = user.getPersonalID();
+		email = user.getEmailAddress();
+		List<Phone> phones = user.getPhones();
+		if (!ListUtil.isEmpty(phones)) {
+			phone = phones.iterator().next().getNumber();
+		}
+		name = user.getName();
+		uuid = user.getUniqueId();
 	}
 
 	public User(com.idega.user.data.User user) {
