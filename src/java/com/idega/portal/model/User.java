@@ -28,6 +28,7 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1514809950328524234L;
 
 	private String id, personalId, email, phone, name, address, password, uuid;
+	private Boolean selected;
 
 	public User() {
 		super();
@@ -225,5 +226,15 @@ public class User implements Serializable {
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
+
+	public Boolean getSelected() {
+		return selected;
+	}
+
+	public void setSelected(Boolean selected) {
+		this.selected = selected;
+	}
+
+
 
 }
