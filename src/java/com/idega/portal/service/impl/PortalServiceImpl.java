@@ -352,23 +352,23 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						account.getPassword());
 			} else {
 				user = getUserBusiness().createUserWithLogin(
-						firstName, 
+						firstName,
 						middleName,
-						lastName, 
-						account.getPersonalId(), 
-						displayName, 
-						null, 
+						lastName,
+						account.getPersonalId(),
+						displayName,
 						null,
-						null, 
-						null, 
-						account.getUsername(), 
+						null,
+						null,
+						null,
+						account.getUsername(),
 						account.getPassword(),
-						Boolean.TRUE, 
-						IWTimestamp.RightNow(), 
-						5000, 
+						Boolean.TRUE,
+						IWTimestamp.RightNow(),
+						5000,
 						Boolean.FALSE,
-						Boolean.TRUE, 
-						Boolean.FALSE, 
+						Boolean.TRUE,
+						Boolean.FALSE,
 						null);
 			}
 
@@ -400,6 +400,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Override
 	public String doAuthorizeViaGateway(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String type) {
+		getLogger().warning("This method is not implemented");
+		return null;
+	}
+
+	@Override
+	public String doUnAuthorizeViaGateway(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String uri) {
 		getLogger().warning("This method is not implemented");
 		return null;
 	}

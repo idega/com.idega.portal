@@ -76,6 +76,17 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 
 	@Override
 	@GET
+	@Path(PortalGateway.UNAUTHORIZE)
+	public String doUnAuthorizeViaGateway(
+			@Context HttpServletRequest httpRequest,
+			@Context HttpServletResponse httpResponse,
+			@QueryParam("uri") String uri
+	) {
+		return portalService.doUnAuthorizeViaGateway(httpRequest, httpResponse, uri);
+	}
+
+	@Override
+	@GET
 	@Path(PortalGateway.LOGOUT)
 	public String logout() {
 		return portalService.logout();

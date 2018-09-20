@@ -82,6 +82,17 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 
 	@Override
 	@GET
+	@Path(UNAUTHORIZE)
+	public String doUnAuthorizeViaGateway(
+			@Context HttpServletRequest httpRequest,
+			@Context HttpServletResponse httpResponse,
+			@QueryParam("uri") String uri
+	) {
+		return portalService.doUnAuthorizeViaGateway(httpRequest, httpResponse, uri);
+	}
+
+	@Override
+	@GET
 	@Path(LANGUAGE)
 	public String setLanguage(@QueryParam("language") String language) {
 		return portalService.setLanguage(language);

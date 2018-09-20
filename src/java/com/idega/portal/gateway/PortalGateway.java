@@ -16,6 +16,7 @@ public interface PortalGateway extends PortalService, UserService {
 								LOGOUT = "/logout",
 
 								AUTHORIZE = "/authorize",
+								UNAUTHORIZE = "/unauthorize",
 
 								USER = "/user",
 								PROFILE = "/profile",

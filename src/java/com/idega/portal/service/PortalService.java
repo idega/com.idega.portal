@@ -19,6 +19,8 @@ public interface PortalService {
 
 	public String doAuthorizeViaGateway(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String type);
 
+	public String doUnAuthorizeViaGateway(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String uri);
+
 	public String setLanguage(String language);
 
 	public String logout();
