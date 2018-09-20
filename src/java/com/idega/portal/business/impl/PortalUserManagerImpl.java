@@ -1,7 +1,6 @@
 package com.idega.portal.business.impl;
 
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 
 import javax.ws.rs.core.Response;
@@ -31,7 +30,6 @@ import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
-import com.idega.util.ListUtil;
 import com.idega.util.RequestUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
@@ -79,7 +77,8 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 					userName,
 					userLogin.getUserPassword(),
 					LoginType.AUTHENTICATION_GATEWAY,
-					(Integer) userLogin.getPrimaryKey()
+					(Integer) userLogin.getPrimaryKey(),
+					type
 			);
 			OAuthToken token = oauth2Service.getToken(clientId, credentials);
 			if (token == null) {
