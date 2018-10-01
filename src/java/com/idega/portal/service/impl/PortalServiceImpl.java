@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
@@ -32,6 +34,7 @@ import com.idega.core.localisation.business.ICLocaleBusiness;
 import com.idega.core.localisation.data.ICLocale;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
+import com.idega.idegaweb.RepositoryStartedEvent;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.model.FooterData;
 import com.idega.portal.model.LanguageData;
@@ -42,6 +45,7 @@ import com.idega.portal.model.UserAccount;
 import com.idega.portal.security.SecurityUtil;
 import com.idega.portal.service.PortalService;
 import com.idega.presentation.IWContext;
+import com.idega.repository.event.RepositoryResourceLocalizer;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
@@ -61,7 +65,7 @@ import com.idega.util.text.Name;
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 @Qualifier(PortalConstants.QUALIFIER_PORTAL)
-public class PortalServiceImpl extends DefaultSpringBean implements PortalService {
+public class PortalServiceImpl extends DefaultSpringBean implements PortalService, ApplicationListener<ApplicationEvent> {
 
 	@Autowired
 	private MessageResourceFactory messageResourceFactory;
@@ -69,16 +73,18 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Autowired
 	private WebUtil webUtil;
 
+	private Map<String, LanguageData> localizations = null;
+
+	@Autowired(required=false)
+	@Qualifier("clientDetails")
+	private JdbcClientDetailsService clientDetailsService;
+
 	private MessageResourceFactory getMessageResourceFactory() {
 		if (this.messageResourceFactory == null) {
 			this.messageResourceFactory = ELUtil.getInstance().getBean(MessageResourceFactory.class);
 		}
 		return this.messageResourceFactory;
 	}
-
-	@Autowired(required=false)
-	@Qualifier("clientDetails")
-	private JdbcClientDetailsService clientDetailsService;
 
 	private JdbcClientDetailsService getClientDetailsService() {
 		if (this.clientDetailsService == null) {
@@ -177,6 +183,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	private Map<String, LanguageData> getLocalizations() {
+		if (localizations != null) {
+			return new HashMap<String, LanguageData>(localizations);
+		}
+
 		Map<String, LanguageData> localizations = new HashMap<String, LanguageData>();
 
 		String bundleIdentifier = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
@@ -194,6 +204,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 		}
 
+		this.localizations = localizations;
 		return localizations;
 	}
 
@@ -460,6 +471,17 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Override
 	public String logout() {
 		return webUtil.logOut();
+	}
+
+	@Override
+	public void onApplicationEvent(ApplicationEvent event) {
+		if (event instanceof RepositoryStartedEvent) {
+			getLocalizations();
+		} else if (event instanceof RepositoryResourceLocalizer) {
+			this.localizations = null;
+			getLocalizations();
+		}
+
 	}
 
 }
