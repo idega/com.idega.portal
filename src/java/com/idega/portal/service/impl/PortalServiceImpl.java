@@ -32,6 +32,7 @@ import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.core.localisation.business.ICLocaleBusiness;
 import com.idega.core.localisation.data.ICLocale;
+import com.idega.development.event.LocalizationChangedEvent;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.idegaweb.RepositoryStartedEvent;
@@ -45,7 +46,6 @@ import com.idega.portal.model.UserAccount;
 import com.idega.portal.security.SecurityUtil;
 import com.idega.portal.service.PortalService;
 import com.idega.presentation.IWContext;
-import com.idega.repository.event.RepositoryResourceLocalizer;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
@@ -477,7 +477,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (event instanceof RepositoryStartedEvent) {
 			getLocalizations();
-		} else if (event instanceof RepositoryResourceLocalizer) {
+		} else if (event instanceof LocalizationChangedEvent) {
 			this.localizations = null;
 			getLocalizations();
 		}
