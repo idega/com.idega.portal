@@ -92,4 +92,11 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 		return portalService.logout();
 	}
 
+	@Override
+	@GET
+	@Path(PortalGateway.REMIND_PASSWORD)
+	public String remindPassword(String ssn) {
+		return portalService.remindPassword(ssn);
+	}
+
 }

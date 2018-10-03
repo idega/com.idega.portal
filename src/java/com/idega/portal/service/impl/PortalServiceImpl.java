@@ -481,7 +481,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			this.localizations = null;
 			getLocalizations();
 		}
+	}
 
+	@Override
+	public String remindPassword(String ssn) {
+		return "Unimplemented";
 	}
 
 }

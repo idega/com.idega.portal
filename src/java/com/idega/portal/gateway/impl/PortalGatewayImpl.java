@@ -132,4 +132,11 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 		return portalService.logout();
 	}
 
+	@Override
+	@GET
+	@Path(PortalGateway.REMIND_PASSWORD)
+	public String remindPassword(String ssn) {
+		return portalService.remindPassword(ssn);
+	}
+
 }

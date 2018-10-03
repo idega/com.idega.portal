@@ -25,4 +25,6 @@ public interface PortalService {
 
 	public String logout();
 
+	public String remindPassword(String ssn);
+
 }
