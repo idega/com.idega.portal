@@ -135,7 +135,7 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	@Override
 	@GET
 	@Path(PortalGateway.REMIND_PASSWORD)
-	public String doRemindPassword(String ssn) {
+	public String doRemindPassword(@QueryParam("ssn") String ssn) {
 		return portalService.doRemindPassword(ssn);
 	}
 
