@@ -95,8 +95,8 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@Override
 	@GET
 	@Path(PortalGateway.REMIND_PASSWORD)
-	public String remindPassword(String ssn) {
-		return portalService.remindPassword(ssn);
+	public String doRemindPassword(String ssn) {
+		return portalService.doRemindPassword(ssn);
 	}
 
 }

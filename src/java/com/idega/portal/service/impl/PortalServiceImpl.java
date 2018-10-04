@@ -484,7 +484,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public String remindPassword(String ssn) {
+	public String doRemindPassword(String ssn) {
 		return "Unimplemented";
 	}
 
