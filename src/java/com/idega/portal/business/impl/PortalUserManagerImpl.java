@@ -55,7 +55,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 
 			String userName = getLoginNameByUUID(uuid);
 			if (StringUtil.isEmpty(userName)) {
-				getLogger().warning("Unable to get user's login name by UUID: " + uuid);
+				getLogger().warning("Unable to get user's login name by UUID: '" + uuid + "'");
 				return new AccessToken();
 			}
 
@@ -124,7 +124,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 		UserDAO userDAO = ELUtil.getInstance().getBean(UserDAO.class);
 		User user = userDAO.getUserByUUID(uuid);
 		if (user == null) {
-			getLogger().warning("Unable to find user by UUID: " + uuid);
+			getLogger().warning("Unable to find user by UUID: '" + uuid + "'");
 			return null;
 		}
 

@@ -57,5 +57,4 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 		return appService.logout();
 	}
 
-
 }
