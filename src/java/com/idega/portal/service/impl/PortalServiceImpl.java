@@ -192,15 +192,18 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		String bundleIdentifier = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
 
 		List<ICLocale> icLocales = ICLocaleBusiness.listOfLocales(true);
-		if (!ListUtil.isEmpty(icLocales)) {
-			for (ICLocale icLocale : icLocales) {
-				LanguageData data = getLocalizedStrings(
-						LocaleUtil.getLocale(icLocale.toString()),
-						bundleIdentifier
-				);
-				if (data != null) {
-					localizations.put(icLocale.toString(), data);
-				}
+		if (ListUtil.isEmpty(icLocales)) {
+			this.localizations = localizations;
+			return localizations;
+		}
+
+		for (ICLocale icLocale: icLocales) {
+			LanguageData data = getLocalizedStrings(
+					LocaleUtil.getLocale(icLocale.toString()),
+					bundleIdentifier
+			);
+			if (data != null) {
+				localizations.put(icLocale.toString(), data);
 			}
 		}
 
@@ -209,8 +212,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	private LanguageData getLocalizedStrings(Locale locale, String bundleIdentifier) {
-		List<MessageResource> resourceList;
-		resourceList = getMessageResourceFactory().getResourceListByBundleAndLocale(bundleIdentifier, locale);
+		List<MessageResource> resourceList = getMessageResourceFactory().getResourceListByBundleAndLocale(bundleIdentifier, locale);
 
 		LanguageData languageData = new LanguageData();
 		languageData.setLocale(locale.toString());
@@ -220,34 +222,36 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		Map<String, Map<MessageResource, String>> localizedStrings = getLocalizedStrings(resourceList);
 		for (String key: localizedStrings.keySet()) {
 			Map<MessageResource, String> valueMap = localizedStrings.get(key);
-			if (!MapUtil.isEmpty(valueMap)) {
-				List<MessageResource> resources = new ArrayList<>(valueMap.keySet());
-				Collections.sort(resources, new Comparator<MessageResource>() {
-
-					@Override
-					public int compare(MessageResource o1, MessageResource o2) {
-						if (o1.getLevel().intValue() > o2.getLevel().intValue()) {
-							return -1;
-						}
-
-						if (o2.getLevel().intValue() > o1.getLevel().intValue()) {
-							return 1;
-						}
-
-						return 0;
-					}
-				});
-
-				String localizedString = CoreConstants.EMPTY;
-
-				for (MessageResource resource : resources) {
-					localizedString = valueMap.get(resource) == null ? localizedString :  valueMap.get(resource);
-					if (!CoreConstants.EMPTY.equals(localizedString)){
-						break;
-					}
-				}
-				languageData.getLocalizedStrings().put(key, localizedString);
+			if (MapUtil.isEmpty(valueMap)) {
+				continue;
 			}
+
+			List<MessageResource> resources = new ArrayList<>(valueMap.keySet());
+			Collections.sort(resources, new Comparator<MessageResource>() {
+
+				@Override
+				public int compare(MessageResource o1, MessageResource o2) {
+					if (o1.getLevel().intValue() > o2.getLevel().intValue()) {
+						return -1;
+					}
+
+					if (o2.getLevel().intValue() > o1.getLevel().intValue()) {
+						return 1;
+					}
+
+					return 0;
+				}
+			});
+
+			String localizedString = CoreConstants.EMPTY;
+
+			for (MessageResource resource: resources) {
+				localizedString = valueMap.get(resource) == null ? localizedString : valueMap.get(resource);
+				if (!CoreConstants.EMPTY.equals(localizedString)) {
+					break;
+				}
+			}
+			languageData.getLocalizedStrings().put(key, localizedString);
 		}
 
 		return languageData;
