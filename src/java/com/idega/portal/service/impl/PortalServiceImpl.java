@@ -3,6 +3,7 @@ package com.idega.portal.service.impl;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -189,7 +190,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		Map<String, LanguageData> localizations = new HashMap<String, LanguageData>();
 
-		String bundleIdentifier = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
+		String bundleIdentifiersProp = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
+		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp.split(CoreConstants.COMMA));
 
 		List<ICLocale> icLocales = ICLocaleBusiness.listOfLocales(true);
 		if (ListUtil.isEmpty(icLocales)) {
@@ -200,7 +202,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		for (ICLocale icLocale: icLocales) {
 			LanguageData data = getLocalizedStrings(
 					LocaleUtil.getLocale(icLocale.toString()),
-					bundleIdentifier
+					bundleIdentifiers
 			);
 			if (data != null) {
 				localizations.put(icLocale.toString(), data);
@@ -211,47 +213,62 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return localizations;
 	}
 
-	private LanguageData getLocalizedStrings(Locale locale, String bundleIdentifier) {
-		List<MessageResource> resourceList = getMessageResourceFactory().getResourceListByBundleAndLocale(bundleIdentifier, locale);
-
+	private LanguageData getLocalizedStrings(Locale locale, List<String> bundleIdentifiers) {
 		LanguageData languageData = new LanguageData();
 		languageData.setLocale(locale.toString());
 		languageData.setLanguage(StringHandler.firstCharacterToUpperCaseRestToLowerCase(locale.getDisplayLanguage(locale)));
 		languageData.setLocalizedStrings(new HashMap<String, String>());
 
-		Map<String, Map<MessageResource, String>> localizedStrings = getLocalizedStrings(resourceList);
-		for (String key: localizedStrings.keySet()) {
-			Map<MessageResource, String> valueMap = localizedStrings.get(key);
-			if (MapUtil.isEmpty(valueMap)) {
+		if (ListUtil.isEmpty(bundleIdentifiers)) {
+			return languageData;
+		}
+
+		for (String bundleIdentifier: bundleIdentifiers) {
+			if (bundleIdentifier == null) {
 				continue;
 			}
 
-			List<MessageResource> resources = new ArrayList<>(valueMap.keySet());
-			Collections.sort(resources, new Comparator<MessageResource>() {
-
-				@Override
-				public int compare(MessageResource o1, MessageResource o2) {
-					if (o1.getLevel().intValue() > o2.getLevel().intValue()) {
-						return -1;
-					}
-
-					if (o2.getLevel().intValue() > o1.getLevel().intValue()) {
-						return 1;
-					}
-
-					return 0;
-				}
-			});
-
-			String localizedString = CoreConstants.EMPTY;
-
-			for (MessageResource resource: resources) {
-				localizedString = valueMap.get(resource) == null ? localizedString : valueMap.get(resource);
-				if (!CoreConstants.EMPTY.equals(localizedString)) {
-					break;
-				}
+			bundleIdentifier = bundleIdentifier.trim();
+			if (StringUtil.isEmpty(bundleIdentifier)) {
+				continue;
 			}
-			languageData.getLocalizedStrings().put(key, localizedString);
+
+			List<MessageResource> resourceList = getMessageResourceFactory().getResourceListByBundleAndLocale(bundleIdentifier, locale);
+
+			Map<String, Map<MessageResource, String>> localizedStrings = getLocalizedStrings(resourceList);
+			for (String key: localizedStrings.keySet()) {
+				Map<MessageResource, String> valueMap = localizedStrings.get(key);
+				if (MapUtil.isEmpty(valueMap)) {
+					continue;
+				}
+
+				List<MessageResource> resources = new ArrayList<>(valueMap.keySet());
+				Collections.sort(resources, new Comparator<MessageResource>() {
+
+					@Override
+					public int compare(MessageResource o1, MessageResource o2) {
+						if (o1.getLevel().intValue() > o2.getLevel().intValue()) {
+							return -1;
+						}
+
+						if (o2.getLevel().intValue() > o1.getLevel().intValue()) {
+							return 1;
+						}
+
+						return 0;
+					}
+				});
+
+				String localizedString = CoreConstants.EMPTY;
+
+				for (MessageResource resource: resources) {
+					localizedString = valueMap.get(resource) == null ? localizedString : valueMap.get(resource);
+					if (!CoreConstants.EMPTY.equals(localizedString)) {
+						break;
+					}
+				}
+				languageData.getLocalizedStrings().put(key, localizedString);
+			}
 		}
 
 		return languageData;
