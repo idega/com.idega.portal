@@ -1,6 +1,5 @@
 package com.idega.portal.business.impl;
 
-import java.util.Date;
 import java.util.logging.Level;
 
 import javax.ws.rs.core.Response;
@@ -14,7 +13,6 @@ import com.idega.block.login.bean.OAuthToken;
 import com.idega.block.login.business.OAuth2Service;
 import com.idega.block.oauth2.server.authentication.bean.AccessToken;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
-import com.idega.core.accesscontrol.data.LoginRecordHome;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.accesscontrol.data.LoginTableHome;
 import com.idega.core.accesscontrol.event.LoggedInUserCredentials;
@@ -28,7 +26,6 @@ import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
-import com.idega.util.IWTimestamp;
 import com.idega.util.RequestUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
@@ -129,24 +126,6 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 			return null;
 		}
 
-		com.idega.core.accesscontrol.data.LoginRecord lRecord = null;
-		try {
-			LoginRecordHome loginRecordHome = (LoginRecordHome) IDOLookup.getHome(com.idega.core.accesscontrol.data.LoginRecord.class);
-			lRecord = loginRecordHome.findLastLoginRecord(user);
-		} catch (Exception e) {}
-
-		Date loggedInAt = lRecord == null ? new Date(System.currentTimeMillis()) : lRecord.getLogInStamp();
-		if (loggedInAt == null) {
-			getLogger().warning("Do not know when " + user + " logged in");
-		}
-
-		long timePassedAfterLogin = IWTimestamp.RightNow().getTime().getTime() - loggedInAt.getTime();
-		int allowedTimeOut = getApplication().getSettings().getInt("oauth_login_allowed_timeout", 30000);
-		if (timePassedAfterLogin > allowedTimeOut) {
-			getLogger().warning("It passed " + timePassedAfterLogin + " ms after " + user + " last time logged in, while it is allowed pass " + allowedTimeOut + " ms: disabling access");
-			return null;
-		}
-
 		LoginTable login = LoginDBHandler.getUserLogin(user);
 		if (login == null) {
 			getLogger().warning("Unable to get login name for " + user);
@@ -154,7 +133,6 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 		}
 
 		String userLogin = login.getUserLogin();
-		getLogger().info("Found user login '" + userLogin + "' for UUID: " + uuid);
 		return userLogin;
 	}
 
