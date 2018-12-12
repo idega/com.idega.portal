@@ -5,8 +5,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.idega.portal.model.Localization;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
+import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
 
 public interface PortalService {
@@ -26,5 +28,7 @@ public interface PortalService {
 	public String logout();
 
 	public String doRemindPassword(String ssn);
+
+	public Result setLocalization(Localization localization);
 
 }

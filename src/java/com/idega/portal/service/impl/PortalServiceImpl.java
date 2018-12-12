@@ -16,6 +16,7 @@ import java.util.logging.Level;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +34,7 @@ import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.core.localisation.business.ICLocaleBusiness;
 import com.idega.core.localisation.data.ICLocale;
+import com.idega.development.business.LocalizerBusiness;
 import com.idega.development.event.LocalizationChangedEvent;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
@@ -40,9 +42,11 @@ import com.idega.idegaweb.RepositoryStartedEvent;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.model.FooterData;
 import com.idega.portal.model.LanguageData;
+import com.idega.portal.model.Localization;
 import com.idega.portal.model.OAuthInfo;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
+import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
 import com.idega.portal.security.SecurityUtil;
 import com.idega.portal.service.PortalService;
@@ -79,6 +83,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Autowired(required=false)
 	@Qualifier("clientDetails")
 	private JdbcClientDetailsService clientDetailsService;
+
+	@Autowired
+	private LocalizerBusiness localizerBusiness;
 
 	private MessageResourceFactory getMessageResourceFactory() {
 		if (this.messageResourceFactory == null) {
@@ -507,6 +514,30 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Override
 	public String doRemindPassword(String ssn) {
 		return "Unimplemented";
+	}
+
+	@Override
+	public Result setLocalization(Localization localization) {
+		if (localization == null || StringUtil.isEmpty(localization.getLocalizedKey()) || StringUtil.isEmpty(localization.getLocalization()) || StringUtil.isEmpty(localization.getBundleIdentifier())) {
+			return null;
+		}
+
+		try {
+			User user = SecurityUtil.getInstance().getAuthorizedUser();
+			if (user == null) {
+				return null;
+			}
+
+			String locale = localization.getLocale();
+			locale = StringUtil.isEmpty(locale) ? getCurrentLocale().toString() : locale;
+
+			localizerBusiness.storeLocalizedStrings(null, localization.getLocalizedKey(), localization.getLocalization(), localization.getBundleIdentifier(), locale, null);
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error setting localization " + localization, e);
+			return null;
+		}
+
+		return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 	}
 
 }

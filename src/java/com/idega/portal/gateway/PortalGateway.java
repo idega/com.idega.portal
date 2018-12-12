@@ -12,6 +12,7 @@ public interface PortalGateway extends PortalService, UserService {
 								ACCOUNT = "/account",
 								MENUS = "/menus",
 								LANGUAGE = "/language",
+								LOCALIZE = "/localize",
 
 								LOGOUT = "/logout",
 

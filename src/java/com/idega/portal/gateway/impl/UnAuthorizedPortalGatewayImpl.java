@@ -19,8 +19,10 @@ import org.springframework.stereotype.Component;
 
 import com.idega.portal.PortalConstants;
 import com.idega.portal.gateway.PortalGateway;
+import com.idega.portal.model.Localization;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
+import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
 import com.idega.portal.service.PortalService;
 import com.idega.restful.business.DefaultRestfulService;
@@ -61,6 +63,13 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@Path(PortalGateway.LANGUAGE)
 	public String setLanguage(@QueryParam("language") String language) {
 		return portalService.setLanguage(language);
+	}
+
+	@Override
+	@POST
+	@Path(PortalGateway.LANGUAGE + PortalGateway.LOCALIZE)
+	public Result setLocalization(Localization localization) {
+		return null;
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.Filter;
+import com.idega.portal.model.Localization;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
@@ -96,6 +97,13 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	@Path(LANGUAGE)
 	public String setLanguage(@QueryParam("language") String language) {
 		return portalService.setLanguage(language);
+	}
+
+	@Override
+	@POST
+	@Path(LANGUAGE + LOCALIZE)
+	public Result setLocalization(Localization localization) {
+		return portalService.setLocalization(localization);
 	}
 
 	/* WS for citizen */
