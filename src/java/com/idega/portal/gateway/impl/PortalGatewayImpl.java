@@ -147,4 +147,11 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 		return portalService.doRemindPassword(ssn);
 	}
 
+	@Override
+	@GET
+	@Path(PortalGateway.PING)
+	public Result doPing() {
+		return portalService.doPing();
+	}
+
 }

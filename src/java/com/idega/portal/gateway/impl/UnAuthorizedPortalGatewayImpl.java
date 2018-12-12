@@ -108,4 +108,11 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 		return portalService.doRemindPassword(ssn);
 	}
 
+	@Override
+	@GET
+	@Path(PortalGateway.PING)
+	public Result doPing() {
+		return null;
+	}
+
 }

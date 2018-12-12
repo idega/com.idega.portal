@@ -540,4 +540,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 	}
 
+	@Override
+	public Result doPing() {
+		try {
+			return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
+		} catch (Exception e) {}
+		return new Result(Status.INTERNAL_SERVER_ERROR.getStatusCode(), Boolean.FALSE.toString());
+	}
+
 }

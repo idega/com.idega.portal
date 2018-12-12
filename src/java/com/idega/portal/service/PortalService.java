@@ -31,4 +31,6 @@ public interface PortalService {
 
 	public Result setLocalization(Localization localization);
 
+	public Result doPing();
+
 }
