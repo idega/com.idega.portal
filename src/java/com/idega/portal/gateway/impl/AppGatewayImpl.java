@@ -2,6 +2,7 @@ package com.idega.portal.gateway.impl;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -17,6 +18,8 @@ import com.idega.portal.business.PortalUserManager;
 import com.idega.portal.gateway.AppGateway;
 import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.PortalSettings;
+import com.idega.portal.model.Result;
+import com.idega.portal.model.UserAccount;
 import com.idega.portal.service.AppService;
 import com.idega.restful.business.DefaultRestfulService;
 
@@ -52,9 +55,17 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 	}
 
 	@Override
+	@GET
 	@Path(PortalGateway.LOGOUT)
 	public String logout() {
 		return appService.logout();
+	}
+
+	@Override
+	@POST
+	@Path(AppGateway.CREDENTIALS)
+	public Result isValidLogin(UserAccount credentials) {
+		return appService.isValidLogin(credentials);
 	}
 
 }

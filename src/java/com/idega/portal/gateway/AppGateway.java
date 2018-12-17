@@ -6,7 +6,8 @@ import com.idega.portal.service.AppService;
 public interface AppGateway extends AppService {
 
 	public static final String	PATH = "/app",
-								ACCESS_TOKEN = "/token";
+								ACCESS_TOKEN = "/token",
+								CREDENTIALS = "/credentials";
 
 	public AccessToken getAccessToken(String uuid, String clientId, String type);
 
