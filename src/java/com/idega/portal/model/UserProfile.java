@@ -14,6 +14,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.idega.block.oauth2.server.authentication.bean.User;
 import com.idega.business.IBOLookup;
+import com.idega.core.accesscontrol.business.LoginDBHandler;
+import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.contact.data.bean.Email;
 import com.idega.core.contact.data.bean.Phone;
 import com.idega.core.location.data.bean.Address;
@@ -159,6 +161,19 @@ public class UserProfile extends User {
 				Logger.getLogger(getClass().getName()).log(Level.WARNING, "Error getting user's image for user: " + user, e);
 			}
 		}
+
+		//Login
+		if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {
+			try {
+				LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
+				if (loginTable != null) {
+					setLogin(loginTable.getUserLogin());
+				}
+			} catch (Exception eLogin) {
+				Logger.getLogger(getClass().getName()).log(Level.WARNING, "Error getting user's login for user: " + user, eLogin);
+			}
+		}
+
 	}
 
 	public String getPhone() {

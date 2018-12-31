@@ -287,7 +287,7 @@ relation.child=Barn
 relation.son=Son
 relation.daughter=Dotter
 
-citizen_profile.please_provide_data=Vänligen ge data
+citizen_profile.please_provide_data=Obligatorisk information 
 
 password_verification.new_password_empty.error=Ny användares lösenord är tomt.
 password_verification.new_repeat_password_empty.error=Ny användares upprepade lösenord är tomt.
