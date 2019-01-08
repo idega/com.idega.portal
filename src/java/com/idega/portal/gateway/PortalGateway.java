@@ -13,6 +13,10 @@ public interface PortalGateway extends PortalService, UserService {
 								MENUS = "/menus",
 								LANGUAGE = "/language",
 								LOCALIZE = "/localize",
+								STRINGS = "/strings",
+								AVAILABLE = "/available",
+								ADD = "/add",
+								REMOVE = "/remove",
 
 								LOGOUT = "/logout",
 

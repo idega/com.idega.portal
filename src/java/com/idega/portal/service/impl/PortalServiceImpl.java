@@ -43,6 +43,7 @@ import com.idega.portal.PortalConstants;
 import com.idega.portal.model.FooterData;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
+import com.idega.portal.model.Localizations;
 import com.idega.portal.model.OAuthInfo;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
@@ -539,7 +540,98 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 	}
+	
+	@Override
+	public Result setLocalizations(Localizations localizations) {
+		if (localizations == null) {
+			return null;
+		}
 
+		if (ListUtil.isEmpty(localizations.getLocalizations())) {
+			return null;
+		}
+
+		User user = SecurityUtil.getInstance().getAuthorizedUser();
+		if (user == null) {
+			return null;
+		}
+		
+		String bundleIdentifiersProp = getApplicationProperty(
+				PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID,
+				PortalConstants.IW_BUNDLE_IDENTIFIER);
+		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp
+				.split(CoreConstants.COMMA));
+
+		for (Localization localization : localizations.getLocalizations()) {
+			try {
+				if (StringUtil.isEmpty(localization.getBundleIdentifier())) {
+					String bundle = getLocalizationBundle(localization,
+							bundleIdentifiers);
+					if (StringUtil.isEmpty(bundle)) {
+						return null;
+					}
+
+					localization.setBundleIdentifier(bundle);
+				}
+
+				Result result = setLocalization(localization);
+				if (result == null) {
+					return null;
+				}
+
+			} catch (Exception e) {
+				getLogger().log(Level.WARNING,
+						"Error setting localization " + localization, e);
+			}
+		}
+
+		return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
+	}
+
+	@Override
+	public List<LanguageData> getAvailableLanguages() {
+		List<ICLocale> locales = ICLocaleBusiness.listOfLocales(false);
+		if (ListUtil.isEmpty(locales)) {
+			return null;
+		}
+		
+		User user = SecurityUtil.getInstance().getAuthorizedUser();
+		if (user == null) {
+			return null;
+		}
+		
+		List<LanguageData> availableLanguages = new ArrayList<LanguageData>();
+		
+		for (ICLocale icLocale : locales) {
+			Locale locale = LocaleUtil.getLocale(icLocale.toString());
+			if (locale != null) {
+				availableLanguages
+						.add(new LanguageData(
+								locale.toString(),
+								StringHandler
+										.firstCharacterToUpperCaseRestToLowerCase(locale
+												.getDisplayLanguage(locale)),
+								StringHandler
+										.firstCharacterToUpperCaseRestToLowerCase(locale
+												.getDisplayCountry(locale))));
+			}
+		}
+		
+		return availableLanguages;
+	}
+	
+	@Override
+	public Result addLanguage(String locale) {
+		return addOrRemoveLanguage(locale, true) ? new Result(
+				Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
+	}
+	
+	@Override
+	public Result removeLanguage(String locale) {
+		return addOrRemoveLanguage(locale, false) ? new Result(
+				Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
+	}
+	
 	@Override
 	public Result doPing() {
 		try {
@@ -547,5 +639,65 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		} catch (Exception e) {}
 		return new Result(Status.INTERNAL_SERVER_ERROR.getStatusCode(), Boolean.FALSE.toString());
 	}
+	
+	private String getLocalizationBundle(Localization localization,
+			List<String> bundleIdentifiers) {
+		if (localization == null || ListUtil.isEmpty(bundleIdentifiers)) {
+			return null;
+		}
 
+		String key = localization.getLocalizedKey();
+		Locale locale = StringUtil.isEmpty(localization.getLocale()) ? null
+				: LocaleUtil.getLocale(localization.getLocale());
+		if (StringUtil.isEmpty(key) || locale == null) {
+			return null;
+		}
+
+		String bundle = null;
+		String localizedString = null;
+
+		for (String bundleIdentifier : bundleIdentifiers) {
+			localizedString = getApplication().getMessageFactory()
+					.getLocalizedMessage(key, null, bundleIdentifier, locale);
+
+			if (localizedString != null) {
+				bundle = bundleIdentifier;
+			}
+		}
+
+		return bundle;
+	}
+	
+	private boolean addOrRemoveLanguage(String locale, boolean doAdd) {
+		if (StringUtil.isEmpty(locale)) {
+			return false;
+		}
+
+		try {
+			User user = SecurityUtil.getInstance().getAuthorizedUser();
+			if (user == null) {
+				return false;
+			}
+
+			ICLocale icLocale = ICLocaleBusiness.getICLocale(locale);
+			if (icLocale == null) {
+				return false;
+			}
+
+			ICLocaleBusiness.makeLocaleInUse(icLocale.getPrimaryKey()
+					.toString(), doAdd);
+
+			this.localizations = null;
+			
+			return true;
+		} catch (Exception e) {
+			getLogger().log(
+					Level.WARNING,
+					"Error " + (doAdd ? "adding" : "removing") + " language: "
+							+ locale, e);
+		}
+
+		return false;
+	}
+	
 }

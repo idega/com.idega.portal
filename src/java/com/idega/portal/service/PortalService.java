@@ -5,7 +5,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
+import com.idega.portal.model.Localizations;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
@@ -30,7 +32,15 @@ public interface PortalService {
 	public String doRemindPassword(String ssn);
 
 	public Result setLocalization(Localization localization);
+	
+	public Result setLocalizations(Localizations localizations);
+	
+	public List<LanguageData> getAvailableLanguages();
 
+	public Result addLanguage(String locale);
+	
+	public Result removeLanguage(String locale);
+	
 	public Result doPing();
 
 }

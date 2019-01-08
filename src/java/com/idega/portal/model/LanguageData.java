@@ -16,8 +16,19 @@ public class LanguageData implements Serializable {
 	private String locale;
 
 	private String language;
-	
+
+	private String country;
+
 	private Map<String, String> localizedStrings;
+
+	public LanguageData() {
+	}
+
+	public LanguageData(String locale, String language, String country) {
+		this.locale = locale;
+		this.language = language;
+		this.country = country;
+	}
 
 	public String getLocale() {
 		return locale;
@@ -34,7 +45,15 @@ public class LanguageData implements Serializable {
 	public void setLanguage(String language) {
 		this.language = language;
 	}
-	
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
 	public Map<String, String> getLocalizedStrings() {
 		return localizedStrings;
 	}

@@ -19,7 +19,9 @@ import org.springframework.stereotype.Component;
 
 import com.idega.portal.PortalConstants;
 import com.idega.portal.gateway.PortalGateway;
+import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
+import com.idega.portal.model.Localizations;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
@@ -71,7 +73,35 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	public Result setLocalization(Localization localization) {
 		return null;
 	}
+	
+	@Override
+	@POST
+	@Path(PortalGateway.LANGUAGE + PortalGateway.LOCALIZE + PortalGateway.STRINGS)
+	public Result setLocalizations(Localizations localizations) {
+		return null;
+	}
+	
+	@Override
+	@GET
+	@Path(PortalGateway.LANGUAGE + PortalGateway.AVAILABLE)
+	public List<LanguageData> getAvailableLanguages() {
+		return null;
+	}
 
+	@Override
+	@GET
+	@Path(PortalGateway.LANGUAGE + PortalGateway.ADD)
+	public Result addLanguage(@QueryParam("locale") String locale) {
+		return null;
+	}
+	
+	@Override
+	@GET
+	@Path(PortalGateway.LANGUAGE + PortalGateway.REMOVE)
+	public Result removeLanguage(@QueryParam("locale") String locale) {
+		return null;
+	}
+	
 	@Override
 	@GET
 	@Path(PortalGateway.AUTHORIZE)
