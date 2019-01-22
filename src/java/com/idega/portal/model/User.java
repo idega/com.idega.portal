@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.idega.core.accesscontrol.business.LoginDBHandler;
+import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.contact.data.bean.Phone;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.UserApplicationEngine;
@@ -27,7 +29,7 @@ public class User implements Serializable {
 
 	private static final long serialVersionUID = 1514809950328524234L;
 
-	private String id, personalId, email, phone, name, address, password, uuid;
+	private String id, personalId, email, phone, name, address, username, password, uuid;
 
 	private Boolean selected;
 
@@ -64,6 +66,10 @@ public class User implements Serializable {
 		}
 		name = user.getName();
 		uuid = user.getUniqueId();
+		LoginTable loginTable = LoginDBHandler.getUserLogin(user.getId());
+		if (loginTable != null) {
+			this.username = loginTable.getUserLogin();
+		}
 	}
 
 	public User(com.idega.user.data.User user) {
@@ -78,6 +84,10 @@ public class User implements Serializable {
 		phone = userDataBean.getPhone();
 		name = userDataBean.getName();
 		uuid = user.getUniqueId();
+		LoginTable loginTable = LoginDBHandler.getUserLogin(Integer.valueOf(id));
+		if (loginTable != null) {
+			this.username = loginTable.getUserLogin();
+		}
 
 		StringBuilder sb = new StringBuilder();
 
@@ -234,6 +244,14 @@ public class User implements Serializable {
 
 	public void setSelected(Boolean selected) {
 		this.selected = selected;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 }
