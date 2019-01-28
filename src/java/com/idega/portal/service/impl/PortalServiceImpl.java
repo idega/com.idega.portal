@@ -191,7 +191,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return footerData;
 	}
 
-	private Map<String, LanguageData> getLocalizations() {
+	@Override
+	public Map<String, LanguageData> getLocalizations() {
 		if (localizations != null) {
 			return new HashMap<String, LanguageData>(localizations);
 		}
@@ -540,7 +541,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 	}
-	
+
 	@Override
 	public Result setLocalizations(Localizations localizations) {
 		if (localizations == null) {
@@ -555,7 +556,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		if (user == null) {
 			return null;
 		}
-		
+
 		String bundleIdentifiersProp = getApplicationProperty(
 				PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID,
 				PortalConstants.IW_BUNDLE_IDENTIFIER);
@@ -594,14 +595,14 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		if (ListUtil.isEmpty(locales)) {
 			return null;
 		}
-		
+
 		User user = SecurityUtil.getInstance().getAuthorizedUser();
 		if (user == null) {
 			return null;
 		}
-		
+
 		List<LanguageData> availableLanguages = new ArrayList<LanguageData>();
-		
+
 		for (ICLocale icLocale : locales) {
 			Locale locale = LocaleUtil.getLocale(icLocale.toString());
 			if (locale != null) {
@@ -616,22 +617,22 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 												.getDisplayCountry(locale))));
 			}
 		}
-		
+
 		return availableLanguages;
 	}
-	
+
 	@Override
 	public Result addLanguage(String locale) {
 		return addOrRemoveLanguage(locale, true) ? new Result(
 				Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
 	}
-	
+
 	@Override
 	public Result removeLanguage(String locale) {
 		return addOrRemoveLanguage(locale, false) ? new Result(
 				Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
 	}
-	
+
 	@Override
 	public Result doPing() {
 		try {
@@ -639,7 +640,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		} catch (Exception e) {}
 		return new Result(Status.INTERNAL_SERVER_ERROR.getStatusCode(), Boolean.FALSE.toString());
 	}
-	
+
 	private String getLocalizationBundle(Localization localization,
 			List<String> bundleIdentifiers) {
 		if (localization == null || ListUtil.isEmpty(bundleIdentifiers)) {
@@ -667,7 +668,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return bundle;
 	}
-	
+
 	private boolean addOrRemoveLanguage(String locale, boolean doAdd) {
 		if (StringUtil.isEmpty(locale)) {
 			return false;
@@ -688,7 +689,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 					.toString(), doAdd);
 
 			this.localizations = null;
-			
+
 			return true;
 		} catch (Exception e) {
 			getLogger().log(
@@ -699,5 +700,5 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return false;
 	}
-	
+
 }

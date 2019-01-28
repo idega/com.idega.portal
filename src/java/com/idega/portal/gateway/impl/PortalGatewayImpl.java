@@ -2,6 +2,7 @@ package com.idega.portal.gateway.impl;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -114,28 +115,28 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	public Result setLocalizations(Localizations localizations) {
 		return portalService.setLocalizations(localizations);
 	}
-	
+
 	@Override
 	@GET
 	@Path(LANGUAGE + AVAILABLE)
 	public List<LanguageData> getAvailableLanguages() {
 		return portalService.getAvailableLanguages();
 	}
-	
+
 	@Override
 	@GET
 	@Path(LANGUAGE + ADD)
 	public Result addLanguage(@QueryParam("locale") String locale) {
 		return portalService.addLanguage(locale);
 	}
-	
+
 	@Override
 	@GET
 	@Path(LANGUAGE + REMOVE)
 	public Result removeLanguage(@QueryParam("locale") String locale) {
 		return portalService.removeLanguage(locale);
 	}
-	
+
 	/* WS for citizen */
 	@Override
 	@POST
@@ -182,6 +183,11 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	@Path(PortalGateway.PING)
 	public Result doPing() {
 		return portalService.doPing();
+	}
+
+	@Override
+	public Map<String, LanguageData> getLocalizations() {
+		return null;
 	}
 
 }

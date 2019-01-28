@@ -1,6 +1,7 @@
 package com.idega.portal.gateway.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,14 +74,14 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	public Result setLocalization(Localization localization) {
 		return null;
 	}
-	
+
 	@Override
 	@POST
 	@Path(PortalGateway.LANGUAGE + PortalGateway.LOCALIZE + PortalGateway.STRINGS)
 	public Result setLocalizations(Localizations localizations) {
 		return null;
 	}
-	
+
 	@Override
 	@GET
 	@Path(PortalGateway.LANGUAGE + PortalGateway.AVAILABLE)
@@ -94,14 +95,14 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	public Result addLanguage(@QueryParam("locale") String locale) {
 		return null;
 	}
-	
+
 	@Override
 	@GET
 	@Path(PortalGateway.LANGUAGE + PortalGateway.REMOVE)
 	public Result removeLanguage(@QueryParam("locale") String locale) {
 		return null;
 	}
-	
+
 	@Override
 	@GET
 	@Path(PortalGateway.AUTHORIZE)
@@ -142,6 +143,11 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@GET
 	@Path(PortalGateway.PING)
 	public Result doPing() {
+		return null;
+	}
+
+	@Override
+	public Map<String, LanguageData> getLocalizations() {
 		return null;
 	}
 
