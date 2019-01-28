@@ -22,9 +22,12 @@ public class LanguageData implements Serializable {
 	private Map<String, String> localizedStrings;
 
 	public LanguageData() {
+		super();
 	}
 
 	public LanguageData(String locale, String language, String country) {
+		this();
+
 		this.locale = locale;
 		this.language = language;
 		this.country = country;
