@@ -2,7 +2,6 @@ package com.idega.portal.gateway.impl;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -183,11 +182,6 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	@Path(PortalGateway.PING)
 	public Result doPing() {
 		return portalService.doPing();
-	}
-
-	@Override
-	public Map<String, LanguageData> getLocalizations() {
-		return null;
 	}
 
 }

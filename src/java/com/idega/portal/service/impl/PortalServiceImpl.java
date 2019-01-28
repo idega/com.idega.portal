@@ -191,8 +191,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return footerData;
 	}
 
-	@Override
-	public Map<String, LanguageData> getLocalizations() {
+	private Map<String, LanguageData> getLocalizations() {
 		if (localizations != null) {
 			return new HashMap<String, LanguageData>(localizations);
 		}

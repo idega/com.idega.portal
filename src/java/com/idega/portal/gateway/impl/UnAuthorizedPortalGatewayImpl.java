@@ -1,7 +1,6 @@
 package com.idega.portal.gateway.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -143,11 +142,6 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@GET
 	@Path(PortalGateway.PING)
 	public Result doPing() {
-		return null;
-	}
-
-	@Override
-	public Map<String, LanguageData> getLocalizations() {
 		return null;
 	}
 
