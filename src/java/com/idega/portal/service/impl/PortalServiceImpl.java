@@ -23,6 +23,7 @@ import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
+import com.idega.core.localisation.business.ICLocaleBusiness;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
@@ -82,7 +83,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			Locale localeToUse = null;
 			Locale defaultLocale = getApplication().getDefaultLocale();
 			Locale currentLocale = getCurrentLocale();
-			if (defaultLocale != null && currentLocale != null && !defaultLocale.toString().equals(currentLocale.toString())) {
+			if (defaultLocale != null
+					&& currentLocale != null
+					&& !defaultLocale.toString().equals(
+							currentLocale.toString())
+					&& ICLocaleBusiness.isLocaleInUse(currentLocale.toString())) {
 				localeToUse = currentLocale;
 			}
 			localeToUse = localeToUse == null ? defaultLocale : localeToUse;
