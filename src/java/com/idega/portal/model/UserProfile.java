@@ -64,6 +64,8 @@ public class UserProfile extends User {
 	private String newPassword;
 	private String newPasswordRepeat;
 
+	private Integer id;
+
 	private Filter filter;
 
 	public UserProfile() {
@@ -400,6 +402,14 @@ public class UserProfile extends User {
 
 	public void setNewPasswordRepeat(String newPasswordRepeat) {
 		this.newPasswordRepeat = newPasswordRepeat;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 }
