@@ -138,8 +138,9 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 				if (StringUtil.isEmpty(localization.getBundleIdentifier())) {
 					String bundle = getLocalizationBundle(localization,
 							bundleIdentifiers);
-					if (StringUtil.isEmpty(bundle)) {
-						return null;
+					
+					if (StringUtil.isEmpty(bundle) && !ListUtil.isEmpty(bundleIdentifiers)) {
+						bundle = bundleIdentifiers.get(0);
 					}
 
 					localization.setBundleIdentifier(bundle);
@@ -224,6 +225,27 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			}
 		}
 
+		if (StringUtil.isEmpty(bundle)) {
+			List<ICLocale> locales = ICLocaleBusiness.listOfLocales(true);
+			if (!ListUtil.isEmpty(locales)) {
+				for (String bundleIdentifier : bundleIdentifiers) {
+					for (ICLocale icLocale : locales) {
+						localizedString = getApplication().getMessageFactory()
+								.getLocalizedMessage(
+										key,
+										null,
+										bundleIdentifier,
+										LocaleUtil.getLocale(icLocale
+												.toString()));
+
+						if (localizedString != null) {
+							bundle = bundleIdentifier;
+						}
+					}
+				}
+			}
+		}
+		
 		return bundle;
 	}
 
