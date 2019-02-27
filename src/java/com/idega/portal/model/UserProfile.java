@@ -1,6 +1,7 @@
 package com.idega.portal.model;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -39,6 +40,7 @@ public class UserProfile extends User {
 
 	private static final long serialVersionUID = -7263530675290796371L;
 
+	private String personalId;
 	private String phone;
 	private String email;
 
@@ -61,15 +63,50 @@ public class UserProfile extends User {
 	private String postalCode;
 	private String city;
 
+	private String username;
+	private String password;
 	private String newPassword;
 	private String newPasswordRepeat;
 
 	private Integer id;
 
+	private String uuid;
+
 	private Filter filter;
 
 	public UserProfile() {
 		super();
+	}
+
+	public UserProfile(com.idega.user.data.User user) {
+		this();
+
+		if (user == null) {
+			return;
+		}
+
+		id = Integer.valueOf(user.getId());
+		personalId = user.getPersonalID();
+		com.idega.core.contact.data.Email email = null;
+		try {
+			email = user.getUsersEmail();
+		} catch (Exception e) {}
+		if (email != null) {
+			this.email = email.getEmailAddress();
+		}
+		Collection<com.idega.core.contact.data.Phone> phones = null;
+		try {
+			phones = user.getPhones();
+		} catch (Exception e) {}
+		if (!ListUtil.isEmpty(phones)) {
+			phone = phones.iterator().next().getNumber();
+		}
+		setName(user.getName());
+		uuid = user.getUniqueId();
+		LoginTable loginTable = LoginDBHandler.getUserLogin(id);
+		if (loginTable != null) {
+			this.username = loginTable.getUserLogin();
+		}
 	}
 
 	public UserProfile(com.idega.user.data.bean.User user, Locale locale, DataElement... interestedIn) {
@@ -410,6 +447,43 @@ public class UserProfile extends User {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public String getPersonalId() {
+		return personalId;
+	}
+
+	public void setPersonalId(String personalId) {
+		this.personalId = personalId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	@Override
+	public String toString() {
+		return "ID: " + getId();
 	}
 
 }
