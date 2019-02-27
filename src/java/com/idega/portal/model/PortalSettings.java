@@ -49,6 +49,8 @@ public class PortalSettings implements Serializable {
 
 	private Location location;
 
+	Boolean useLDAP = Boolean.FALSE;
+
 	public String getName() {
 		return name;
 	}
@@ -284,5 +286,15 @@ public class PortalSettings implements Serializable {
 	public final void setLocation(Location location) {
 		this.location = location;
 	}
+
+	public Boolean getUseLDAP() {
+		return useLDAP;
+	}
+
+	public void setUseLDAP(Boolean useLDAP) {
+		this.useLDAP = useLDAP;
+	}
+
+
 
 }
