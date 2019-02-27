@@ -138,8 +138,9 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 				if (StringUtil.isEmpty(localization.getBundleIdentifier())) {
 					String bundle = getLocalizationBundle(localization,
 							bundleIdentifiers);
-					if (StringUtil.isEmpty(bundle)) {
-						return null;
+					
+					if (StringUtil.isEmpty(bundle) && !ListUtil.isEmpty(bundleIdentifiers)) {
+						bundle = bundleIdentifiers.get(0);
 					}
 
 					localization.setBundleIdentifier(bundle);
@@ -224,6 +225,27 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			}
 		}
 
+		if (StringUtil.isEmpty(bundle)) {
+			List<ICLocale> locales = ICLocaleBusiness.listOfLocales(true);
+			if (!ListUtil.isEmpty(locales)) {
+				for (String bundleIdentifier : bundleIdentifiers) {
+					for (ICLocale icLocale : locales) {
+						localizedString = getApplication().getMessageFactory()
+								.getLocalizedMessage(
+										key,
+										null,
+										bundleIdentifier,
+										LocaleUtil.getLocale(icLocale
+												.toString()));
+
+						if (localizedString != null) {
+							bundle = bundleIdentifier;
+						}
+					}
+				}
+			}
+		}
+		
 		return bundle;
 	}
 
@@ -261,21 +283,34 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 
 	@Override
 	public Map<String, LanguageData> getLocalizations() {
+		List<ICLocale> icLocales = ICLocaleBusiness.listOfLocales(true);
+		if (ListUtil.isEmpty(icLocales)) {
+			localizations = new HashMap<String, LanguageData>();
+			return localizations;
+		}
+		
 		if (localizations != null) {
-			return new HashMap<String, LanguageData>(localizations);
+			List<String> currentLanguages = new ArrayList<String>();
+			for (ICLocale icLocale : icLocales) {
+				currentLanguages.add(icLocale.toString());
+			}
+			
+			List<String> loadedLanguages = new ArrayList<String>();
+			for (Map.Entry<String, LanguageData> entry : localizations.entrySet()) {
+				loadedLanguages.add(entry.getKey());
+			}
+			
+			if (currentLanguages.size() == loadedLanguages.size()
+					&& currentLanguages.containsAll(loadedLanguages)
+					&& loadedLanguages.containsAll(currentLanguages)) {
+				return new HashMap<String, LanguageData>(localizations);
+			}
 		}
 
 		Map<String, LanguageData> localizations = new HashMap<String, LanguageData>();
-
 		String bundleIdentifiersProp = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
 		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp.split(CoreConstants.COMMA));
-
-		List<ICLocale> icLocales = ICLocaleBusiness.listOfLocales(true);
-		if (ListUtil.isEmpty(icLocales)) {
-			this.localizations = localizations;
-			return localizations;
-		}
-
+		
 		for (ICLocale icLocale: icLocales) {
 			LanguageData data = getLocalizedStrings(
 					LocaleUtil.getLocale(icLocale.toString()),

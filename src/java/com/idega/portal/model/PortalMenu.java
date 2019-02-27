@@ -154,5 +154,9 @@ public class PortalMenu implements Serializable {
 		this.openInNewWindow = openInNewWindow;
 	}
 
+	@Override
+	public String toString() {
+		return getName();
+	}
 
 }
