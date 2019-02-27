@@ -25,6 +25,8 @@ import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.presentation.Image;
+import com.idega.user.bean.UserDataBean;
+import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.Gender;
 import com.idega.util.ArrayUtil;
@@ -33,6 +35,7 @@ import com.idega.util.CoreUtil;
 import com.idega.util.EmailValidator;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.expression.ELUtil;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -59,6 +62,7 @@ public class UserProfile extends User {
 	private Integer genderId;
 	private String gender;
 
+	private String fullAddress;
 	private String streetAndNumber;
 	private String postalCode;
 	private String city;
@@ -74,8 +78,32 @@ public class UserProfile extends User {
 
 	private Filter filter;
 
+	private Boolean selected;
+
 	public UserProfile() {
 		super();
+	}
+
+	public UserProfile(com.idega.user.data.bean.User user) {
+		this();
+
+		if (user == null) {
+			return;
+		}
+
+		id = user.getId();
+		personalId = user.getPersonalID();
+		email = user.getEmailAddress();
+		List<Phone> phones = user.getPhones();
+		if (!ListUtil.isEmpty(phones)) {
+			phone = phones.iterator().next().getNumber();
+		}
+		setName(user.getName());
+		uuid = user.getUniqueId();
+		LoginTable loginTable = LoginDBHandler.getUserLogin(user.getId());
+		if (loginTable != null) {
+			this.username = loginTable.getUserLogin();
+		}
 	}
 
 	public UserProfile(com.idega.user.data.User user) {
@@ -106,6 +134,69 @@ public class UserProfile extends User {
 		LoginTable loginTable = LoginDBHandler.getUserLogin(id);
 		if (loginTable != null) {
 			this.username = loginTable.getUserLogin();
+		}
+
+		UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
+		UserDataBean userDataBean = userApplicationEngine.getUserInfo(user);
+		StringBuilder sb = new StringBuilder();
+
+		String line = userDataBean.getStreetNameAndNumber();
+		if (!StringUtil.isEmpty(line)) {
+			sb.append(line);
+		}
+
+		line = userDataBean.getProvince();
+		if (!StringUtil.isEmpty(line)) {
+			if (sb.length() > 0) {
+				sb.append(CoreConstants.COMMA)
+				.append(CoreConstants.SPACE);
+			}
+
+			sb.append(line);
+		}
+
+		line = userDataBean.getCity();
+		if (!StringUtil.isEmpty(line)) {
+			if (sb.length() > 0) {
+				sb.append(CoreConstants.COMMA)
+				.append(CoreConstants.SPACE);
+			}
+
+			sb.append(line);
+		}
+
+		line = userDataBean.getCommune();
+		if (!StringUtil.isEmpty(line)) {
+			if (sb.length() > 0) {
+				sb.append(CoreConstants.COMMA)
+				.append(CoreConstants.SPACE);
+			}
+
+			sb.append(line);
+		}
+
+		line = userDataBean.getCountryName();
+		if (!StringUtil.isEmpty(line)) {
+			if (sb.length() > 0) {
+				sb.append(CoreConstants.COMMA)
+				.append(CoreConstants.SPACE);
+			}
+
+			sb.append(line);
+		}
+
+		line = userDataBean.getPostalBox();
+		if (!StringUtil.isEmpty(line)) {
+			if (sb.length() > 0) {
+				sb.append(CoreConstants.COMMA)
+				.append(CoreConstants.SPACE);
+			}
+
+			sb.append(line);
+		}
+
+		if (!StringUtil.isEmpty(sb.toString())) {
+			this.fullAddress = sb.toString();
 		}
 	}
 
@@ -479,6 +570,22 @@ public class UserProfile extends User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getFullAddress() {
+		return fullAddress;
+	}
+
+	public void setFullAddress(String fullAddress) {
+		this.fullAddress = fullAddress;
+	}
+
+	public Boolean getSelected() {
+		return selected;
+	}
+
+	public void setSelected(Boolean selected) {
+		this.selected = selected;
 	}
 
 	@Override
