@@ -166,11 +166,6 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			return null;
 		}
 
-		User user = SecurityUtil.getInstance().getAuthorizedUser();
-		if (user == null) {
-			return null;
-		}
-
 		List<LanguageData> availableLanguages = new ArrayList<LanguageData>();
 
 		for (ICLocale icLocale : locales) {
@@ -266,18 +261,18 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			localizations = new HashMap<String, LanguageData>();
 			return localizations;
 		}
-		
+
 		if (localizations != null) {
 			List<String> currentLanguages = new ArrayList<String>();
 			for (ICLocale icLocale : icLocales) {
 				currentLanguages.add(icLocale.toString());
 			}
-			
+
 			List<String> loadedLanguages = new ArrayList<String>();
 			for (Map.Entry<String, LanguageData> entry : localizations.entrySet()) {
 				loadedLanguages.add(entry.getKey());
 			}
-			
+
 			if (currentLanguages.size() == loadedLanguages.size()
 					&& currentLanguages.containsAll(loadedLanguages)
 					&& loadedLanguages.containsAll(currentLanguages)) {
@@ -288,7 +283,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 		Map<String, LanguageData> localizations = new HashMap<String, LanguageData>();
 		String bundleIdentifiersProp = getApplicationProperty(PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID, PortalConstants.IW_BUNDLE_IDENTIFIER);
 		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp.split(CoreConstants.COMMA));
-		
+
 		for (ICLocale icLocale: icLocales) {
 			LanguageData data = getLocalizedStrings(
 					LocaleUtil.getLocale(icLocale.toString()),
