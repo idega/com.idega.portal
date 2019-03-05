@@ -55,6 +55,9 @@ public class SecurityUtil {
 	private static Set<String> ALL_ROLES = new HashSet<>();
 
 	@Autowired
+	private List<Gateway> beans;
+	
+	@Autowired
 	private OAuth2Service oauthService;
 
 	private SecurityUtil() {}
@@ -64,6 +67,14 @@ public class SecurityUtil {
 			ELUtil.getInstance().autowire(this);
 		}
 		return oauthService;
+	}
+
+	private List<Gateway> getGateways() {
+		if (this.beans == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+
+		return this.beans;
 	}
 
 	public static final SecurityUtil getInstance() {
@@ -99,11 +110,11 @@ public class SecurityUtil {
 	}
 
 	public User getAuthorizedUser() {
-		Map<String, Gateway> gateways = WebApplicationContextUtils.getWebApplicationContext(IWMainApplication.getDefaultIWMainApplication().getServletContext()).getBeansOfType(Gateway.class);
+		List<Gateway> gateways = getGateways();
 		String methodName = getCurrentMethodName(gateways);
 		String uri = getURI(methodName, gateways);
 		if (StringUtil.isEmpty(uri)) {
-			if (!StringUtil.isEmpty(methodName) && !MapUtil.isEmpty(gateways)) {
+			if (!StringUtil.isEmpty(methodName) && !ListUtil.isEmpty(gateways)) {
 				LOGGER.warning("Did not find URI for " + methodName + " in " + gateways + ". WS: " + getRequestURI());
 			}
 			return null;
@@ -112,60 +123,58 @@ public class SecurityUtil {
 		return getAuthorizedUser(uri);
 	}
 
-	private String getCurrentMethodName(Map<String, Gateway> gateways) {
-		try {
-			if (MapUtil.isEmpty(gateways)) {
-				LOGGER.warning("There are no gateways with type " + Gateway.class.getName());
-				return null;
+	private String getCurrentMethodName(List<Gateway> gateways) {
+		if (ListUtil.isEmpty(gateways)) {
+			LOGGER.warning("There are no gateways with type " + Gateway.class.getName());
+			return null;
+		}
+
+		final StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+		if (ArrayUtil.isEmpty(stElements)) {
+			LOGGER.warning("Stack trace is not available");
+			return null;
+		}
+
+		for (Gateway gateway: gateways) {
+			if (gateway == null) {
+				continue;
 			}
 
-			final StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
-			if (ArrayUtil.isEmpty(stElements)) {
-				LOGGER.warning("Stack trace is not available");
-				return null;
-			}
-
-			for (Gateway gateway: gateways.values()) {
-				if (gateway == null) {
+			String gatewayClassName = gateway.getClass().getName();
+			for (StackTraceElement ste: stElements) {
+				if (ste == null) {
 					continue;
 				}
 
-				String gatewayClassName = gateway.getClass().getName();
-				for (StackTraceElement ste: stElements) {
-					if (ste == null) {
-						continue;
-					}
+				String className = ste.getClassName();
+				if (StringUtil.isEmpty(className)) {
+					continue;
+				}
 
-					String className = ste.getClassName();
-					if (StringUtil.isEmpty(className)) {
-						continue;
-					}
-
-					if (gatewayClassName.equals(className)) {
-						return ste.getMethodName();
-					}
+				if (gatewayClassName.equals(className)) {
+					return ste.getMethodName();
 				}
 			}
-		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, "Error getting current method's name for " + gateways, e);
 		}
+
 		return null;
 	}
 
-	private String getURI(String methodName, Map<String, Gateway> gateways) {
+	private String getURI(String methodName, List<Gateway> gateways) {
 		if (StringUtil.isEmpty(methodName)) {
 			return null;
 		}
 
-		if (MapUtil.isEmpty(gateways)) {
+		if (ListUtil.isEmpty(gateways)) {
 			LOGGER.warning("There are no gateways with type " + Gateway.class.getName());
 			return null;
 		}
 
 		String uri = null;
-		for (Iterator<Gateway> gatewaysIter = gateways.values().iterator(); (StringUtil.isEmpty(uri) && gatewaysIter.hasNext());) {
+		for (Iterator<Gateway> gatewaysIter = gateways.iterator(); (StringUtil.isEmpty(uri) && gatewaysIter.hasNext());) {
 			uri = getURI(methodName, gatewaysIter.next());
 		}
+
 		return uri;
 	}
 
@@ -229,14 +238,10 @@ public class SecurityUtil {
 		User user = null;
 		try {
 			user = getOAuth2Service().getAuthenticatedUser();
-		} catch (Exception e) {}
-		if (user == null) {
-			IWContext iwc = CoreUtil.getIWContext();
-			user = iwc == null ? null : iwc.isLoggedOn() ? iwc.getLoggedInUser() : null;
-			if (user != null) {
-				LOGGER.info("User was unknown from OAuth, but known in IWContext: " + user);
-			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Failed to get authinticated user, cause of:", e);
 		}
+
 		return user;
 	}
 
