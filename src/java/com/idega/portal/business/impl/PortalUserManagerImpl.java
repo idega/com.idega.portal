@@ -70,11 +70,11 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 					iwc.getRequest(),
 					RequestUtil.getServerURL(iwc.getRequest()),
 					userName,
-					userLogin.getUserPassword(),
 					LoginType.AUTHENTICATION_GATEWAY,
 					(Integer) userLogin.getPrimaryKey(),
 					type
 			);
+			
 			OAuthToken token = oauth2Service.getToken(clientId, credentials);
 			if (token == null) {
 				getLogger().warning("Unable to get OAuth token for user name: '" + userName + "', UUID: " + uuid);
