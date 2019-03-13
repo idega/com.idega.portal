@@ -21,7 +21,7 @@ public class PortalSettings implements Serializable {
 
 	private static final long serialVersionUID = -2750061914031027789L;
 
-	private String name, firstName, middleName, lastName, logo, locale, favicon, mainPortalPage;
+	private String name, firstName, middleName, lastName, logo, locale, favicon, mainPortalPage, sessionId;
 
 	private List<String> cssFiles;
 
@@ -49,7 +49,7 @@ public class PortalSettings implements Serializable {
 
 	private Location location;
 
-	Boolean useLDAP = Boolean.FALSE;
+	private Boolean useLDAP = Boolean.FALSE;
 
 	public String getName() {
 		return name;
@@ -295,6 +295,12 @@ public class PortalSettings implements Serializable {
 		this.useLDAP = useLDAP;
 	}
 
+	public String getSessionId() {
+		return sessionId;
+	}
 
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
 
 }

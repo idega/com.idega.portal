@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import com.idega.portal.model.UserAccount;
 import com.idega.portal.security.SecurityUtil;
 import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
+import com.idega.servlet.filter.RequestResponseProvider;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
@@ -146,6 +148,23 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				if (timeFormatter instanceof SimpleDateFormat) {
 					String timePattern = ((SimpleDateFormat) timeFormatter).toPattern();
 					settings.setTimePattern(timePattern);
+				}
+			}
+
+			RequestResponseProvider rrProvider = null;
+			try {
+				rrProvider = ELUtil.getInstance().getBean(RequestResponseProvider.class);
+			} catch (Exception e) {}
+			if (rrProvider != null) {
+				HttpServletRequest request = rrProvider.getRequest();
+				if (request != null) {
+					HttpSession session = null;
+					try {
+						session = request.getSession();
+					} catch (Exception e) {}
+					if (session != null) {
+						settings.setSessionId(session.getId());
+					}
 				}
 			}
 		} catch (Exception e) {
