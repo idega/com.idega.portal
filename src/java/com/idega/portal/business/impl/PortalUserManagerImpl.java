@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.idega.block.login.bean.OAuthToken;
 import com.idega.block.login.business.OAuth2Service;
 import com.idega.block.oauth2.server.authentication.bean.AccessToken;
+import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.accesscontrol.data.LoginTableHome;
@@ -86,7 +87,14 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 			if (StringUtil.isEmpty(type)) {
 				getLogger().warning("Unknown login type for UUID " + uuid);
 			} else {
-				iwc.setSessionAttribute(LoggedInUserCredentials.LOGIN_TYPE, type.concat(CoreConstants.AT).concat(LoginType.AUTHENTICATION_GATEWAY.toString()));
+				type = type.concat(CoreConstants.AT).concat(LoginType.AUTHENTICATION_GATEWAY.toString());
+				iwc.setSessionAttribute(LoggedInUserCredentials.LOGIN_TYPE, type);
+			}
+
+			if (getSettings().getBoolean("portal.publish_event_for_token", false)) {
+				User user = getUser(userLogin.getUser());
+				LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(iwc);
+				loginBusiness.doPublishLoggedInEvent(iwc.getRequest(), user, userName, type);
 			}
 
 			return new AccessToken(token, userName);
