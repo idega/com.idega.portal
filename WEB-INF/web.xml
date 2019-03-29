@@ -15,23 +15,7 @@
 		<servlet-class>com.idega.portal.servlet.PortalServlet</servlet-class>
 		<init-param>
 			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>com.idega.portal.gateway</param-value>
-		</init-param>
-		<init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>com.idega.portal.service</param-value>
-		</init-param>
-		<init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>com.idega.portal.model</param-value>
-		</init-param>
-		<init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>com.idega.block.news.model</param-value>
-		</init-param>
-		<init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>com.idega.cases.management.data</param-value>
+			<param-value>com.idega.portal.gateway;com.idega.portal.service;com.idega.portal.model;com.idega.block.news.model;com.idega.cases.management.data;com.idega.portal.exception</param-value>
 		</init-param>
 		<init-param>
 			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
