@@ -42,6 +42,8 @@ public class PortalMenu implements Serializable {
 
 	private boolean title, divider;
 
+	private boolean isAccessibleIfGroup = false;
+
 	private List<PortalMenu> children;
 
 	private Badge badge;
@@ -152,6 +154,14 @@ public class PortalMenu implements Serializable {
 
 	public void setOpenInNewWindow(Boolean openInNewWindow) {
 		this.openInNewWindow = openInNewWindow;
+	}
+
+	public boolean isAccessibleIfGroup() {
+		return isAccessibleIfGroup;
+	}
+
+	public void setAccessibleIfGroup(boolean isAccessibleIfGroup) {
+		this.isAccessibleIfGroup = isAccessibleIfGroup;
 	}
 
 	@Override
