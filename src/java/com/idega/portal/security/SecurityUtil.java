@@ -99,21 +99,20 @@ public class SecurityUtil {
 	}
 
 	public User getAuthorizedUser() {
+		String uri = null;
 		if (getSettings().getBoolean("oauth.check_roles_for_ws", true)) {
 			Map<String, Gateway> gateways = WebApplicationContextUtils.getWebApplicationContext(IWMainApplication.getDefaultIWMainApplication().getServletContext()).getBeansOfType(Gateway.class);
 			String methodName = getCurrentMethodName(gateways);
-			String uri = getURI(methodName, gateways);
+			uri = getURI(methodName, gateways);
 			if (StringUtil.isEmpty(uri)) {
 				if (!StringUtil.isEmpty(methodName) && !MapUtil.isEmpty(gateways)) {
 					LOGGER.warning("Did not find URI for " + methodName + " in " + gateways + ". WS: " + getRequestURI());
 				}
 				return null;
 			}
-		} else {
-			return getAuthorizedUser(null);
 		}
 
-		return null;
+		return getAuthorizedUser(uri);
 	}
 
 	private String getCurrentMethodName(Map<String, Gateway> gateways) {
@@ -249,7 +248,9 @@ public class SecurityUtil {
 		try {
 			user = getCurrentUser();
 			if (user == null) {
-				LOGGER.warning("Not authorized for WS '" + uri + "' because not logged in");
+				if (!StringUtil.isEmpty(uri)) {
+					LOGGER.warning("Not authorized for WS '" + uri + "' because not logged in");
+				}
 				return null;
 			}
 
