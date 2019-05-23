@@ -25,7 +25,6 @@ import com.idega.portal.model.Filter;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
-import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
@@ -68,7 +67,7 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 	@Override
 	@GET
 	@Path(MENUS)
-	public List<PortalMenu> getPortalMenus() {
+	public String getPortalMenus() {
 		return portalService.getPortalMenus();
 	}
 

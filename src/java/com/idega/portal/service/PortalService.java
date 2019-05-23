@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
-import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
@@ -17,7 +16,7 @@ public interface PortalService {
 
 	public PortalSettings getDashboardSettings();
 
-	public List<PortalMenu> getPortalMenus();
+	public String getPortalMenus();
 
 	public UserAccount doCreateAccount(UserAccount account);
 

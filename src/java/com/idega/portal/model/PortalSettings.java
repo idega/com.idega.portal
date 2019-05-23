@@ -1,5 +1,6 @@
 package com.idega.portal.model;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,18 +9,25 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.idega.block.oauth2.server.authentication.bean.User;
 import com.idega.block.sso.model.AuthorizationSettings;
 import com.idega.core.location.data.bean.Location;
 import com.idega.util.StringUtil;
+import com.idega.util.datastructures.map.MapUtil;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.PROPERTY)
 public class PortalSettings implements Serializable {
 
 	private static final long serialVersionUID = -2750061914031027789L;
+
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	private String name, firstName, middleName, lastName, logo, locale, favicon, mainPortalPage, sessionId;
 
@@ -31,7 +39,10 @@ public class PortalSettings implements Serializable {
 
 	private User user;
 
-	private List<PortalMenu> menus;
+	@XmlTransient
+	private Map<String, List<PortalMenu>> menus;
+
+	private String menuValue;
 
 	private List<AuthorizationSettings> authorizationSettings;
 
@@ -50,6 +61,8 @@ public class PortalSettings implements Serializable {
 	private Location location;
 
 	private Boolean useLDAP = Boolean.FALSE;
+
+	private List<String> systemRoles = new ArrayList<String>();
 
 	public String getName() {
 		return name;
@@ -137,14 +150,6 @@ public class PortalSettings implements Serializable {
 
 	public void setUser(User user) {
 		this.user = user;
-	}
-
-	public List<PortalMenu> getMenus() {
-		return menus;
-	}
-
-	public void setMenus(List<PortalMenu> menus) {
-		this.menus = menus;
 	}
 
 	public String getFavicon() {
@@ -302,5 +307,34 @@ public class PortalSettings implements Serializable {
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
 	}
+	
+	@XmlElement
+	public List<String> getSystemRoles() {
+		return systemRoles;
+	}
 
+	@XmlTransient
+	public Map<String, List<PortalMenu>> getMenus() {
+		return menus;
+	}
+
+	public void setMenus(Map<String, List<PortalMenu>> menus) {
+		this.menus = menus;
+
+		if (!MapUtil.isEmpty(menus)) {
+			try {
+				setMenuValue(MAPPER.writeValueAsString(menus));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public String getMenuValue() {
+		return menuValue;
+	}
+
+	public void setMenuValue(String menuValue) {
+		this.menuValue = menuValue;
+	}
 }

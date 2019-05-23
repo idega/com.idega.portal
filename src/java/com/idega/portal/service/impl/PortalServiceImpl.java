@@ -3,8 +3,10 @@ package com.idega.portal.service.impl;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response.Status;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -56,6 +59,8 @@ import com.idega.util.text.Name;
 @Qualifier(PortalConstants.QUALIFIER_PORTAL)
 public class PortalServiceImpl extends DefaultSpringBean implements PortalService {
 
+	private static final ObjectMapper MAPPER = new ObjectMapper();
+	
 	@Autowired
 	private WebUtil webUtil;
 
@@ -188,25 +193,20 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public List<PortalMenu> getPortalMenus() {
+	public String getPortalMenus() {
 		User user = null;
 		try {
 			user = SecurityUtil.getInstance().getAuthorizedUser();
-			return getMenus(user);
+			return MAPPER.writeValueAsString(getMenus(user));
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting menu for " + user, e);
 		}
+
 		return null;
 	}
 
-	private List<PortalMenu> getMenus(User user) {
-		List<PortalMenu> menus = new ArrayList<>();
-		if (user == null) {
-			getLogger().warning("User is unknown");
-			return menus;
-		}
-
-		return menus;
+	private Map<String, List<PortalMenu>> getMenus(User user) {
+		return Collections.emptyMap();
 	}
 
 	@Override
