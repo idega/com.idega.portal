@@ -33,8 +33,6 @@ public class PortalSettings implements Serializable {
 
 	private List<PortalMenu> menus;
 
-	private String menuValue;
-
 	private List<AuthorizationSettings> authorizationSettings;
 
 	private FooterData footerData;
