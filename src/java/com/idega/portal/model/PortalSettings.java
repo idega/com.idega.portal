@@ -22,12 +22,10 @@ import com.idega.util.StringUtil;
 import com.idega.util.datastructures.map.MapUtil;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.PROPERTY)
+@XmlAccessorType(XmlAccessType.FIELD)
 public class PortalSettings implements Serializable {
 
 	private static final long serialVersionUID = -2750061914031027789L;
-
-	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	private String name, firstName, middleName, lastName, logo, locale, favicon, mainPortalPage, sessionId;
 
@@ -39,8 +37,7 @@ public class PortalSettings implements Serializable {
 
 	private User user;
 
-	@XmlTransient
-	private Map<String, List<PortalMenu>> menus;
+	private List<PortalMenu> menus;
 
 	private String menuValue;
 
@@ -150,6 +147,14 @@ public class PortalSettings implements Serializable {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public List<PortalMenu> getMenus() {
+		return menus;
+	}
+
+	public void setMenus(List<PortalMenu> menus) {
+		this.menus = menus;
 	}
 
 	public String getFavicon() {
@@ -313,28 +318,4 @@ public class PortalSettings implements Serializable {
 		return systemRoles;
 	}
 
-	@XmlTransient
-	public Map<String, List<PortalMenu>> getMenus() {
-		return menus;
-	}
-
-	public void setMenus(Map<String, List<PortalMenu>> menus) {
-		this.menus = menus;
-
-		if (!MapUtil.isEmpty(menus)) {
-			try {
-				setMenuValue(MAPPER.writeValueAsString(menus));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public String getMenuValue() {
-		return menuValue;
-	}
-
-	public void setMenuValue(String menuValue) {
-		this.menuValue = menuValue;
-	}
 }

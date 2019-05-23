@@ -22,6 +22,7 @@ import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
@@ -55,7 +56,7 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@Override
 	@GET
 	@Path(PortalGateway.MENUS)
-	public String getPortalMenus() {
+	public List<PortalMenu> getPortalMenus() {
 		return null;	//	User must be authorized for this WS
 	}
 

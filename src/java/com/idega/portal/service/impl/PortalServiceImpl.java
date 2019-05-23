@@ -59,8 +59,6 @@ import com.idega.util.text.Name;
 @Qualifier(PortalConstants.QUALIFIER_PORTAL)
 public class PortalServiceImpl extends DefaultSpringBean implements PortalService {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
-	
 	@Autowired
 	private WebUtil webUtil;
 
@@ -193,20 +191,25 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public String getPortalMenus() {
+	public List<PortalMenu> getPortalMenus() {
 		User user = null;
 		try {
 			user = SecurityUtil.getInstance().getAuthorizedUser();
-			return MAPPER.writeValueAsString(getMenus(user));
+			return getMenus(user);
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting menu for " + user, e);
 		}
-
 		return null;
 	}
 
-	private Map<String, List<PortalMenu>> getMenus(User user) {
-		return Collections.emptyMap();
+	private List<PortalMenu> getMenus(User user) {
+		List<PortalMenu> menus = new ArrayList<>();
+		if (user == null) {
+			getLogger().warning("User is unknown");
+			return menus;
+		}
+
+		return menus;
 	}
 
 	@Override
