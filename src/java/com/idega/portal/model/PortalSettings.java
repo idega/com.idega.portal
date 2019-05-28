@@ -1,6 +1,5 @@
 package com.idega.portal.model;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,17 +8,12 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.idega.block.oauth2.server.authentication.bean.User;
 import com.idega.block.sso.model.AuthorizationSettings;
 import com.idega.core.location.data.bean.Location;
 import com.idega.util.StringUtil;
-import com.idega.util.datastructures.map.MapUtil;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -38,8 +32,6 @@ public class PortalSettings implements Serializable {
 	private User user;
 
 	private List<PortalMenu> menus;
-
-	private String menuValue;
 
 	private List<AuthorizationSettings> authorizationSettings;
 
@@ -313,7 +305,6 @@ public class PortalSettings implements Serializable {
 		this.sessionId = sessionId;
 	}
 	
-	@XmlElement
 	public List<String> getSystemRoles() {
 		return systemRoles;
 	}
