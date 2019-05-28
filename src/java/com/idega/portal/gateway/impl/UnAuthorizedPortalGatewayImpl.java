@@ -2,6 +2,7 @@ package com.idega.portal.gateway.impl;
 
 import java.util.List;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -42,63 +43,119 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@Override
 	@GET
 	@Path(PortalGateway.SETTINGS)
-	public PortalSettings getDashboardSettings() {
-		return portalService.getDashboardSettings();
+	public PortalSettings getDashboardSettings(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.getDashboardSettings(
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
 	@POST
 	@Path(PortalGateway.ACCOUNT)
-	public UserAccount doCreateAccount(UserAccount account) {
-		return portalService.doCreateAccount(account);
+	public UserAccount doCreateAccount(
+			UserAccount account,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.doCreateAccount(
+				account,
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.MENUS)
-	public List<PortalMenu> getPortalMenus() {
+	public List<PortalMenu> getPortalMenus(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;	//	User must be authorized for this WS
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.LANGUAGE)
-	public String setLanguage(@QueryParam("language") String language) {
-		return portalService.setLanguage(language);
+	public String setLanguage(
+			@QueryParam("language") String language,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.setLanguage(
+				language,
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
 	@POST
 	@Path(PortalGateway.LANGUAGE + PortalGateway.LOCALIZE)
-	public Result setLocalization(Localization localization) {
+	public Result setLocalization(
+			Localization localization,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;
 	}
 
 	@Override
 	@POST
 	@Path(PortalGateway.LANGUAGE + PortalGateway.LOCALIZE + PortalGateway.STRINGS)
-	public Result setLocalizations(Localizations localizations) {
+	public Result setLocalizations(
+			Localizations localizations,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.LANGUAGE + PortalGateway.AVAILABLE)
-	public List<LanguageData> getAvailableLanguages() {
+	public List<LanguageData> getAvailableLanguages(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.LANGUAGE + PortalGateway.ADD)
-	public Result addLanguage(@QueryParam("locale") String locale) {
+	public Result addLanguage(
+			@QueryParam("locale") String locale,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.LANGUAGE + PortalGateway.REMOVE)
-	public Result removeLanguage(@QueryParam("locale") String locale) {
+	public Result removeLanguage(
+			@QueryParam("locale") String locale,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;
 	}
 
@@ -127,21 +184,43 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@Override
 	@GET
 	@Path(PortalGateway.LOGOUT)
-	public String logout() {
-		return portalService.logout();
+	public String logout(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.logout(
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.REMIND_PASSWORD)
-	public String doRemindPassword(@QueryParam("ssn") String ssn) {
-		return portalService.doRemindPassword(ssn);
+	public String doRemindPassword(
+			@QueryParam("ssn") String ssn,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.doRemindPassword(
+				ssn,
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
 	@GET
 	@Path(PortalGateway.PING)
-	public Result doPing() {
+	public Result doPing(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
 		return null;
 	}
 

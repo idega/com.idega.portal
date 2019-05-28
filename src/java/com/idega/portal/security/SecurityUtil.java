@@ -98,7 +98,7 @@ public class SecurityUtil {
 		ALL_ROLES.addAll(roles);
 	}
 
-	public User getAuthorizedUser() {
+	public User getAuthorizedUser(IWContext iwc) {
 		String uri = null;
 		if (getSettings().getBoolean("oauth.check_roles_for_ws", true)) {
 			Map<String, Gateway> gateways = WebApplicationContextUtils.getWebApplicationContext(IWMainApplication.getDefaultIWMainApplication().getServletContext()).getBeansOfType(Gateway.class);
@@ -112,7 +112,7 @@ public class SecurityUtil {
 			}
 		}
 
-		return getAuthorizedUser(uri);
+		return getAuthorizedUser(uri, iwc);
 	}
 
 	private String getCurrentMethodName(Map<String, Gateway> gateways) {
@@ -228,25 +228,26 @@ public class SecurityUtil {
 		return request == null ? null : request.getRequestURI();
 	}
 
-	public User getCurrentUser() {
+	public User getCurrentUser(IWContext iwc) {
 		User user = null;
 		try {
-			user = getOAuth2Service().getAuthenticatedUser();
+			user = iwc == null ? null : iwc.isLoggedOn() ? iwc.getLoggedInUser() : null;
 		} catch (Exception e) {}
 		if (user == null) {
-			IWContext iwc = CoreUtil.getIWContext();
-			user = iwc == null ? null : iwc.isLoggedOn() ? iwc.getLoggedInUser() : null;
+			try {
+				user = getOAuth2Service().getAuthenticatedUser(iwc);
+			} catch (Exception e) {}
 			if (user != null) {
-				LOGGER.info("User was unknown from OAuth, but known in IWContext: " + user);
+				LOGGER.info("User was unknown from IWContext, but known in OAuth: " + user);
 			}
 		}
 		return user;
 	}
 
-	public User getAuthorizedUser(String uri) {
+	public User getAuthorizedUser(String uri, IWContext iwc) {
 		User user = null;
 		try {
-			user = getCurrentUser();
+			user = getCurrentUser(iwc);
 			if (user == null) {
 				if (!StringUtil.isEmpty(uri)) {
 					LOGGER.warning("Not authorized for WS '" + uri + "' because not logged in");
@@ -258,7 +259,6 @@ public class SecurityUtil {
 				return user;
 			}
 
-			IWContext iwc = CoreUtil.getIWContext();
 			IWMainApplication iwma = iwc == null ? IWMainApplication.getDefaultIWMainApplication() : iwc.getIWMainApplication();
 
 			Property<String, List<String>> roles = AccessArtifact.getRoles(iwma.getSettings(), uri);
@@ -273,7 +273,7 @@ public class SecurityUtil {
 				return cachedAccess.get(key) ? user : null;
 			}
 
-			if (hasAnyRole(user, roles.getValue())) {
+			if (hasAnyRole(iwc, user, roles.getValue())) {
 				cachedAccess.put(key, Boolean.TRUE);
 				return user;
 			}
@@ -284,16 +284,15 @@ public class SecurityUtil {
 		return null;
 	}
 
-	public boolean hasRole(User user, String role) {
-		return StringUtil.isEmpty(role) ? false : hasAnyRole(user, Arrays.asList(role));
+	public boolean hasRole(IWContext iwc, User user, String role) {
+		return StringUtil.isEmpty(role) ? false : hasAnyRole(iwc, user, Arrays.asList(role));
 	}
 
-	public boolean hasAnyRole(User user, List<String> roles) {
+	public boolean hasAnyRole(IWContext iwc, User user, List<String> roles) {
 		if (user == null || ListUtil.isEmpty(roles)) {
 			return false;
 		}
 
-		IWContext iwc = CoreUtil.getIWContext();
 		if (iwc == null) {
 			LOGGER.warning(IWContext.class.getName() + " is unavailable, unable to check is user " + user + " has role(s) " + roles);
 			return false;
@@ -326,12 +325,11 @@ public class SecurityUtil {
 		return false;
 	}
 
-	public List<String> getAllRoles(User user){
+	public List<String> getAllRoles(IWContext iwc, User user) {
 		if (user == null) {
 			return null;
 		}
 
-		IWContext iwc = CoreUtil.getIWContext();
 		if (iwc == null) {
 			LOGGER.warning(IWContext.class.getName() + " is unavailable, unable to get user " + user + " role(s)");
 			return null;

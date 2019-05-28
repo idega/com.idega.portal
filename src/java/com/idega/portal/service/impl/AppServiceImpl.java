@@ -2,6 +2,9 @@ package com.idega.portal.service.impl;
 
 import java.util.logging.Level;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +37,17 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 	private PortalService portalService;
 
 	@Override
-	public PortalSettings getDashboardSettings() {
-		return portalService.getDashboardSettings();
+	public PortalSettings getDashboardSettings(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return portalService.getDashboardSettings(
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
-	public String logout(){
-		return portalService.logout();
+	public String logout(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return portalService.logout(request, response, context);
 	}
 
 	@Override

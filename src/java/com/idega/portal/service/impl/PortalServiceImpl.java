@@ -1,41 +1,29 @@
 package com.idega.portal.service.impl;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.logging.Level;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response.Status;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.oauth2.provider.ClientDetails;
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.stereotype.Service;
 
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
-import com.idega.core.localisation.business.ICLocaleBusiness;
-import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
-import com.idega.portal.model.FooterData;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
-import com.idega.portal.model.OAuthInfo;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
@@ -43,15 +31,13 @@ import com.idega.portal.model.UserAccount;
 import com.idega.portal.security.SecurityUtil;
 import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
-import com.idega.servlet.filter.RequestResponseProvider;
+import com.idega.portal.service.PortalSettingsResolver;
+import com.idega.presentation.IWContext;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
-import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
-import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
-import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Name;
 
 @Service
@@ -62,128 +48,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Autowired
 	private WebUtil webUtil;
 
-	@Autowired(required=false)
-	@Qualifier("clientDetails")
-	private JdbcClientDetailsService clientDetailsService;
-
 	@Autowired
 	private LocalizationService localizationService;
 
-	private JdbcClientDetailsService getClientDetailsService() {
-		if (this.clientDetailsService == null) {
-			ELUtil.getInstance().autowire(this);
-		}
-
-		return clientDetailsService;
-	}
-
 	@Override
-	public PortalSettings getDashboardSettings() {
-		PortalSettings settings = new PortalSettings();
-		try {
-			IWMainApplicationSettings appSettings = getSettings();
-			String name = appSettings.getProperty("portal.name");
-			settings.setName(name);
-
-			Locale localeToUse = null;
-			Locale defaultLocale = getApplication().getDefaultLocale();
-			Locale currentLocale = getCurrentLocale();
-			if (defaultLocale != null
-					&& currentLocale != null
-					&& !defaultLocale.toString().equals(
-							currentLocale.toString())
-					&& ICLocaleBusiness.isLocaleInUse(currentLocale.toString())) {
-				localeToUse = currentLocale;
-			}
-			localeToUse = localeToUse == null ? defaultLocale : localeToUse;
-			localeToUse = localeToUse == null ? Locale.ENGLISH : localeToUse;
-			settings.setLocale(localeToUse.toString());
-			settings.setLocalizations(localizationService.getLocalizations());
-
-			settings.addCSSFile("/style/style.css");
-			settings.setLogo("/images/main-logo.png");
-			settings.setFavicon("/images/favicon.ico");
-
-			settings.setOauthInfo(getOAuthSettings());
-
-			settings.setAuthorizationSettings(SecurityUtil.getInstance().getAllAuthorizationSettings());
-
-			settings.setMainPortalPage(appSettings.getProperty("portal.main_portal_page"));
-
-			User user = null;
-			try {
-				user = SecurityUtil.getInstance().getAuthorizedUser();
-			} catch (Exception e) {}
-			if (user == null) {
-				user = getCurrentUser();
-			}
-			if (user != null) {
-				settings.setLoggedIn(Boolean.TRUE);
-				settings.setUser(new com.idega.block.oauth2.server.authentication.bean.User(user));
-
-				settings.setMenus(getMenus(user));
-
-				settings.setRoles(SecurityUtil.getInstance().getAllRoles(user));
-
-				Name nameUtil = new Name(user.getName());
-				settings.setFirstName(nameUtil.getFirstName());
-				settings.setMiddleName(nameUtil.getMiddleName());
-				settings.setLastName(nameUtil.getLastName());
-			}
-
-			FooterData footerData = getFooterData();
-			if (footerData != null) {
-				settings.setFooterData(footerData);
-			}
-
-			settings.setMainPortalLink(appSettings.getProperty("portal.main_portal_url"));
-			settings.setMainPortalLabel(appSettings.getProperty("portal.main_portal_label"));
-
-			Locale locale = getCurrentLocale();
-			if (locale != null) {
-				DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-				if (dateFormatter instanceof SimpleDateFormat) {
-					String datePattern = ((SimpleDateFormat) dateFormatter).toPattern();
-					settings.setDatePattern(datePattern);
-				}
-
-				DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
-				if (timeFormatter instanceof SimpleDateFormat) {
-					String timePattern = ((SimpleDateFormat) timeFormatter).toPattern();
-					settings.setTimePattern(timePattern);
-				}
-			}
-
-			RequestResponseProvider rrProvider = null;
-			try {
-				rrProvider = ELUtil.getInstance().getBean(RequestResponseProvider.class);
-			} catch (Exception e) {}
-			if (rrProvider != null) {
-				HttpServletRequest request = rrProvider.getRequest();
-				if (request != null) {
-					HttpSession session = null;
-					try {
-						session = request.getSession();
-					} catch (Exception e) {}
-					if (session != null) {
-						settings.setSessionId(session.getId());
-					}
-				}
-			}
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Error getting settings", e);
-		}
-		return settings;
-	}
-
-	private FooterData getFooterData() {
-		FooterData footerData = new FooterData();
-		footerData.setMunicipality(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_MUNICIPALITY, CoreConstants.EMPTY));
-		footerData.setAddress(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_ADDRESS, CoreConstants.EMPTY));
-		footerData.setPhoneNumber(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_PHONE_NUMBER, CoreConstants.EMPTY));
-		footerData.setFaxNumber(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_FAX_NUMBER, CoreConstants.EMPTY));
-		footerData.setEmailAddress(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_EMAIL_ADDRESS, CoreConstants.EMPTY));
-		return footerData;
+	public PortalSettings getDashboardSettings(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return new PortalSettingsResolver().getDashboardSettings(new IWContext(request, response, context));
 	}
 
 	private UserBusiness getUserBusiness() {
@@ -191,10 +61,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public List<PortalMenu> getPortalMenus() {
+	public List<PortalMenu> getPortalMenus(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		User user = null;
 		try {
-			user = SecurityUtil.getInstance().getAuthorizedUser();
+			user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 			return getMenus(user);
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting menu for " + user, e);
@@ -213,7 +83,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public UserAccount doCreateAccount(UserAccount account) {
+	public UserAccount doCreateAccount(UserAccount account, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
 
 		if (account == null) {
@@ -329,72 +199,47 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public String setLanguage(String language) {
-		return localizationService.setLanguage(language);
-	}
-
-	private List<OAuthInfo> getOAuthSettings() {
-		List<OAuthInfo> info = new ArrayList<>();
-		try {
-			List<ClientDetails> clientsDetails = getClientDetailsService().listClientDetails();
-			if (ListUtil.isEmpty(clientsDetails)) {
-				return info;
-			}
-
-			for (ClientDetails clientDetails: clientsDetails) {
-				info.add(
-						new OAuthInfo(
-								clientDetails.getClientId(),
-								clientDetails.getClientSecret(),
-								StringUtil.getValue(clientDetails.getAuthorizedGrantTypes()),
-								clientDetails.getAccessTokenValiditySeconds(),
-								clientDetails.getRefreshTokenValiditySeconds()
-						)
-				);
-			}
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Error getting OAuth settings", e);
-		}
-		return info;
+	public String setLanguage(String language, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return localizationService.setLanguage(language, request, response, context);
 	}
 
 	@Override
-	public String logout() {
+	public String logout(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		return webUtil.logOut();
 	}
 
 	@Override
-	public String doRemindPassword(String ssn) {
+	public String doRemindPassword(String ssn, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		return "Unimplemented";
 	}
 
 	@Override
-	public Result setLocalization(Localization localization) {
-		return localizationService.setLocalization(localization);
+	public Result setLocalization(Localization localization, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return localizationService.setLocalization(localization, request, response, context);
 	}
 
 	@Override
-	public Result setLocalizations(Localizations localizations) {
-		return localizationService.setLocalizations(localizations);
+	public Result setLocalizations(Localizations localizations, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return localizationService.setLocalizations(localizations, request, response, context);
 	}
 
 	@Override
-	public List<LanguageData> getAvailableLanguages() {
-		return localizationService.getAvailableLanguages();
+	public List<LanguageData> getAvailableLanguages(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return localizationService.getAvailableLanguages(request, response, context);
 	}
 
 	@Override
-	public Result addLanguage(String locale) {
-		return localizationService.addLanguage(locale);
+	public Result addLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return localizationService.addLanguage(locale, request, response, context);
 	}
 
 	@Override
-	public Result removeLanguage(String locale) {
-		return localizationService.removeLanguage(locale);
+	public Result removeLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return localizationService.removeLanguage(locale, request, response, context);
 	}
 
 	@Override
-	public Result doPing() {
+	public Result doPing(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		try {
 			return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 		} catch (Exception e) {}

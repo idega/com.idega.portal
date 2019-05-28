@@ -92,6 +92,9 @@ import java.util.List;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -117,6 +120,7 @@ import com.idega.portal.model.Result;
 import com.idega.portal.model.UserProfile;
 import com.idega.portal.security.SecurityUtil;
 import com.idega.portal.service.UserService;
+import com.idega.presentation.IWContext;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
@@ -140,12 +144,12 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public UserProfile getCitizenProfile(Filter filter) {
+	public UserProfile getCitizenProfile(Filter filter, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		UserProfile profile = new UserProfile();
 		User user = null;
 		try {
 			//Get authorized user
-			user = SecurityUtil.getInstance().getAuthorizedUser();
+			user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 			if (user == null) {
 				return profile;
 			}
@@ -165,7 +169,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 	}
 
 	@Override
-	public Result setProfile(UserProfile profile) {
+	public Result setProfile(UserProfile profile, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
 		Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
 
@@ -175,7 +179,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 		String errors = CoreConstants.EMPTY;
 		try {
-			User user = SecurityUtil.getInstance().getAuthorizedUser();
+			User user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 			if (user == null) {
 				return result;
 			}
@@ -438,7 +442,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 	}
 
 	@Override
-	public Result setProfilePicture(InputStream stream, FormDataContentDisposition info, String personalId) {
+	public Result setProfilePicture(InputStream stream, FormDataContentDisposition info, String personalId, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
 		Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
 
@@ -449,7 +453,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		com.idega.core.user.data.User userIDO = null;
 		boolean success = true;
 		try {
-			User user = SecurityUtil.getInstance().getAuthorizedUser();
+			User user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 			if (user == null) {
 				return result;
 			}

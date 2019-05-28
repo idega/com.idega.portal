@@ -1,11 +1,15 @@
 package com.idega.portal.gateway.impl;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +43,16 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 	@Override
 	@GET
 	@Path(PortalGateway.SETTINGS)
-	public PortalSettings getDashboardSettings() {
-		return appService.getDashboardSettings();
+	public PortalSettings getDashboardSettings(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return appService.getDashboardSettings(
+				request,
+				response,
+				context
+		);
 	}
 
 	@Override
@@ -57,8 +69,12 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 	@Override
 	@GET
 	@Path(PortalGateway.LOGOUT)
-	public String logout() {
-		return appService.logout();
+	public String logout(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return appService.logout(request, response, context);
 	}
 
 	@Override

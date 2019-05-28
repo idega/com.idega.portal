@@ -12,6 +12,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +40,6 @@ import com.idega.presentation.IWContext;
 import com.idega.restful.business.DefaultRestfulService;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
-import com.idega.util.CoreUtil;
 import com.idega.util.ListUtil;
 import com.idega.util.LocaleUtil;
 import com.idega.util.StringHandler;
@@ -67,7 +69,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	}
 
 	@Override
-	public String setLanguage(String language) {
+	public String setLanguage(String language, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		if (StringUtil.isEmpty(language)) {
 			return null;
 		}
@@ -78,7 +80,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 				return null;
 			}
 
-			IWContext iwc = CoreUtil.getIWContext();
+			IWContext iwc = new IWContext(request, response, context);
 			iwc.setCurrentLocale(locale);
 			return language;
 		} catch (Exception e) {
@@ -89,13 +91,13 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	}
 
 	@Override
-	public Result setLocalization(Localization localization) {
+	public Result setLocalization(Localization localization, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		if (localization == null || StringUtil.isEmpty(localization.getLocalizedKey()) || StringUtil.isEmpty(localization.getLocalization()) || StringUtil.isEmpty(localization.getBundleIdentifier())) {
 			return null;
 		}
 
 		try {
-			User user = SecurityUtil.getInstance().getAuthorizedUser();
+			User user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 			if (user == null) {
 				return null;
 			}
@@ -113,7 +115,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	}
 
 	@Override
-	public Result setLocalizations(Localizations localizations) {
+	public Result setLocalizations(Localizations localizations, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		if (localizations == null) {
 			return null;
 		}
@@ -122,23 +124,23 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			return null;
 		}
 
-		User user = SecurityUtil.getInstance().getAuthorizedUser();
+		User user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 		if (user == null) {
 			return null;
 		}
 
 		String bundleIdentifiersProp = getApplicationProperty(
 				PortalConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID,
-				PortalConstants.IW_BUNDLE_IDENTIFIER);
-		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp
-				.split(CoreConstants.COMMA));
+				PortalConstants.IW_BUNDLE_IDENTIFIER
+		);
+		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp.split(CoreConstants.COMMA));
 
 		for (Localization localization : localizations.getLocalizations()) {
 			try {
 				if (StringUtil.isEmpty(localization.getBundleIdentifier())) {
 					String bundle = getLocalizationBundle(localization,
 							bundleIdentifiers);
-					
+
 					if (StringUtil.isEmpty(bundle) && !ListUtil.isEmpty(bundleIdentifiers)) {
 						bundle = bundleIdentifiers.get(0);
 					}
@@ -146,7 +148,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 					localization.setBundleIdentifier(bundle);
 				}
 
-				Result result = setLocalization(localization);
+				Result result = setLocalization(localization, request, response, context);
 				if (result == null) {
 					return null;
 				}
@@ -161,7 +163,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	}
 
 	@Override
-	public List<LanguageData> getAvailableLanguages() {
+	public List<LanguageData> getAvailableLanguages(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		List<ICLocale> locales = ICLocaleBusiness.listOfLocales(false);
 		if (ListUtil.isEmpty(locales)) {
 			return null;
@@ -186,17 +188,16 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	}
 
 	@Override
-	public Result addLanguage(String locale) {
-		return addOrRemoveLanguage(locale, true) ? new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
+	public Result addLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return addOrRemoveLanguage(locale, true, request, response, context) ? new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
 	}
 
 	@Override
-	public Result removeLanguage(String locale) {
-		return addOrRemoveLanguage(locale, false) ? new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
+	public Result removeLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		return addOrRemoveLanguage(locale, false, request, response, context) ? new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString()) : null;
 	}
 
-	private String getLocalizationBundle(Localization localization,
-			List<String> bundleIdentifiers) {
+	private String getLocalizationBundle(Localization localization, List<String> bundleIdentifiers) {
 		if (localization == null || ListUtil.isEmpty(bundleIdentifiers)) {
 			return null;
 		}
@@ -240,17 +241,17 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 				}
 			}
 		}
-		
+
 		return bundle;
 	}
 
-	private boolean addOrRemoveLanguage(String locale, boolean doAdd) {
+	private boolean addOrRemoveLanguage(String locale, boolean doAdd, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		if (StringUtil.isEmpty(locale)) {
 			return false;
 		}
 
 		try {
-			User user = SecurityUtil.getInstance().getAuthorizedUser();
+			User user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
 			if (user == null) {
 				return false;
 			}
@@ -277,7 +278,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	}
 
 	@Override
-	public Map<String, LanguageData> getLocalizations() {
+	public Map<String, LanguageData> getLocalizations(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		List<ICLocale> icLocales = ICLocaleBusiness.listOfLocales(true);
 		if (ListUtil.isEmpty(icLocales)) {
 			localizations = new HashMap<String, LanguageData>();
@@ -410,10 +411,10 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (event instanceof RepositoryStartedEvent) {
-			getLocalizations();
+			getLocalizations(null, null, null);
 		} else if (event instanceof LocalizationChangedEvent) {
 			this.localizations = null;
-			getLocalizations();
+			getLocalizations(null, null, null);
 		}
 	}
 
