@@ -6,6 +6,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.idega.portal.model.Article;
+import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
@@ -43,5 +45,9 @@ public interface PortalService {
 	public Result removeLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result doPing(HttpServletRequest request, HttpServletResponse response, ServletContext context);
+
+	public Article getArticleByURI(String uri, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+
+	public ArticleList getArticlesByCategory(String category, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 }

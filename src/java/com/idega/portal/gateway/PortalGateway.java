@@ -30,6 +30,9 @@ public interface PortalGateway extends PortalService, UserService {
 								MESSAGES = "/messages",
 								UPDATE = "/update",
 								PICTURE = "/picture",
-								REMIND_PASSWORD = "/remindpassword";
+								REMIND_PASSWORD = "/remindpassword",
+
+								ARTICLE = "/article",
+								ARTICLES = "/articles";
 
 }

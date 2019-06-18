@@ -1,6 +1,9 @@
 package com.idega.portal.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -15,12 +18,17 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.idega.block.article.bean.ArticleItemBean;
+import com.idega.block.article.data.ArticleEntity;
+import com.idega.block.article.data.dao.ArticleDao;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
+import com.idega.portal.model.Article;
+import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
@@ -35,7 +43,9 @@ import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
+import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
+import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
 import com.idega.util.text.Name;
@@ -50,6 +60,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private LocalizationService localizationService;
+
+	@Autowired
+	private ArticleDao articleDAO;
 
 	@Override
 	public PortalSettings getDashboardSettings(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
@@ -244,6 +257,89 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 		} catch (Exception e) {}
 		return new Result(Status.INTERNAL_SERVER_ERROR.getStatusCode(), Boolean.FALSE.toString());
+	}
+
+	@Override
+	public Article getArticleByURI(String uri, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		Article article = null;
+		try {
+			if (StringUtil.isEmpty(uri)) {
+				return article;
+			}
+
+			if (StringUtil.isEmpty(uri) || (uri.equals(CoreConstants.SLASH))) {
+				getLogger().warning("URI is invalid: " + uri);
+				return null;
+			}
+
+			ArticleItemBean articleItemBean = new ArticleItemBean();
+			articleItemBean.setResourcePath(uri);
+			articleItemBean.load();
+
+			article = new Article();
+			article.setTitle(articleItemBean.getHeadline());
+			article.setBody(articleItemBean.getBody());
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error loading article at " + uri, e);
+		}
+		return article;
+	}
+
+	@Override
+	public ArticleList getArticlesByCategory(String category, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		if (category == null) {
+			return null;
+		}
+
+		List<String> categories = new ArrayList<String>();
+		categories.add(category);
+
+		List<ArticleEntity> articles = articleDAO.getByCategories(categories, null, 0);
+		if (ListUtil.isEmpty(articles)) {
+			return null;
+		}
+
+		Collections.sort(articles, new Comparator<ArticleEntity>() {
+
+			@Override
+			public int compare(ArticleEntity a1, ArticleEntity a2) {
+				Date date1 = a1.getModificationDate();
+				Date date2 = a2.getModificationDate();
+				if (date1 == null || date2 == null) {
+					return 0;
+				}
+
+				return date1.compareTo(date2);
+			}
+
+		});
+
+		List<ArticleItemBean> articleBeans = new ArrayList<ArticleItemBean>();
+		for (ArticleEntity article: articles) {
+			try {
+				String uri = article.getUri();
+				if (StringUtil.isEmpty(uri) || (uri.equals(CoreConstants.SLASH))) {
+					getLogger().warning("URI is invalid: " + uri);
+					continue;
+				}
+
+				ArticleItemBean articleItemBean = new ArticleItemBean();
+				articleItemBean.setResourcePath(uri);
+				articleItemBean.load();
+
+				articleBeans.add(articleItemBean);
+			} catch (Exception e) {
+				getLogger().warning("Error loading article at " + article.getUri());
+			}
+		}
+
+		ArticleList result = new ArticleList();
+		List<Article> art = new ArrayList<Article>();
+		result.setArticles(art);
+		for (ArticleItemBean article: articleBeans) {
+			art.add(new Article(article));
+		}
+		return result;
 	}
 
 }

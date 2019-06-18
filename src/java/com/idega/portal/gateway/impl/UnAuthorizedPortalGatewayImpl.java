@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 import com.idega.portal.PortalConstants;
 import com.idega.portal.gateway.PortalGateway;
+import com.idega.portal.model.Article;
+import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
@@ -222,6 +224,40 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 			@Context ServletContext context
 	) {
 		return null;
+	}
+
+	@GET
+	@Path(PortalGateway.ARTICLE)
+	@Override
+	public Article getArticleByURI(
+			@QueryParam("uri") String uri,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.getArticleByURI(
+				uri,
+				request,
+				response,
+				context
+		);
+	}
+
+	@GET
+	@Path(PortalGateway.ARTICLES)
+	@Override
+	public ArticleList getArticlesByCategory(
+			@QueryParam("category") String category,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.getArticlesByCategory(
+				category,
+				request,
+				response,
+				context
+		);
 	}
 
 }

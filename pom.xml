@@ -32,6 +32,10 @@
 			<groupId>com.idega.block.platform</groupId>
 			<artifactId>com.idega.developer</artifactId>
 		</dependency>
+		<dependency>
+	      <groupId>com.idega.block.platform</groupId>
+	      <artifactId>com.idega.block.article</artifactId>
+	    </dependency>
 		
 		<dependency>
 	      <groupId>com.idega.block.addon</groupId>
