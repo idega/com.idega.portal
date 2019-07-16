@@ -19,6 +19,7 @@ public interface PortalGateway extends PortalService, UserService {
 								REMOVE = "/remove",
 
 								LOGOUT = "/logout",
+								LOGIN = "/login",
 
 								AUTHORIZE = "/authorize",
 								UNAUTHORIZE = "/unauthorize",

@@ -21,7 +21,12 @@ import org.springframework.stereotype.Service;
 import com.idega.block.article.bean.ArticleItemBean;
 import com.idega.block.article.data.ArticleEntity;
 import com.idega.block.article.data.dao.ArticleDao;
+import com.idega.block.login.bean.OAuthToken;
+import com.idega.block.login.business.OAuth2Service;
+import com.idega.block.login.presentation.Login;
+import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
+import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
@@ -32,6 +37,7 @@ import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
@@ -48,6 +54,7 @@ import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
+import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Name;
 
 @Service
@@ -63,6 +70,16 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private ArticleDao articleDAO;
+
+	@Autowired
+	private OAuth2Service oauth2Service;
+
+	private OAuth2Service getOAuth2Service() {
+		if (oauth2Service == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+		return oauth2Service;
+	}
 
 	@Override
 	public PortalSettings getDashboardSettings(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
@@ -340,6 +357,98 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			art.add(new Article(article));
 		}
 		return result;
+	}
+
+	@Override
+	public LoginResult login(String clientId, String username, String password, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		String error = null;
+		if (request == null) {
+			error = "Request is unknown";
+			getLogger().warning(error);
+			return new LoginResult(-1, error, "login_error.request_unknown");
+		}
+
+		IWResourceBundle iwrb = null;
+		try {
+			IWContext iwc = new IWContext(request, response, context);
+			iwrb = getResourceBundle(getApplication().getBundle(Login.IW_BUNDLE_IDENTIFIER));
+
+			LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(iwc);
+
+			//	Logout
+			if (iwc.isLoggedOn()) {
+				try {
+					loginBusiness.logOutUser(iwc);
+				} catch (Exception e) {}
+			}
+
+			//	Check username
+			username = StringUtil.isEmpty(username) ? request.getHeader("username") : username;
+			if (StringUtil.isEmpty(username) || "undefined".equals(username)) {
+				error = "Username is not provided";
+				getLogger().warning(error);
+				return new LoginResult(-1, error, "login_error.username_is_not_provided");
+			}
+
+			//	Check password
+			password = StringUtil.isEmpty(password) ? request.getHeader("password") : password;
+			if (StringUtil.isEmpty(password) || "undefined".equals(password)) {
+				error = "Password is not provided";
+				getLogger().warning(error + ". Username: " + username);
+				return new LoginResult(-1, error, "login_error.password_is_not_provided");
+			}
+
+			if (!loginBusiness.logInUser(request, username, password)) {
+				LoginState state = LoginBusinessBean.internalGetState(iwc);
+				String errorLocalizedKey = "login_failed";
+				error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+				if (state != null) {
+					if (state.equals(LoginState.FAILED)) {
+						errorLocalizedKey = "login_failed";
+						error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+
+					} else if (state.equals(LoginState.USER_NOT_FOUND)) {
+						errorLocalizedKey = "login_no_user";
+						error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid user");
+
+					} else if (state.equals(LoginState.WRONG_PASSWORD)) {
+						errorLocalizedKey = "login_wrong";
+						error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password");
+
+					} else if (state.equals(LoginState.EXPIRED)) {
+						errorLocalizedKey = "login_expired";
+						error = iwrb.getLocalizedString(errorLocalizedKey, "Login expired");
+
+					} else if (state.equals(LoginState.FAILED_DISABLED_NEXT_TIME)){
+						errorLocalizedKey = "login_wrong_disabled_next_time";
+						error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password, access closed next time login fails");
+					}
+				}
+				getLogger().warning((error == null ? "Login failed" : error) + ". State: " + state + ", username " + username + " and password: " + password);
+				return new LoginResult(-1, error, errorLocalizedKey);
+			}
+
+			clientId = StringUtil.isEmpty(clientId) ? request.getHeader("client_id") : clientId;
+			if (StringUtil.isEmpty(clientId) || "undefined".equals(clientId)) {
+				clientId = request.getParameter("client_id");
+			}
+			OAuthToken token = getOAuth2Service().getToken(request, clientId, username, password);
+			if (token == null) {
+				error = "Failed to authorize, please try again a bit later";
+				getLogger().warning(error + ": did not get OAuth token for username " + username + " and password: " + password);
+				return new LoginResult(-1, error, "login_error.failed_to_get_oauth_token");
+			} else if (StringUtil.isEmpty(token.getScope())) {
+				token.setScope("read write trust");
+			}
+
+			LoginResult success = new LoginResult(token);
+			return success;
+		} catch (Exception e) {
+			String errorLocalizedKey = "login_failed";
+			error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+			getLogger().log(Level.WARNING, error + ". Username: " + username + ", password: " + password, e);
+			return new LoginResult(-1, error, errorLocalizedKey);
+		}
 	}
 
 }

@@ -7,6 +7,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -28,6 +29,7 @@ import com.idega.portal.model.Filter;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
@@ -359,6 +361,21 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 				response,
 				context
 		);
+	}
+
+	@POST
+	@Path(PortalGateway.LOGIN)
+	@Override
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public LoginResult login(
+			@FormParam("client_id") String clientId,
+			@FormParam("username") String username,
+			@FormParam("password") String password,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.login(clientId, username, password, request, response, context);
 	}
 
 }
