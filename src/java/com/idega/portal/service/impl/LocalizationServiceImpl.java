@@ -292,13 +292,15 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			}
 
 			List<String> loadedLanguages = new ArrayList<String>();
-			for (Map.Entry<String, LanguageData> entry : localizations.entrySet()) {
+			for (Map.Entry<String, LanguageData> entry: localizations.entrySet()) {
 				loadedLanguages.add(entry.getKey());
 			}
 
-			if (currentLanguages.size() == loadedLanguages.size()
-					&& currentLanguages.containsAll(loadedLanguages)
-					&& loadedLanguages.containsAll(currentLanguages)) {
+			if (
+					currentLanguages.size() == loadedLanguages.size() &&
+					currentLanguages.containsAll(loadedLanguages) &&
+					loadedLanguages.containsAll(currentLanguages)
+			) {
 				return new HashMap<String, LanguageData>(localizations);
 			}
 		}
@@ -385,23 +387,29 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 	private Map<String, Map<MessageResource, String>> getLocalizedStrings(List<MessageResource> resources) {
 		Map<String, Map<MessageResource, String>> localizedStrings = new TreeMap<>();
 
-		if (!ListUtil.isEmpty(resources)) {
-			for (MessageResource resource : resources) {
-				Set<String> keys = resource.getAllLocalizedKeys();
-				if (!ListUtil.isEmpty(keys)) {
-					for (String key : keys) {
-						String value = resource.getMessage(key);
-						if (!StringUtil.isEmpty(value)) {
-							Map<MessageResource, String> valueMap = localizedStrings.get(key);
-							if (MapUtil.isEmpty(valueMap)) {
-								valueMap = new HashMap<>();
-								localizedStrings.put(key, valueMap);
-							}
+		if (ListUtil.isEmpty(resources)) {
+			return localizedStrings;
+		}
 
-							valueMap.put(resource, value);
-						}
-					}
+		for (MessageResource resource: resources) {
+			Set<String> keys = resource.getAllLocalizedKeys();
+			if (ListUtil.isEmpty(keys)) {
+				continue;
+			}
+
+			for (String key: keys) {
+				String value = resource.getMessage(key);
+				if (StringUtil.isEmpty(value)) {
+					continue;
 				}
+
+				Map<MessageResource, String> valueMap = localizedStrings.get(key);
+				if (MapUtil.isEmpty(valueMap)) {
+					valueMap = new HashMap<>();
+					localizedStrings.put(key, valueMap);
+				}
+
+				valueMap.put(resource, value);
 			}
 		}
 
