@@ -48,7 +48,7 @@ public class Article implements Serializable {
 		this.url = article.getResourcePath();
 		String teaser = article.getTeaser();
 		if(teaser != null) {
-			this.teaser = teaser;//Base64.getEncoder().encodeToString(teaser.getBytes());
+			this.teaser = teaser;
 		}
 	}
 
