@@ -1,6 +1,5 @@
 package com.idega.portal.service.impl;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
-import javax.mail.MessagingException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +30,6 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
-import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.model.Article;
@@ -50,14 +47,12 @@ import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
+import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
-import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
-import com.idega.util.SendMail;
-import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
 import com.idega.util.expression.ELUtil;
@@ -211,11 +206,16 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 									+ " for user (ID: "
 									+ user.getPrimaryKey().toString() + ")");
 				}
-				sendMailWithLoginInfo(
+				UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
+				userApplicationEngine.sendMailWithLoginInfo(
 						new IWContext(request, response, context), 
 						iwrb, 
-						newLogin,
-						account
+						newLogin, 
+						account.getName(), 
+						account.getUsername(), 
+						account.getPassword(),
+						account.getEmail(), 
+						null
 				);
 			}
 			account.setUserId(user.getPrimaryKey().toString());
@@ -228,52 +228,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return account;
 	}
 	
-	private void sendMailWithLoginInfo(
-			IWContext iwc,
-			IWResourceBundle iwrb,
-			boolean newLogin,
-			UserAccount account
-	) throws MessagingException {
-		IWMainApplicationSettings settings = iwc.getIWMainApplication().getSettings();
-
-		String portNumber = new StringBuilder(":").append(String.valueOf(iwc.getServerPort())).toString();
-		String portal = settings.getProperty("sua.portal_address");
-		String serverURL = CoreUtil.getServerURL(iwc.getRequest());
-		String serverLink = StringUtil.isEmpty(portal) ? StringHandler.replace(serverURL, portNumber, CoreConstants.EMPTY) : portal;
-		String subject = newLogin ? iwrb.getLocalizedString("account_was_created", "Account was created") :
-									iwrb.getLocalizedString("account_information_was_changed", "Account was modified");
-		StringBuilder text = new StringBuilder(iwrb.getLocalizedString("dear", "Dear").concat(CoreConstants.SPACE).concat(account.getName())
-				.concat(",\n\r"));
-		if (newLogin) {
-			text = text.append(iwrb.getLocalizedString("login_here", "Login here")).append(": ").append(serverLink).append("\n\r")
-				.append(iwrb.getLocalizedString("your_user_name", "Your user name")).append(": ").append(account.getUsername()).append(", ")
-				.append(iwrb.getLocalizedString("your_password", "your password")).append(": ").append(account.getPassword()).append(". ")
-				.append(iwrb.getLocalizedString("we_recommend_to_change_password_after_login", "We recommend to change password after login!"));
-		} else {
-			String mainText = MessageFormat.format(
-					iwrb.getLocalizedString(
-							"account_was_modified_explanation", 
-							"Your account was modified. Please, login in to review changes."
-					), 
-					CoreConstants.EMPTY
-			);
-			text = text.append(mainText).append("\n\r").append(iwrb.getLocalizedString("login_here", "Login here")).append(": ").append(serverLink);
-		}
-		text.append("\n\r").append(iwrb.getLocalizedString("with_regards", "With regards,")).append("\r").append(settings.getProperty("with_regards_text", serverLink.concat(" team")));
-
-		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
-		SendMail.send(
-				from, 
-				account.getEmail(),
-				null, 
-				null, 
-				null, 
-				null, 
-				subject, 
-				text.toString()
-		);
-	}
-
 	@Override
 	public String doAuthorizeViaGateway(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String type) {
 		getLogger().warning("This method is not implemented");
