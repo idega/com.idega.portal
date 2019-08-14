@@ -129,13 +129,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 		com.idega.user.data.User user = null;
 		try {
 			user = userBusiness.getUserByUniqueId(uuid);
-		} catch (Exception e) {
-			getLogger().log(
-					Level.WARNING, 
-					"Failed finding user by unique id '" + uuid +"'",
-					e
-			);
-		}
+		} catch (Exception e) {}
 		if (user == null) {
 			getLogger().warning("Unable to find user by UUID: '" + uuid + "'");
 			return null;
@@ -143,29 +137,28 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 
 		LoginTable login = LoginDBHandler.getUserLogin(user);
 		if (login == null) {
-			getLogger().warning("Creating login for " + user);
 			try {
 				login = LoginDBHandler.createLogin(
-						user, 
-						user.getPersonalID(), 
-						user.getUniqueId(), 
-						Boolean.TRUE, 
-						IWTimestamp.RightNow(), 
-						-1, 
-						Boolean.FALSE, 
-						Boolean.TRUE, 
-						Boolean.FALSE, 
+						user,
+						user.getPersonalID(),
+						user.getUniqueId(),
+						Boolean.TRUE,
+						IWTimestamp.RightNow(),
+						-1,
+						Boolean.FALSE,
+						Boolean.TRUE,
+						Boolean.FALSE,
 						null
 				);
 			} catch (Exception e) {
 				getLogger().log(
-						Level.WARNING, 
-						"Failed creating login for user uuid='" + uuid +"'",
+						Level.WARNING,
+						"Failed creating login for user " + user + " with uuid='" + uuid + "'",
 						e
 				);
 			}
 			if (login == null) {
-				getLogger().warning("Unable to create user login by uuid='"+uuid+"'");
+				getLogger().warning("Unable to create login for " + user + " with uuid='" + uuid + "'");
 				return null;
 			}
 		}
