@@ -92,7 +92,12 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 
 	@Override
 	public Result setLocalization(Localization localization, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
-		if (localization == null || StringUtil.isEmpty(localization.getLocalizedKey()) || StringUtil.isEmpty(localization.getLocalization()) || StringUtil.isEmpty(localization.getBundleIdentifier())) {
+		if (
+				localization == null ||
+				StringUtil.isEmpty(localization.getLocalizedKey()) ||
+				StringUtil.isEmpty(localization.getLocalization()) ||
+				StringUtil.isEmpty(localization.getBundleIdentifier())
+		) {
 			return null;
 		}
 
@@ -138,8 +143,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 		for (Localization localization : localizations.getLocalizations()) {
 			try {
 				if (StringUtil.isEmpty(localization.getBundleIdentifier())) {
-					String bundle = getLocalizationBundle(localization,
-							bundleIdentifiers);
+					String bundle = getLocalizationBundle(localization, bundleIdentifiers);
 
 					if (StringUtil.isEmpty(bundle) && !ListUtil.isEmpty(bundleIdentifiers)) {
 						bundle = bundleIdentifiers.get(0);
@@ -154,8 +158,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 				}
 
 			} catch (Exception e) {
-				getLogger().log(Level.WARNING,
-						"Error setting localization " + localization, e);
+				getLogger().log(Level.WARNING, "Error setting localization " + localization, e);
 			}
 		}
 
@@ -171,7 +174,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 
 		List<LanguageData> availableLanguages = new ArrayList<LanguageData>();
 
-		for (ICLocale icLocale : locales) {
+		for (ICLocale icLocale: locales) {
 			Locale locale = LocaleUtil.getLocale(icLocale.toString());
 			if (locale != null) {
 				availableLanguages.add(
@@ -203,8 +206,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 		}
 
 		String key = localization.getLocalizedKey();
-		Locale locale = StringUtil.isEmpty(localization.getLocale()) ? null
-				: LocaleUtil.getLocale(localization.getLocale());
+		Locale locale = StringUtil.isEmpty(localization.getLocale()) ? null : LocaleUtil.getLocale(localization.getLocale());
 		if (StringUtil.isEmpty(key) || locale == null) {
 			return null;
 		}
@@ -212,9 +214,10 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 		String bundle = null;
 		String localizedString = null;
 
+		MessageResourceFactory messageFactory = getApplication().getMessageFactory();
+
 		for (String bundleIdentifier : bundleIdentifiers) {
-			localizedString = getApplication().getMessageFactory()
-					.getLocalizedMessage(key, null, bundleIdentifier, locale);
+			localizedString = messageFactory.getLocalizedMessage(key, null, bundleIdentifier, locale);
 
 			if (localizedString != null) {
 				bundle = bundleIdentifier;
@@ -225,14 +228,8 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 			List<ICLocale> locales = ICLocaleBusiness.listOfLocales(true);
 			if (!ListUtil.isEmpty(locales)) {
 				for (String bundleIdentifier : bundleIdentifiers) {
-					for (ICLocale icLocale : locales) {
-						localizedString = getApplication().getMessageFactory()
-								.getLocalizedMessage(
-										key,
-										null,
-										bundleIdentifier,
-										LocaleUtil.getLocale(icLocale
-												.toString()));
+					for (ICLocale icLocale: locales) {
+						localizedString = messageFactory.getLocalizedMessage(key, null, bundleIdentifier, LocaleUtil.getLocale(icLocale.toString()));
 
 						if (localizedString != null) {
 							bundle = bundleIdentifier;
@@ -261,17 +258,13 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 				return false;
 			}
 
-			ICLocaleBusiness.makeLocaleInUse(icLocale.getPrimaryKey()
-					.toString(), doAdd);
+			ICLocaleBusiness.makeLocaleInUse(icLocale.getPrimaryKey().toString(), doAdd);
 
 			this.localizations = null;
 
 			return true;
 		} catch (Exception e) {
-			getLogger().log(
-					Level.WARNING,
-					"Error " + (doAdd ? "adding" : "removing") + " language: "
-							+ locale, e);
+			getLogger().log(Level.WARNING, "Error " + (doAdd ? "adding" : "removing") + " language: " + locale, e);
 		}
 
 		return false;
@@ -310,10 +303,7 @@ public class LocalizationServiceImpl extends DefaultRestfulService implements Lo
 		List<String> bundleIdentifiers = Arrays.asList(bundleIdentifiersProp.split(CoreConstants.COMMA));
 
 		for (ICLocale icLocale: icLocales) {
-			LanguageData data = getLocalizedStrings(
-					LocaleUtil.getLocale(icLocale.toString()),
-					bundleIdentifiers
-			);
+			LanguageData data = getLocalizedStrings(LocaleUtil.getLocale(icLocale.toString()), bundleIdentifiers);
 			if (data != null) {
 				localizations.put(icLocale.toString(), data);
 			}
