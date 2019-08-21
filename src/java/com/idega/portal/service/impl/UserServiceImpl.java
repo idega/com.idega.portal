@@ -355,6 +355,17 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 					}
 				}
 
+				//User gender
+				if (dataToLoad.contains(DataElement.GENDER) || dataToLoad.contains(DataElement.ALL)) {
+					Integer genderIdFromProfile = profile.getGenderId();
+					if (genderIdFromProfile != null) {
+						try {
+								userIDO.setGender(genderIdFromProfile);
+								userIDO.store();
+						} catch (Exception e) {}
+					}
+				}
+
 				//**** User photo/picture ****
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.IMAGE)) {
 					//Remove image
