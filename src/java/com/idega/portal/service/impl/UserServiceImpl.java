@@ -124,6 +124,7 @@ import com.idega.presentation.IWContext;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
+import com.idega.util.CoreUtil;
 import com.idega.util.EmailValidator;
 import com.idega.util.IOUtil;
 import com.idega.util.IWTimestamp;
@@ -388,6 +389,8 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			getLogger().log(Level.WARNING, errorMsg, e);
 			errors += errorMsg;
 			errors += " \n";
+		} finally {
+			CoreUtil.clearIDOCaches();
 		}
 
 		//Create return result
