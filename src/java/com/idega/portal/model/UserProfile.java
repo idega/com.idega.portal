@@ -20,6 +20,7 @@ import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.contact.data.bean.Email;
 import com.idega.core.contact.data.bean.Phone;
 import com.idega.core.location.data.bean.Address;
+import com.idega.core.location.data.bean.Country;
 import com.idega.core.location.data.bean.PostalCode;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
@@ -240,6 +241,49 @@ public class UserProfile extends User {
 				if (StringUtil.isEmpty(this.postalCode)) {
 					Logger.getLogger(getClass().getName()).warning("Postal code is unknown for " + user + " and address " + address);
 				}
+
+				//Full address
+				StringBuilder sbFullAddress = new StringBuilder();
+				String line = this.streetAndNumber;
+				if (!StringUtil.isEmpty(line)) {
+					sbFullAddress.append(line);
+				}
+
+				line = this.postalCode;
+				if (!StringUtil.isEmpty(line)) {
+					if (sbFullAddress.length() > 0) {
+						sbFullAddress.append(CoreConstants.COMMA)
+						.append(CoreConstants.SPACE);
+					}
+					sbFullAddress.append(line);
+				}
+
+				line = this.city;
+				if (!StringUtil.isEmpty(line)) {
+					if (sbFullAddress.length() > 0) {
+						sbFullAddress.append(CoreConstants.COMMA)
+						.append(CoreConstants.SPACE);
+					}
+					sbFullAddress.append(line);
+				}
+
+				Country country = address.getCountry();
+				if (country != null) {
+					line = country.getName();
+					if (!StringUtil.isEmpty(line)) {
+						if (sbFullAddress.length() > 0) {
+							sbFullAddress.append(CoreConstants.COMMA)
+							.append(CoreConstants.SPACE);
+						}
+
+						sbFullAddress.append(line);
+					}
+				}
+
+				if (!StringUtil.isEmpty(sbFullAddress.toString())) {
+					this.fullAddress = sbFullAddress.toString();
+				}
+
 			}
 		}
 
