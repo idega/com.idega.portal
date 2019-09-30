@@ -47,6 +47,7 @@ import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
+import com.idega.user.business.StandardGroup;
 import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
@@ -74,6 +75,19 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private OAuth2Service oauth2Service;
+
+	@Qualifier("citizenStandardGroup")
+	@Autowired(required = false)
+	private StandardGroup standardGroup;
+
+	private StandardGroup getStandardGroup() {
+		if (standardGroup == null) {
+			try {
+				ELUtil.getInstance().autowire(this);
+			} catch (Exception e) {}
+		}
+		return standardGroup;
+	}
 
 	private OAuth2Service getOAuth2Service() {
 		if (oauth2Service == null) {
@@ -144,6 +158,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			String displayName = null;
 			String name = account.getName();
 			Name userNames = null;
+			Integer genderId = null;
 
 			if (StringUtil.isEmpty(name)) {
 				com.idega.user.data.User tmpUser = null;
@@ -154,6 +169,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 					name = tmpUser.getName();
 					userNames = new Name(name);
 					displayName = name;
+
+					int tmpGenderId = tmpUser.getGenderID();
+					if (tmpGenderId > 0) {
+						genderId = tmpGenderId;
+					}
 				}
 			} else {
 				userNames = new Name(name);
@@ -186,16 +206,20 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						account.getUsername(),
 						account.getPassword());
 			} else {
+				StandardGroup standardGroup = null;
+				try {
+					standardGroup = getStandardGroup();
+				} catch (Throwable t) {}
 				user = userBusiness.createUserWithLogin(
 						firstName,
 						middleName,
 						lastName,
 						account.getPersonalId(),
 						displayName,
-						null,
-						null,
-						null,
-						null,
+						null,						//	Description
+						genderId,					//	Gender
+						null,						//	Date of birth
+						standardGroup == null ? null : Integer.valueOf(standardGroup.getGroup().getPrimaryKey().toString()),
 						account.getUsername(),
 						account.getPassword(),
 						Boolean.TRUE,
@@ -204,7 +228,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						Boolean.FALSE,
 						Boolean.TRUE,
 						Boolean.FALSE,
-						null);
+						null
+				);
 			}
 
 			if (user == null) {
