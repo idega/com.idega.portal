@@ -136,28 +136,43 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			com.idega.user.data.User user = null;
+			UserBusiness userBusiness = getUserBusiness();
 
 			String firstName = null;
 			String middleName = null;
 			String lastName = null;
 			String displayName = null;
+			String name = account.getName();
+			Name userNames = null;
 
-			if (!StringUtil.isEmpty(account.getName())) {
-				Name userNames = new Name(account.getName());
+			if (StringUtil.isEmpty(name)) {
+				com.idega.user.data.User tmpUser = null;
+				try {
+					tmpUser = userBusiness.getUser(account.getPersonalId());
+				} catch (Exception e) {}
+				if (tmpUser != null) {
+					name = tmpUser.getName();
+					userNames = new Name(name);
+					displayName = name;
+				}
+			} else {
+				userNames = new Name(name);
+				displayName = name;
+			}
+			if (userNames != null) {
 				firstName = userNames.getFirstName();
 				middleName = userNames.getMiddleName();
 				lastName = userNames.getLastName();
-				displayName = account.getName();
 			}
 
-			if (!getUserBusiness().validatePersonalId(account.getPersonalId(), getCurrentLocale())) {
+			if (!userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale())) {
 				account.setErrorMessage(iwrb.getLocalizedString("account.provide_valid_personal_id", "Please provide valid personal ID"));
 				return account;
 			}
 
 			boolean newLogin = StringUtil.isEmpty(account.getUuid());
 			if (!newLogin) {
-				user = getUserBusiness().update(
+				user = userBusiness.update(
 						null,
 						account.getUuid(),
 						null,
@@ -171,7 +186,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						account.getUsername(),
 						account.getPassword());
 			} else {
-				user = getUserBusiness().createUserWithLogin(
+				user = userBusiness.createUserWithLogin(
 						firstName,
 						middleName,
 						lastName,
@@ -198,7 +213,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			if (!StringUtil.isEmpty(account.getEmail())) {
-				Email email = getUserBusiness().updateUserMail(user, account.getEmail());
+				Email email = userBusiness.updateUserMail(user, account.getEmail());
 				if (email == null) {
 					getLogger().log(
 							Level.WARNING,
@@ -208,13 +223,13 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				}
 				UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
 				userApplicationEngine.sendMailWithLoginInfo(
-						new IWContext(request, response, context), 
-						iwrb, 
-						newLogin, 
-						account.getName(), 
-						account.getUsername(), 
+						new IWContext(request, response, context),
+						iwrb,
+						newLogin,
+						account.getName(),
+						account.getUsername(),
 						account.getPassword(),
-						account.getEmail(), 
+						account.getEmail(),
 						null
 				);
 			}
@@ -227,7 +242,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return account;
 	}
-	
+
 	@Override
 	public String doAuthorizeViaGateway(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String type) {
 		getLogger().warning("This method is not implemented");
