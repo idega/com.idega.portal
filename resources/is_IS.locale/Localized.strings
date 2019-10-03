@@ -320,3 +320,6 @@ notification_mobile_unit.unit4=Eining 4
 dashboard.remote_google_login_label=Google reikningur
 
 timeline=Tímalína
+
+message.email.account_created.subject=Var búin
+message.email.account_created.body=Hæ {0}.\n\nNýskráningu lokið. Aðgangurinn þinn er þegar orðinn virkur og getur þú því skráð þig inn og notað kennitöluna þína sem notendanafn og lykilorðið sem þú valdir sjálf/ur.

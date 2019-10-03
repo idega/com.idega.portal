@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
+import javax.mail.MessagingException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,6 +31,8 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
+import com.idega.idegaweb.IWMainApplication;
+import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.model.Article;
@@ -48,12 +51,12 @@ import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
 import com.idega.user.business.StandardGroup;
-import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
+import com.idega.util.SendMail;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
 import com.idega.util.expression.ELUtil;
@@ -246,17 +249,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 									+ " for user (ID: "
 									+ user.getPrimaryKey().toString() + ")");
 				}
-				UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
-				userApplicationEngine.sendMailWithLoginInfo(
-						new IWContext(request, response, context),
-						iwrb,
-						newLogin,
-						account.getName(),
-						account.getUsername(),
-						account.getPassword(),
-						account.getEmail(),
-						null
-				);
+				sendAccountCreatedMail(user, account.getEmail());
 			}
 			account.setUserId(user.getPrimaryKey().toString());
 			account.setErrorMessage(null);
@@ -266,6 +259,37 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		return account;
+	}
+	
+	private void sendAccountCreatedMail(
+			com.idega.user.data.User user,
+			String email
+	) throws MessagingException {
+		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
+		IWMainApplication iwma = getApplication();
+		IWMainApplicationSettings settings = iwma.getSettings();
+		String team = settings.getProperty("with_regards_text", "Idega");
+		String subject = iwrb.getLocalizedString(
+				"message.email.account_created.subject",
+				"Account was created"
+		);
+		Object[] paremeters = {user.getDisplayName()};
+		String body = iwrb.getLocalizedAndFormattedString(
+				"message.email.account_created.body", 
+				"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
+				paremeters
+		);
+		body += "\n\n" + team;
+		sendEmail(settings,email, subject, body);
+	}
+	protected void sendEmail(
+			IWMainApplicationSettings settings,
+			String emailTo, 
+			String subject, 
+			String text
+	) throws MessagingException {
+		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
+		SendMail.send(from, emailTo, null, null, null, null, subject, text);
 	}
 
 	@Override
