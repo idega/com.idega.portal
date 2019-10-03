@@ -2,9 +2,11 @@ package com.idega.portal.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -371,7 +373,7 @@ public class UserProfile extends User {
 			return;
 		}
 
-		StringBuilder phonesLabel = new StringBuilder();
+		Set<String> numbers = new HashSet<>();
 		for (Iterator<Phone> phonesIter = phones.iterator(); phonesIter.hasNext();) {
 			Phone phone = phonesIter.next();
 			if (phone == null) {
@@ -383,8 +385,22 @@ public class UserProfile extends User {
 				continue;
 			}
 
+			numbers.add(number);
+		}
+
+		if (ListUtil.isEmpty(numbers)) {
+			return;
+		}
+
+		StringBuilder phonesLabel = new StringBuilder();
+		for (Iterator<String> numbersIter = numbers.iterator(); numbersIter.hasNext();) {
+			String number = numbersIter.next();
+			if (StringUtil.isEmpty(number)) {
+				continue;
+			}
+
 			phonesLabel.append(number);
-			if (phonesIter.hasNext()) {
+			if (numbersIter.hasNext()) {
 				phonesLabel.append(CoreConstants.COMMA).append(CoreConstants.SPACE);
 			}
 		}
@@ -398,7 +414,7 @@ public class UserProfile extends User {
 		}
 
 		EmailValidator validator = EmailValidator.getInstance();
-		StringBuilder emailsLabel = new StringBuilder();
+		Set<String> emailAddresses = new HashSet<>();
 		for (Iterator<Email> emailsIter = emails.iterator(); emailsIter.hasNext();) {
 			Email email = emailsIter.next();
 			if (email == null) {
@@ -410,8 +426,22 @@ public class UserProfile extends User {
 				continue;
 			}
 
+			emailAddresses.add(address);
+		}
+
+		if (ListUtil.isEmpty(emailAddresses)) {
+			return;
+		}
+
+		StringBuilder emailsLabel = new StringBuilder();
+		for (Iterator<String> emailAddressesIter = emailAddresses.iterator(); emailAddressesIter.hasNext();) {
+			String address = emailAddressesIter.next();
+			if (!validator.isValid(address)) {
+				continue;
+			}
+
 			emailsLabel.append(address);
-			if (emailsIter.hasNext()) {
+			if (emailAddressesIter.hasNext()) {
 				emailsLabel.append(CoreConstants.COMMA).append(CoreConstants.SPACE);
 			}
 		}
