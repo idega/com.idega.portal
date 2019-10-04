@@ -378,4 +378,41 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 		return portalService.login(clientId, username, password, request, response, context);
 	}
 
+	@POST
+	@Path(PortalGateway.PASSWORD_TOKEN_PASSWORD)
+	@Override
+	public String doUpdatePassword(
+			@PathParam("tokenId")String token,
+			String newPassword,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response, 
+			@Context ServletContext context
+	) {
+		return portalService.doUpdatePassword(
+				token, 
+				newPassword, 
+				request, 
+				response, 
+				context
+		);
+	}
+	
+	
+	@GET
+	@Path(PortalGateway.PASSWORD_TOKEN_BY_ID)
+	@Override
+	public String isUpdatePasswordLinkValid(
+			@PathParam("tokenId")String token, 
+			@Context HttpServletRequest request, 
+			@Context HttpServletResponse response, 
+			@Context ServletContext context
+	) {
+		return portalService.isUpdatePasswordLinkValid(
+				token, 
+				request, 
+				response, 
+				context
+		);
+	}
+
 }

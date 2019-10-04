@@ -53,4 +53,19 @@ public interface PortalService {
 
 	public LoginResult login(String clientId, String username, String password, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
+	public String doUpdatePassword(
+			String token,
+			String newPassword,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	);
+	
+	public String isUpdatePasswordLinkValid(
+			String token, 
+			HttpServletRequest request, 
+			HttpServletResponse response, 
+			ServletContext context
+	);
+
 }

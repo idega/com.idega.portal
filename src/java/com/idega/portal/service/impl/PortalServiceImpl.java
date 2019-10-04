@@ -1,5 +1,6 @@
 package com.idega.portal.service.impl;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,6 +12,7 @@ import javax.mail.MessagingException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +26,19 @@ import com.idega.block.article.data.ArticleEntity;
 import com.idega.block.article.data.dao.ArticleDao;
 import com.idega.block.login.bean.OAuthToken;
 import com.idega.block.login.business.OAuth2Service;
+import com.idega.block.login.business.PasswordTokenBusiness;
+import com.idega.block.login.data.PasswordTokenEntity;
+import com.idega.block.login.data.dao.PasswordTokenEntityDAO;
 import com.idega.block.login.presentation.Login;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.business.LoginState;
+import com.idega.core.accesscontrol.dao.UserLoginDAO;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
+import com.idega.core.cache.IWCacheManager2;
 import com.idega.core.contact.data.Email;
+import com.idega.idegaweb.IWConstants;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
@@ -50,8 +58,11 @@ import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
+import com.idega.restful.exception.BadRequest;
+import com.idega.restful.exception.InternalServerError;
 import com.idega.user.business.StandardGroup;
 import com.idega.user.business.UserBusiness;
+import com.idega.user.dao.UserDAO;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
@@ -82,6 +93,18 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Qualifier("citizenStandardGroup")
 	@Autowired(required = false)
 	private StandardGroup standardGroup;
+	
+	@Autowired
+	private UserDAO userDAO;
+	
+	@Autowired
+	private PasswordTokenEntityDAO passwordTokenEntityDAO;
+	
+	@Autowired
+	private PasswordTokenBusiness passwordTokenBusiness;
+	
+	@Autowired
+	private UserLoginDAO userLoginDAO;
 
 	private StandardGroup getStandardGroup() {
 		if (standardGroup == null) {
@@ -282,14 +305,14 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		body += "\n\n" + team;
 		sendEmail(settings,email, subject, body);
 	}
-	protected void sendEmail(
+	private void sendEmail(
 			IWMainApplicationSettings settings,
 			String emailTo, 
 			String subject, 
-			String text
+			String body
 	) throws MessagingException {
 		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
-		SendMail.send(from, emailTo, null, null, null, null, subject, text);
+		SendMail.send(from, emailTo, null, null, null, null, subject, body);
 	}
 
 	@Override
@@ -315,8 +338,59 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
+	@Transactional
 	public String doRemindPassword(String ssn, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
-		return "Unimplemented";
+		IWContext iwc = new IWContext(request, response, context);
+		IWMainApplication iwma = iwc.getIWMainApplication();
+		IWResourceBundle iwrb = iwma.getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
+		IWMainApplicationSettings settings = iwma.getSettings();
+
+		User user = userDAO.getUser(ssn);
+		if(user == null) {
+			throw new BadRequest("User '"+ssn+"' not found");
+		}
+		String email = user.getEmailAddress();
+		if(StringUtil.isEmpty(email)) {
+			throw new BadRequest("User '"+ssn+"' does not have email address");
+		}
+		PasswordTokenEntity passwordToken = passwordTokenEntityDAO.create(
+				user.getUniqueId(), 
+				iwc.getRemoteIpAddress(),
+				Long.valueOf(86400000) // 24 hours
+		);
+		sendPasswordResetLink(user, iwc, email, passwordToken, iwrb, settings);
+		String message = iwrb.getLocalizedString(
+				"message.password_remind.success",
+				"It succeeded! We have sent instructions at the email {0} so you can reset your password"
+		);
+		message = MessageFormat.format(message, new Object[] {email});
+		return email;
+	}
+	
+	private void sendPasswordResetLink(
+			User user,
+			IWContext iwc,
+			String emailTo,
+			PasswordTokenEntity passwordToken,
+			IWResourceBundle iwrb,
+			IWMainApplicationSettings settings
+	) {
+		String link = passwordTokenBusiness.getLink(passwordToken, iwc);
+		String message = iwrb.getLocalizedAndFormattedString(
+				"message.email.registered.body", 
+				"Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.", 
+				new Object[] {
+					user.getDisplayName(),
+					user.getFirstName(),
+					settings.getProperty(IWConstants.SERVER_URL_PROPERTY_NAME),
+					link
+				}
+		);
+		passwordTokenBusiness.notifyRegisteredUser(
+				passwordToken, 
+				iwc,
+				message.toString()
+		);
 	}
 
 	@Override
@@ -525,6 +599,69 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			getLogger().log(Level.WARNING, error + ". Username: " + username + ", password: " + password, e);
 			return new LoginResult(-1, error, errorLocalizedKey);
 		}
+	}
+	
+	@Override
+	public String doUpdatePassword(
+			String token,
+			String newPassword,
+			HttpServletRequest request, 
+			HttpServletResponse response, 
+			ServletContext context
+	) {
+		if(StringUtil.isEmpty(newPassword)) {
+			throw new BadRequest("Password can not be empty");
+		}
+		validateUpdatePasswordToken(token);
+		com.idega.user.data.User user = passwordTokenBusiness.completePasswordReset(
+				token, 
+				newPassword
+		);
+		if(user == null) {
+			throw new InternalServerError(
+					"Failed changing password by token '"
+						+ token
+						+ "' and password '"
+						+ newPassword
+						+ "'"
+			);
+		}
+//		IWContext iwc = new IWContext(request, response, context);
+//		LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(iwc);
+//		try {
+//			loginBusiness.changeUserPassword(user, newPassword);
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//		}
+		
+//		TODO: this is bad but I dont know what cache to invalidate
+		IWCacheManager2 iwcm = IWCacheManager2.getInstance(getApplication());
+		iwcm.reset();
+		
+		return Boolean.TRUE.toString();
+	}
+	
+	private void validateUpdatePasswordToken(String token) {
+		if(StringUtil.isEmpty(token)) {
+			throw new BadRequest("Token can not be empty");
+		}
+		PasswordTokenEntity passwordToken = passwordTokenEntityDAO.findByToken(token);
+		if (passwordToken == null) {
+			throw new BadRequest("Token '"+token+"' is not found in database");
+		}
+
+		if (passwordToken.isExpired()) {
+			throw new BadRequest("Token '"+token+"' is expired");
+		}
+	}
+	public String isUpdatePasswordLinkValid(
+			String token, 
+			HttpServletRequest request, 
+			HttpServletResponse response, 
+			ServletContext context
+	) {
+		validateUpdatePasswordToken(token);
+		return "\"" + token + "\"";
 	}
 
 }
