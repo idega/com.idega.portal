@@ -33,10 +33,8 @@ import com.idega.block.login.presentation.Login;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.business.LoginState;
-import com.idega.core.accesscontrol.dao.UserLoginDAO;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
-import com.idega.core.cache.IWCacheManager2;
 import com.idega.core.contact.data.Email;
 import com.idega.idegaweb.IWConstants;
 import com.idega.idegaweb.IWMainApplication;
@@ -65,6 +63,7 @@ import com.idega.user.business.UserBusiness;
 import com.idega.user.dao.UserDAO;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
+import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.SendMail;
@@ -93,18 +92,15 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Qualifier("citizenStandardGroup")
 	@Autowired(required = false)
 	private StandardGroup standardGroup;
-	
+
 	@Autowired
 	private UserDAO userDAO;
-	
+
 	@Autowired
 	private PasswordTokenEntityDAO passwordTokenEntityDAO;
-	
+
 	@Autowired
 	private PasswordTokenBusiness passwordTokenBusiness;
-	
-	@Autowired
-	private UserLoginDAO userLoginDAO;
 
 	private StandardGroup getStandardGroup() {
 		if (standardGroup == null) {
@@ -283,7 +279,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return account;
 	}
-	
+
 	private void sendAccountCreatedMail(
 			com.idega.user.data.User user,
 			String email
@@ -298,7 +294,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		);
 		Object[] paremeters = {user.getDisplayName()};
 		String body = iwrb.getLocalizedAndFormattedString(
-				"message.email.account_created.body", 
+				"message.email.account_created.body",
 				"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
 				paremeters
 		);
@@ -307,8 +303,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 	private void sendEmail(
 			IWMainApplicationSettings settings,
-			String emailTo, 
-			String subject, 
+			String emailTo,
+			String subject,
 			String body
 	) throws MessagingException {
 		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
@@ -342,19 +338,19 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	public String doRemindPassword(String ssn, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		IWContext iwc = new IWContext(request, response, context);
 		IWMainApplication iwma = iwc.getIWMainApplication();
-		IWResourceBundle iwrb = iwma.getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
+		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER), iwc);
 		IWMainApplicationSettings settings = iwma.getSettings();
 
 		User user = userDAO.getUser(ssn);
-		if(user == null) {
+		if (user == null) {
 			throw new BadRequest("User '"+ssn+"' not found");
 		}
 		String email = user.getEmailAddress();
-		if(StringUtil.isEmpty(email)) {
+		if (StringUtil.isEmpty(email)) {
 			throw new BadRequest("User '"+ssn+"' does not have email address");
 		}
 		PasswordTokenEntity passwordToken = passwordTokenEntityDAO.create(
-				user.getUniqueId(), 
+				user.getUniqueId(),
 				iwc.getRemoteIpAddress(),
 				Long.valueOf(86400000) // 24 hours
 		);
@@ -366,7 +362,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		message = MessageFormat.format(message, new Object[] {email});
 		return email;
 	}
-	
+
 	private void sendPasswordResetLink(
 			User user,
 			IWContext iwc,
@@ -377,8 +373,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	) {
 		String link = passwordTokenBusiness.getLink(passwordToken, iwc);
 		String message = iwrb.getLocalizedAndFormattedString(
-				"message.email.registered.body", 
-				"Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.", 
+				"message.email.registered.body",
+				"Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.",
 				new Object[] {
 					user.getDisplayName(),
 					user.getFirstName(),
@@ -387,7 +383,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				}
 		);
 		passwordTokenBusiness.notifyRegisteredUser(
-				passwordToken, 
+				passwordToken,
 				iwc,
 				message.toString()
 		);
@@ -600,24 +596,24 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			return new LoginResult(-1, error, errorLocalizedKey);
 		}
 	}
-	
+
 	@Override
 	public String doUpdatePassword(
 			String token,
 			String newPassword,
-			HttpServletRequest request, 
-			HttpServletResponse response, 
+			HttpServletRequest request,
+			HttpServletResponse response,
 			ServletContext context
 	) {
-		if(StringUtil.isEmpty(newPassword)) {
+		if (StringUtil.isEmpty(newPassword)) {
 			throw new BadRequest("Password can not be empty");
 		}
 		validateUpdatePasswordToken(token);
 		com.idega.user.data.User user = passwordTokenBusiness.completePasswordReset(
-				token, 
+				token,
 				newPassword
 		);
-		if(user == null) {
+		if (user == null) {
 			throw new InternalServerError(
 					"Failed changing password by token '"
 						+ token
@@ -626,38 +622,30 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						+ "'"
 			);
 		}
-//		IWContext iwc = new IWContext(request, response, context);
-//		LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(iwc);
-//		try {
-//			loginBusiness.changeUserPassword(user, newPassword);
-//		} catch (Exception e) {
-//			// TODO: handle exception
-//		}
-		
-//		TODO: this is bad but I dont know what cache to invalidate
-		IWCacheManager2 iwcm = IWCacheManager2.getInstance(getApplication());
-		iwcm.reset();
-		
+
+		CoreUtil.clearAllCaches();
+
 		return Boolean.TRUE.toString();
 	}
-	
+
 	private void validateUpdatePasswordToken(String token) {
-		if(StringUtil.isEmpty(token)) {
+		if (StringUtil.isEmpty(token)) {
 			throw new BadRequest("Token can not be empty");
 		}
 		PasswordTokenEntity passwordToken = passwordTokenEntityDAO.findByToken(token);
 		if (passwordToken == null) {
 			throw new BadRequest("Token '"+token+"' is not found in database");
 		}
-
 		if (passwordToken.isExpired()) {
 			throw new BadRequest("Token '"+token+"' is expired");
 		}
 	}
+
+	@Override
 	public String isUpdatePasswordLinkValid(
-			String token, 
-			HttpServletRequest request, 
-			HttpServletResponse response, 
+			String token,
+			HttpServletRequest request,
+			HttpServletResponse response,
 			ServletContext context
 	) {
 		validateUpdatePasswordToken(token);
