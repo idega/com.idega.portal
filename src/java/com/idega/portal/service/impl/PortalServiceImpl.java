@@ -1,13 +1,15 @@
 package com.idega.portal.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 
-import javax.mail.MessagingException;
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,6 +41,9 @@ import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
+import com.idega.portal.business.AccountCreatedMessageSender;
+import com.idega.portal.business.DefaultAccountCreatedMessageSender;
+import com.idega.portal.business.MessageSender;
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
@@ -64,7 +69,6 @@ import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
-import com.idega.util.SendMail;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
 import com.idega.util.expression.ELUtil;
@@ -99,7 +103,24 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private PasswordTokenBusiness passwordTokenBusiness;
+	
+	@Autowired(required=false)
+	private List<AccountCreatedMessageSender> customAccountCreatedMessagesSenders;
 
+	private List<? extends MessageSender> accountCreatedMessagesSenders;
+	
+	@PostConstruct
+    private void initAccountCreatedMessagesSenders() {
+        if(ListUtil.isEmpty(customAccountCreatedMessagesSenders)) {
+        	accountCreatedMessagesSenders = Arrays.asList(
+        			new DefaultAccountCreatedMessageSender()
+        	);
+        	return;
+        }
+        accountCreatedMessagesSenders = customAccountCreatedMessagesSenders;
+        
+    }
+	
 	private StandardGroup getStandardGroup() {
 		if (standardGroup == null) {
 			try {
@@ -266,7 +287,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 									+ " for user (ID: "
 									+ user.getPrimaryKey().toString() + ")");
 				}
-				sendAccountCreatedMail(user, account.getEmail());
+				IWContext iwc = new IWContext(request, response, context);
+				sendAccountCreatedMessage(user, iwc.getLocale());
 			}
 			account.setUserId(user.getPrimaryKey().toString());
 			account.setErrorMessage(null);
@@ -278,41 +300,14 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return account;
 	}
 
-	private void sendAccountCreatedMail(
-			com.idega.user.data.User user,
-			String email
-	) throws MessagingException {
-		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
-		IWMainApplication iwma = getApplication();
-		IWMainApplicationSettings settings = iwma.getSettings();
-		String team = iwrb.getLocalizedString(
-				"message.email.account_created.body.with_regards",
-				null
-		);
-		if(StringUtil.isEmpty(team)) {
-			team = settings.getProperty("with_regards_text", "Idega");
+	private void sendAccountCreatedMessage(
+			com.idega.user.data.User legacyUser,
+			Locale locale
+	) throws Exception {
+		User user = getUser(legacyUser);
+		for(MessageSender sender : accountCreatedMessagesSenders) {
+			sender.sendUserMessages(user, locale);
 		}
-		String subject = iwrb.getLocalizedString(
-				"message.email.account_created.subject",
-				"Account was created"
-		);
-		Object[] paremeters = {user.getDisplayName()};
-		String body = iwrb.getLocalizedAndFormattedString(
-				"message.email.account_created.body",
-				"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
-				paremeters
-		);
-		body += "\n\n" + team;
-		sendEmail(settings,email, subject, body);
-	}
-	private void sendEmail(
-			IWMainApplicationSettings settings,
-			String emailTo,
-			String subject,
-			String body
-	) throws MessagingException {
-		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
-		SendMail.send(from, emailTo, null, null, null, null, subject, body);
 	}
 
 	@Override
