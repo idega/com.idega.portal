@@ -293,25 +293,22 @@ public class SecurityUtil {
 			return false;
 		}
 
-		if (iwc == null) {
-			LOGGER.warning(IWContext.class.getName() + " is unavailable, unable to check is user " + user + " has role(s) " + roles);
-			return false;
-		}
-
-		if (iwc.isSuperAdmin()) {
+		if (iwc != null && iwc.isSuperAdmin()) {
 			return true;
 		}
 
-		Map<String, SecurityResolver> resolvers = WebApplicationContextUtils.getWebApplicationContext(iwc.getServletContext()).getBeansOfType(SecurityResolver.class);
-		if (!MapUtil.isEmpty(resolvers)) {
-			for (SecurityResolver resolver: resolvers.values()) {
-				if (resolver.hasAccess(iwc, user, roles)) {
-					return true;
+		if (iwc != null) {
+			Map<String, SecurityResolver> resolvers = WebApplicationContextUtils.getWebApplicationContext(iwc.getServletContext()).getBeansOfType(SecurityResolver.class);
+			if (!MapUtil.isEmpty(resolvers)) {
+				for (SecurityResolver resolver: resolvers.values()) {
+					if (resolver.hasAccess(iwc, user, roles)) {
+						return true;
+					}
 				}
 			}
 		}
 
-		AccessController accessController = iwc.getAccessController();
+		AccessController accessController = IWMainApplication.getDefaultIWMainApplication().getAccessController();
 
 		Set<String> userRoles = accessController.getAllRolesForUser(user);
 		if (!ListUtil.isEmpty(userRoles)) {
