@@ -311,4 +311,4 @@ timeline=Timeline
 message.email.account_created.subject=Account was created
 message.email.account_created.body=Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.
 message.password_remind.success=It succeeded! We have sent instructions at the email {0} so you can reset your password
-message.email.registered.body=Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.
+message.email.password_remind.body=Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.

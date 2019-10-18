@@ -1,6 +1,5 @@
 package com.idega.portal.service.impl;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,7 +35,6 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
-import com.idega.idegaweb.IWConstants;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
@@ -287,7 +285,13 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
 		IWMainApplication iwma = getApplication();
 		IWMainApplicationSettings settings = iwma.getSettings();
-		String team = settings.getProperty("with_regards_text", "Idega");
+		String team = iwrb.getLocalizedString(
+				"message.email.account_created.body.with_regards",
+				null
+		);
+		if(StringUtil.isEmpty(team)) {
+			team = settings.getProperty("with_regards_text", "Idega");
+		}
 		String subject = iwrb.getLocalizedString(
 				"message.email.account_created.subject",
 				"Account was created"
@@ -354,12 +358,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				iwc.getRemoteIpAddress(),
 				Long.valueOf(86400000) // 24 hours
 		);
-		sendPasswordResetLink(user, iwc, email, passwordToken, iwrb, settings);
-		String message = iwrb.getLocalizedString(
-				"message.password_remind.success",
-				"It succeeded! We have sent instructions at the email {0} so you can reset your password"
-		);
-		message = MessageFormat.format(message, new Object[] {email});
+		sendPasswordResetLink(user, iwc, email, passwordToken, iwrb);
 		return email;
 	}
 
@@ -368,17 +367,17 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			IWContext iwc,
 			String emailTo,
 			PasswordTokenEntity passwordToken,
-			IWResourceBundle iwrb,
-			IWMainApplicationSettings settings
+			IWResourceBundle iwrb
 	) {
 		String link = passwordTokenBusiness.getLink(passwordToken, iwc);
+		String systemName = iwrb.getLocalizedString("message.email.password_remind.body.system_name", "Idega");
 		String message = iwrb.getLocalizedAndFormattedString(
-				"message.email.registered.body",
+				"message.email.password_remind.body",
 				"Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.",
 				new Object[] {
 					user.getDisplayName(),
 					user.getFirstName(),
-					settings.getProperty(IWConstants.SERVER_URL_PROPERTY_NAME),
+					systemName,
 					link
 				}
 		);
