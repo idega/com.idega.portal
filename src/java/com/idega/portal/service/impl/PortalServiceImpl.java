@@ -37,8 +37,6 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
-import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.business.AccountCreatedMessageSender;
@@ -103,12 +101,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private PasswordTokenBusiness passwordTokenBusiness;
-	
+
 	@Autowired(required=false)
 	private List<AccountCreatedMessageSender> customAccountCreatedMessagesSenders;
 
 	private List<? extends MessageSender> accountCreatedMessagesSenders;
-	
+
 	@PostConstruct
     private void initAccountCreatedMessagesSenders() {
         if(ListUtil.isEmpty(customAccountCreatedMessagesSenders)) {
@@ -118,9 +116,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
         	return;
         }
         accountCreatedMessagesSenders = customAccountCreatedMessagesSenders;
-        
+
     }
-	
+
 	private StandardGroup getStandardGroup() {
 		if (standardGroup == null) {
 			try {
@@ -201,24 +199,22 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			Name userNames = null;
 			Integer genderId = null;
 
-			if (StringUtil.isEmpty(name)) {
-				com.idega.user.data.User tmpUser = null;
-				try {
-					tmpUser = userBusiness.getUser(account.getPersonalId());
-				} catch (Exception e) {}
-				if (tmpUser != null) {
-					name = tmpUser.getName();
-					userNames = new Name(name);
-					displayName = name;
-
-					int tmpGenderId = tmpUser.getGenderID();
-					if (tmpGenderId > 0) {
-						genderId = tmpGenderId;
-					}
-				}
+			com.idega.user.data.User tmpUser = null;
+			try {
+				tmpUser = userBusiness.getUser(account.getPersonalId());
+			} catch (Exception e) {}
+			if (tmpUser == null) {
+				userNames = StringUtil.isEmpty(name) ? null : new Name(name);
+				displayName = name;
 			} else {
+				name = tmpUser.getName();
 				userNames = new Name(name);
 				displayName = name;
+
+				int tmpGenderId = tmpUser.getGenderID();
+				if (tmpGenderId > 0) {
+					genderId = tmpGenderId;
+				}
 			}
 			if (userNames != null) {
 				firstName = userNames.getFirstName();
@@ -245,7 +241,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						account.getEmail(),
 						null,
 						account.getUsername(),
-						account.getPassword());
+						account.getPassword()
+				);
 			} else {
 				StandardGroup standardGroup = null;
 				try {
@@ -336,9 +333,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Transactional
 	public String doRemindPassword(String ssn, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		IWContext iwc = new IWContext(request, response, context);
-		IWMainApplication iwma = iwc.getIWMainApplication();
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER), iwc);
-		IWMainApplicationSettings settings = iwma.getSettings();
 
 		User user = userDAO.getUser(ssn);
 		if (user == null) {
