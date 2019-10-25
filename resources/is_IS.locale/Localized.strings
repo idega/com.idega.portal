@@ -322,6 +322,6 @@ dashboard.remote_google_login_label=Google reikningur
 timeline=Tímalína
 
 message.email.account_created.subject=Var búin
-message.email.account_created.body=Hæ {0}.\n\nNýskráningu lokið. Aðgangurinn þinn er þegar orðinn virkur og getur þú því skráð þig inn og notað kennitöluna þína sem notendanafn og lykilorðið sem þú valdir sjálf/ur.
+message.email.account_created.body=Góðan dag, {0}.\n\nNýskráningu lokið. Aðgangurinn þinn er þegar orðinn virkur og getur þú því skráð þig inn og notað kennitöluna þína sem notendanafn og lykilorðið sem þú valdir sjálf/ur.
 message.password_remind.success=Það tókst! Við lofum að senda leiðbeiningar á netfangið {0} svo þú getir endurstillt lykilorðið þitt
-message.email.password_remind.body=Hæ {0}.\n\nÓskað hefur verið eftir nýju lykilorði fyrir {1} í gagnagrunni {2}. Til að setja nýtt lykilorð er nauðsynlegt að opna eftirfarandi slóð (setja þarf inn slóðina sem eina samfellda línu í vafra):\n\n{3}\n\nÞessi slóð er virk í 1 sólarhring frá því beiðni barst, eftir það þarf að endurtaka ósk um breytingu á lykilorðinu.
+message.email.password_remind.body=Góðan dag, {0}.\n\nÓskað hefur verið eftir nýju lykilorði fyrir {1} í gagnagrunni {2}. Til að setja nýtt lykilorð er nauðsynlegt að opna eftirfarandi slóð (setja þarf inn slóðina sem eina samfellda línu í vafra):\n\n{3}\n\nÞessi slóð er virk í 1 sólarhring frá því beiðni barst, eftir það þarf að endurtaka ósk um breytingu á lykilorðinu.
