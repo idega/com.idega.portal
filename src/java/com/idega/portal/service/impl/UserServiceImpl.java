@@ -205,10 +205,15 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			//Change the user data
 			if (userIDO != null) {
 				//**** Update the main user data ****
-				//Name
+				//Name and personal ID
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.GENERAL)) {
 					if (!StringUtil.isEmpty(profile.getName())) {
 						userIDO.setFullName(profile.getName());
+						userIDO.store();
+					}
+					
+					if (!StringUtil.isEmpty(profile.getPersonalID())) {
+						userIDO.setPersonalID(profile.getPersonalID());
 						userIDO.store();
 					}
 				}
@@ -317,9 +322,10 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				//Address
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.ADDRESS)) {
 					try {
+						AddressBusiness addressBusiness = getServiceInstance(AddressBusiness.class);
+						com.idega.core.location.data.Address address = userIDO.getUsersMainAddress();
+						
 						if (profile.getAddress() != null) {
-							AddressBusiness addressBusiness = getServiceInstance(AddressBusiness.class);
-							com.idega.core.location.data.Address address = userIDO.getUsersMainAddress();
 							Country country = addressBusiness.getCountryHome().findByCountryName(profile.getAddress().getCountry());
 							com.idega.core.location.data.PostalCode pc = null;
 							if (profile.getAddress().getPostalCodeId() != null) {
@@ -348,6 +354,55 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 										null
 								);
 							}
+						} else if (!StringUtil.isEmpty(profile
+								.getStreetAndNumber())
+								|| !StringUtil.isEmpty(profile.getPostalCode())
+								|| !StringUtil.isEmpty(profile.getCity())) {
+							
+							String streetAndNumber = profile.getStreetAndNumber();
+							String postalCode = profile.getPostalCode();
+							String city = profile.getCity();
+							
+							if (address == null) {
+								com.idega.core.location.data.PostalCode pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city);
+								
+								UserBusiness userBusiness = getServiceInstance(UserBusiness.class);
+								userBusiness.updateUsersMainAddressOrCreateIfDoesNotExist(
+										userIDO,
+										streetAndNumber,
+										pc,
+										null,
+										city,
+										null,
+										null,
+										null
+								);
+							} else {
+								if (StringUtil.isEmpty(streetAndNumber)) {
+									streetAndNumber = address.getStreetAddress();
+								}
+								
+								if (StringUtil.isEmpty(postalCode)) {
+									postalCode = address.getPostalCode() == null ? null : address.getPostalCode().getPostalCode();
+								}
+								
+								if (StringUtil.isEmpty(city)) {
+									city = address.getCity();
+								}
+								
+								Country country = address.getCountry();
+								com.idega.core.location.data.PostalCode pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city, country);
+
+								String streetName = addressBusiness.getStreetNameFromAddressString(streetAndNumber);
+								String streetNumber = addressBusiness.getStreetNumberFromAddressString(streetAndNumber);
+								
+								address.setStreetName(streetName);
+								address.setStreetNumber(streetNumber);
+								address.setPostalCode(pc);
+								address.setCity(city);
+								address.store();
+							}
+
 						}
 					} catch (Exception eAddr) {
 						getLogger().log(Level.WARNING, "Could not update the user address for user with personal id: " + userPersonalId, eAddr);
