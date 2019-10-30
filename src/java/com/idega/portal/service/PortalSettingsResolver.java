@@ -166,6 +166,7 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 		footerData.setPhoneNumber(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_PHONE_NUMBER, CoreConstants.EMPTY));
 		footerData.setFaxNumber(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_FAX_NUMBER, CoreConstants.EMPTY));
 		footerData.setEmailAddress(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_EMAIL_ADDRESS, CoreConstants.EMPTY));
+		footerData.setWorkingHours(getApplicationProperty(PortalConstants.PROPERTY_FOOTER_WORKING_HOURS, CoreConstants.EMPTY));
 		return footerData;
 	}
 

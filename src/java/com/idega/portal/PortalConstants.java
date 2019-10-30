@@ -26,6 +26,7 @@ public class PortalConstants {
 								PROPERTY_FOOTER_PHONE_NUMBER = "footer.phone_number",
 								PROPERTY_FOOTER_FAX_NUMBER = "footer.fax_number",
 								PROPERTY_FOOTER_EMAIL_ADDRESS = "footer.email_address",
+								PROPERTY_FOOTER_WORKING_HOURS = "footer.working_hours",
 
 								PROPERTY_PORTAL_OAUTH_CLIENTS = "portal_oauth_clients",
 								PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID = "portal.localizer_bundle_id";

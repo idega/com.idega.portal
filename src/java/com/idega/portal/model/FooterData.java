@@ -17,6 +17,7 @@ public class FooterData implements Serializable {
 	private String phoneNumber;
 	private String faxNumber;
 	private String emailAddress;
+	private String workingHours;
 
 	public String getMunicipality() {
 		return municipality;
@@ -33,7 +34,7 @@ public class FooterData implements Serializable {
 	public void setAddress(String address) {
 		this.address = address;
 	}
-	
+
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
@@ -56,6 +57,14 @@ public class FooterData implements Serializable {
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+	}
+
+	public String getWorkingHours() {
+		return workingHours;
+	}
+
+	public void setWorkingHours(String workingHours) {
+		this.workingHours = workingHours;
 	}
 
 }
