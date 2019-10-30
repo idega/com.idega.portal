@@ -1,14 +1,15 @@
 package com.idega.portal.service.impl;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 
-import javax.mail.MessagingException;
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,11 +37,11 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
-import com.idega.idegaweb.IWConstants;
-import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
+import com.idega.portal.business.AccountCreatedMessageSender;
+import com.idega.portal.business.DefaultAccountCreatedMessageSender;
+import com.idega.portal.business.MessageSender;
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
@@ -66,7 +67,6 @@ import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
-import com.idega.util.SendMail;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
 import com.idega.util.expression.ELUtil;
@@ -101,6 +101,23 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired
 	private PasswordTokenBusiness passwordTokenBusiness;
+
+	@Autowired(required=false)
+	private List<AccountCreatedMessageSender> customAccountCreatedMessagesSenders;
+
+	private List<? extends MessageSender> accountCreatedMessagesSenders;
+
+	@PostConstruct
+    private void initAccountCreatedMessagesSenders() {
+        if(ListUtil.isEmpty(customAccountCreatedMessagesSenders)) {
+        	accountCreatedMessagesSenders = Arrays.asList(
+        			new DefaultAccountCreatedMessageSender()
+        	);
+        	return;
+        }
+        accountCreatedMessagesSenders = customAccountCreatedMessagesSenders;
+
+    }
 
 	private StandardGroup getStandardGroup() {
 		if (standardGroup == null) {
@@ -182,24 +199,22 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			Name userNames = null;
 			Integer genderId = null;
 
-			if (StringUtil.isEmpty(name)) {
-				com.idega.user.data.User tmpUser = null;
-				try {
-					tmpUser = userBusiness.getUser(account.getPersonalId());
-				} catch (Exception e) {}
-				if (tmpUser != null) {
-					name = tmpUser.getName();
-					userNames = new Name(name);
-					displayName = name;
-
-					int tmpGenderId = tmpUser.getGenderID();
-					if (tmpGenderId > 0) {
-						genderId = tmpGenderId;
-					}
-				}
+			com.idega.user.data.User tmpUser = null;
+			try {
+				tmpUser = userBusiness.getUser(account.getPersonalId());
+			} catch (Exception e) {}
+			if (tmpUser == null) {
+				userNames = StringUtil.isEmpty(name) ? null : new Name(name);
+				displayName = name;
 			} else {
+				name = tmpUser.getName();
 				userNames = new Name(name);
 				displayName = name;
+
+				int tmpGenderId = tmpUser.getGenderID();
+				if (tmpGenderId > 0) {
+					genderId = tmpGenderId;
+				}
 			}
 			if (userNames != null) {
 				firstName = userNames.getFirstName();
@@ -226,7 +241,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						account.getEmail(),
 						null,
 						account.getUsername(),
-						account.getPassword());
+						account.getPassword()
+				);
 			} else {
 				StandardGroup standardGroup = null;
 				try {
@@ -268,7 +284,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 									+ " for user (ID: "
 									+ user.getPrimaryKey().toString() + ")");
 				}
-				sendAccountCreatedMail(user, account.getEmail());
+				IWContext iwc = new IWContext(request, response, context);
+				sendAccountCreatedMessage(user, iwc.getLocale());
 			}
 			account.setUserId(user.getPrimaryKey().toString());
 			account.setErrorMessage(null);
@@ -280,35 +297,14 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return account;
 	}
 
-	private void sendAccountCreatedMail(
-			com.idega.user.data.User user,
-			String email
-	) throws MessagingException {
-		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
-		IWMainApplication iwma = getApplication();
-		IWMainApplicationSettings settings = iwma.getSettings();
-		String team = settings.getProperty("with_regards_text", "Idega");
-		String subject = iwrb.getLocalizedString(
-				"message.email.account_created.subject",
-				"Account was created"
-		);
-		Object[] paremeters = {user.getDisplayName()};
-		String body = iwrb.getLocalizedAndFormattedString(
-				"message.email.account_created.body",
-				"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
-				paremeters
-		);
-		body += "\n\n" + team;
-		sendEmail(settings,email, subject, body);
-	}
-	private void sendEmail(
-			IWMainApplicationSettings settings,
-			String emailTo,
-			String subject,
-			String body
-	) throws MessagingException {
-		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
-		SendMail.send(from, emailTo, null, null, null, null, subject, body);
+	private void sendAccountCreatedMessage(
+			com.idega.user.data.User legacyUser,
+			Locale locale
+	) throws Exception {
+		User user = getUser(legacyUser);
+		for(MessageSender sender : accountCreatedMessagesSenders) {
+			sender.sendUserMessages(user, locale);
+		}
 	}
 
 	@Override
@@ -337,9 +333,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Transactional
 	public String doRemindPassword(String ssn, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		IWContext iwc = new IWContext(request, response, context);
-		IWMainApplication iwma = iwc.getIWMainApplication();
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER), iwc);
-		IWMainApplicationSettings settings = iwma.getSettings();
 
 		User user = userDAO.getUser(ssn);
 		if (user == null) {
@@ -354,12 +348,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				iwc.getRemoteIpAddress(),
 				Long.valueOf(86400000) // 24 hours
 		);
-		sendPasswordResetLink(user, iwc, email, passwordToken, iwrb, settings);
-		String message = iwrb.getLocalizedString(
-				"message.password_remind.success",
-				"It succeeded! We have sent instructions at the email {0} so you can reset your password"
-		);
-		message = MessageFormat.format(message, new Object[] {email});
+		sendPasswordResetLink(user, iwc, email, passwordToken, iwrb);
 		return email;
 	}
 
@@ -368,17 +357,17 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			IWContext iwc,
 			String emailTo,
 			PasswordTokenEntity passwordToken,
-			IWResourceBundle iwrb,
-			IWMainApplicationSettings settings
+			IWResourceBundle iwrb
 	) {
 		String link = passwordTokenBusiness.getLink(passwordToken, iwc);
+		String systemName = iwrb.getLocalizedString("message.email.password_remind.body.system_name", "Idega");
 		String message = iwrb.getLocalizedAndFormattedString(
-				"message.email.registered.body",
+				"message.email.password_remind.body",
 				"Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.",
 				new Object[] {
 					user.getDisplayName(),
 					user.getFirstName(),
-					settings.getProperty(IWConstants.SERVER_URL_PROPERTY_NAME),
+					systemName,
 					link
 				}
 		);
