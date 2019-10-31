@@ -118,6 +118,7 @@ public class UserProfile extends User {
 
 		id = Integer.valueOf(user.getId());
 		personalId = user.getPersonalID();
+		setPersonalID(user.getPersonalID());
 		com.idega.core.contact.data.Email email = null;
 		try {
 			email = user.getUsersEmail();
@@ -142,8 +143,9 @@ public class UserProfile extends User {
 		UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
 		UserDataBean userDataBean = userApplicationEngine.getUserInfo(user);
 		StringBuilder sb = new StringBuilder();
-
-		String line = userDataBean.getStreetNameAndNumber();
+		
+		streetAndNumber = userDataBean.getStreetNameAndNumber();
+		String line = streetAndNumber;
 		if (!StringUtil.isEmpty(line)) {
 			sb.append(line);
 		}
@@ -158,7 +160,8 @@ public class UserProfile extends User {
 			sb.append(line);
 		}
 
-		line = userDataBean.getCity();
+		city = userDataBean.getCity();
+		line = city;
 		if (!StringUtil.isEmpty(line)) {
 			if (sb.length() > 0) {
 				sb.append(CoreConstants.COMMA)
@@ -188,6 +191,7 @@ public class UserProfile extends User {
 			sb.append(line);
 		}
 
+		postalCode = userDataBean.getPostalCodeId();
 		line = userDataBean.getPostalBox();
 		if (!StringUtil.isEmpty(line)) {
 			if (sb.length() > 0) {
