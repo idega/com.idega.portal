@@ -15,12 +15,22 @@ public class Filter implements Serializable {
 
 	private List<DataElement> dataToLoad = null;
 
+	private Boolean loadDataFromLegacyUser = Boolean.FALSE;
+
 	public List<DataElement> getDataToLoad() {
 		return dataToLoad;
 	}
 
 	public void setDataToLoad(List<DataElement> dataToLoad) {
 		this.dataToLoad = dataToLoad;
+	}
+
+	public Boolean getLoadDataFromLegacyUser() {
+		return loadDataFromLegacyUser;
+	}
+
+	public void setLoadDataFromLegacyUser(Boolean loadDataFromLegacyUser) {
+		this.loadDataFromLegacyUser = loadDataFromLegacyUser;
 	}
 
 }
