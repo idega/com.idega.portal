@@ -31,6 +31,7 @@ import com.idega.block.login.business.PasswordTokenBusiness;
 import com.idega.block.login.data.PasswordTokenEntity;
 import com.idega.block.login.data.dao.PasswordTokenEntityDAO;
 import com.idega.block.login.presentation.Login;
+import com.idega.core.accesscontrol.business.AccessController;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.business.LoginState;
@@ -59,10 +60,15 @@ import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
 import com.idega.restful.exception.BadRequest;
 import com.idega.restful.exception.InternalServerError;
+import com.idega.user.bean.UserDataBean;
+import com.idega.user.business.CompanyHelper;
+import com.idega.user.business.GroupBusiness;
 import com.idega.user.business.StandardGroup;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.dao.UserDAO;
+import com.idega.user.data.Group;
 import com.idega.user.data.bean.User;
+import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
@@ -104,6 +110,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired(required=false)
 	private List<AccountCreatedMessageSender> customAccountCreatedMessagesSenders;
+
+	@Autowired
+	private CompanyHelper companyHelper;
 
 	private List<? extends MessageSender> accountCreatedMessagesSenders;
 
@@ -182,11 +191,18 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		try {
+			IWContext iwc = new IWContext(request, response, context);
+
 			LoginTable login = LoginDBHandler.getUserLoginByUserName(account.getUsername());
 			if (login != null) {
 				account.setErrorMessage(iwrb.getLocalizedString("account.please_choose_different_user_name", "Please choose different username"));
 				return account;
 			}
+
+			UserDataBean company = null;
+			try {
+				company = companyHelper.getCompanyInfo(account.getPersonalId());
+			} catch (Exception e) {}
 
 			com.idega.user.data.User user = null;
 			UserBusiness userBusiness = getUserBusiness();
@@ -204,8 +220,14 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				tmpUser = userBusiness.getUser(account.getPersonalId());
 			} catch (Exception e) {}
 			if (tmpUser == null) {
-				userNames = StringUtil.isEmpty(name) ? null : new Name(name);
-				displayName = name;
+				if (company == null) {
+					userNames = StringUtil.isEmpty(name) ? null : new Name(name);
+					displayName = name;
+				} else {
+					name = company.getName();
+					displayName = name;
+					firstName = name;
+				}
 			} else {
 				name = tmpUser.getName();
 				userNames = new Name(name);
@@ -222,15 +244,54 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				lastName = userNames.getLastName();
 			}
 
-			if (!userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale())) {
+			if (company == null && !userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale())) {
 				account.setErrorMessage(iwrb.getLocalizedString("account.provide_valid_personal_id", "Please provide valid personal ID"));
 				return account;
 			}
 
+			Group companyGroup = null;
+			GroupBusiness groupBusiness = getServiceInstance(GroupBusiness.class);
+			if (company != null && company.getGroupId() != null) {
+				companyGroup = groupBusiness.getGroupByGroupID(company.getGroupId());
+			}
+
+			try {
+				user = userBusiness.getUser(account.getPersonalId());
+			} catch (Exception e) {}
+
 			boolean newLogin = StringUtil.isEmpty(account.getUuid());
-			if (!newLogin) {
+			if (newLogin) {
+				StandardGroup standardGroup = null;
+				if (companyGroup == null) {
+					try {
+						standardGroup = getStandardGroup();
+					} catch (Throwable t) {}
+				}
+				user = userBusiness.createUserWithLogin(
+						firstName,
+						middleName,
+						lastName,
+						account.getPersonalId(),
+						displayName,
+						null,						//	Description
+						genderId,					//	Gender
+						null,						//	Date of birth
+						companyGroup == null ?
+								standardGroup == null ? null : Integer.valueOf(standardGroup.getGroup().getPrimaryKey().toString()) :
+								(Integer) companyGroup.getPrimaryKey(),
+						account.getUsername(),
+						account.getPassword(),
+						Boolean.TRUE,
+						IWTimestamp.RightNow(),
+						5000,
+						Boolean.FALSE,
+						Boolean.TRUE,
+						Boolean.FALSE,
+						null
+				);
+			} else {
 				user = userBusiness.update(
-						null,
+						user == null ? null : user.getId(),
 						account.getUuid(),
 						null,
 						firstName,
@@ -243,31 +304,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						account.getUsername(),
 						account.getPassword()
 				);
-			} else {
-				StandardGroup standardGroup = null;
-				try {
-					standardGroup = getStandardGroup();
-				} catch (Throwable t) {}
-				user = userBusiness.createUserWithLogin(
-						firstName,
-						middleName,
-						lastName,
-						account.getPersonalId(),
-						displayName,
-						null,						//	Description
-						genderId,					//	Gender
-						null,						//	Date of birth
-						standardGroup == null ? null : Integer.valueOf(standardGroup.getGroup().getPrimaryKey().toString()),
-						account.getUsername(),
-						account.getPassword(),
-						Boolean.TRUE,
-						IWTimestamp.RightNow(),
-						5000,
-						Boolean.FALSE,
-						Boolean.TRUE,
-						Boolean.FALSE,
-						null
-				);
 			}
 
 			if (user == null) {
@@ -275,16 +311,31 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				return account;
 			}
 
+			if (companyGroup != null) {
+				Integer groupId = company.getGroupId();
+				groupBusiness.addUser(groupId, user);
+
+				String defaultRolesForCompanyProp = getSettings().getProperty("dashboard.default_roles_for_company");
+				if (!StringUtil.isEmpty(defaultRolesForCompanyProp)) {
+					String[] defaultRolesForCompany = defaultRolesForCompanyProp.split(CoreConstants.COMMA);
+					if (!ArrayUtil.isEmpty(defaultRolesForCompany)) {
+						AccessController accessController = iwc.getAccessController();
+						for (String role: defaultRolesForCompany) {
+							if (StringUtil.isEmpty(role)) {
+								continue;
+							}
+
+							accessController.addRoleToGroup(role, groupId, iwc);
+						}
+					}
+				}
+			}
+
 			if (!StringUtil.isEmpty(account.getEmail())) {
 				Email email = userBusiness.updateUserMail(user, account.getEmail());
 				if (email == null) {
-					getLogger().log(
-							Level.WARNING,
-							"Error updating email: " + account.getEmail()
-									+ " for user (ID: "
-									+ user.getPrimaryKey().toString() + ")");
+					getLogger().log(Level.WARNING, "Error updating email: " + account.getEmail() + " for user (ID: " + user.getPrimaryKey().toString() + ")");
 				}
-				IWContext iwc = new IWContext(request, response, context);
 				sendAccountCreatedMessage(user, iwc.getLocale());
 			}
 			account.setUserId(user.getPrimaryKey().toString());
