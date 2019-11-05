@@ -218,24 +218,46 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 					}
 				}
 
-				//**** Change member password *****
-				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {
-					if (!StringUtil.isEmpty(profile.getNewPassword()) && !StringUtil.isEmpty(profile.getNewPasswordRepeat())) {
-						try {
-							LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
-							String passwordVerificationErrors = verifyPassword(loginTable, profile);
-							if (StringUtil.isEmpty(passwordVerificationErrors)) {
-								LoginDBHandler.updateLogin(((Integer) userIDO.getPrimaryKey()).intValue(), loginTable.getUserLogin(), profile.getNewPassword());
-								LoginInfo info = LoginDBHandler.getLoginInfo(loginTable);
-								info.store();
-							} else {
-								errors += passwordVerificationErrors;
+				//**** Change member username and password *****
+				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {					
+					try {						
+						LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
+						boolean changeUsername = !StringUtil.isEmpty(profile.getUsername()) && !profile.getUsername().equals(loginTable.getUserLogin());
+						boolean changePassword = !StringUtil.isEmpty(profile.getNewPassword()) && !StringUtil.isEmpty(profile.getNewPasswordRepeat());
+						
+						if (changeUsername || changePassword) {
+							String userLogin = loginTable.getUserLogin();
+							String userPassword = null;
+							
+							if (changeUsername) {
+								userLogin = profile.getUsername();
 							}
-						} catch (Exception e1) {
-							getLogger().log(Level.WARNING, "Could not change the user password for member with personal id: " + userPersonalId, e1);
-							String errMsg = iwrb.getLocalizedString("user_update.could_not_change_password.error", "Could not change the user password for user with personal id: {0}. \n");
-							errors += MessageFormat.format(errMsg, userPersonalId);
+							
+							if (changePassword) {
+								String passwordVerificationErrors = verifyPassword(loginTable, profile);
+								if (StringUtil.isEmpty(passwordVerificationErrors)) {
+									userPassword = profile.getNewPassword();
+								} else {
+									errors += passwordVerificationErrors;
+								}
+							}
+							
+							if (userPassword == null) {
+								loginTable.setUserLogin(userLogin);
+								loginTable.setLastChanged(IWTimestamp.getTimestampRightNow());
+								loginTable.store();
+								CoreUtil.clearAllCaches();
+							} else {
+								LoginDBHandler.updateLogin(((Integer) userIDO.getPrimaryKey()).intValue(), userLogin, userPassword);
+							}
+							
+							LoginInfo info = LoginDBHandler.getLoginInfo(loginTable);
+							info.store();
 						}
+					} catch (Exception e1) {
+						getLogger().log(Level.WARNING, "Could not change the user password for member with personal id: " + userPersonalId, e1);
+						String errMsg = iwrb.getLocalizedString("user_update.could_not_change_password.error", "Could not change the user password for user with personal id: {0}. \n");
+						errors += MessageFormat.format(errMsg, userPersonalId);
 					}
 				}
 
