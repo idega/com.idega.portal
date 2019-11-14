@@ -216,9 +216,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			Integer genderId = null;
 
 			com.idega.user.data.User tmpUser = null;
-			try {
-				tmpUser = userBusiness.getUser(account.getPersonalId());
-			} catch (Exception e) {}
+			if (company == null) {
+				try {
+					tmpUser = userBusiness.getUser(account.getPersonalId());
+				} catch (Exception e) {}
+			}
 			if (tmpUser == null) {
 				if (company == null) {
 					userNames = StringUtil.isEmpty(name) ? null : new Name(name);
