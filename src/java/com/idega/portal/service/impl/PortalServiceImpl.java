@@ -67,6 +67,7 @@ import com.idega.user.business.StandardGroup;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.dao.UserDAO;
 import com.idega.user.data.Group;
+import com.idega.user.data.MetadataConstants;
 import com.idega.user.data.bean.User;
 import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
@@ -316,6 +317,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			if (companyGroup != null) {
 				Integer groupId = company.getGroupId();
 				groupBusiness.addUser(groupId, user);
+
+				user.setMetaData(MetadataConstants.USER_REAL_COMPANY_META_DATA_KEY, company.getGroupId().toString());
+				user.store();
+				CoreUtil.clearIDOCaches();
 
 				String defaultRolesForCompanyProp = getSettings().getProperty("dashboard.default_roles_for_company");
 				if (!StringUtil.isEmpty(defaultRolesForCompanyProp)) {
