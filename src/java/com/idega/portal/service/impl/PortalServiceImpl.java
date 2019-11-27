@@ -591,6 +591,25 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				return new LoginResult(-1, error, "login_error.password_is_not_provided");
 			}
 
+			String redirections = getSettings().getProperty("dashboard.redirections");
+			if (!StringUtil.isEmpty(redirections)) {
+				String[] usernamesWithRedirections = redirections.split(CoreConstants.COMMA);
+				if (!ArrayUtil.isEmpty(usernamesWithRedirections)) {
+					for (String userNameWithRedirection: usernamesWithRedirections) {
+						if (StringUtil.isEmpty(userNameWithRedirection)) {
+							continue;
+						}
+
+						String[] usernameAndRedirection = userNameWithRedirection.split(CoreConstants.EQ);
+						if (!ArrayUtil.isEmpty(usernameAndRedirection) && usernameAndRedirection.length == 2 && usernameAndRedirection[0].equals(username)) {
+							LoginResult result = new LoginResult();
+							result.setRedirect(usernameAndRedirection[1]);
+							return result;
+						}
+					}
+				}
+			}
+
 			if (!loginBusiness.logInUser(request, username, password)) {
 				LoginState state = LoginBusinessBean.internalGetState(iwc);
 				String errorLocalizedKey = "login_failed";
