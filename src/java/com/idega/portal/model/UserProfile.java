@@ -143,7 +143,7 @@ public class UserProfile extends User {
 		UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
 		UserDataBean userDataBean = userApplicationEngine.getUserInfo(user);
 		StringBuilder sb = new StringBuilder();
-		
+
 		streetAndNumber = userDataBean.getStreetNameAndNumber();
 		String line = streetAndNumber;
 		if (!StringUtil.isEmpty(line)) {
@@ -619,6 +619,9 @@ public class UserProfile extends User {
 	}
 
 	public String getPersonalId() {
+		if (StringUtil.isEmpty(personalId)) {
+			return getPersonalID();
+		}
 		return personalId;
 	}
 
