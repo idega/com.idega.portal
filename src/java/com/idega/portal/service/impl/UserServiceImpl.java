@@ -211,7 +211,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 						userIDO.setFullName(profile.getName());
 						userIDO.store();
 					}
-					
+
 					if (!StringUtil.isEmpty(profile.getPersonalID())) {
 						userIDO.setPersonalID(profile.getPersonalID());
 						userIDO.store();
@@ -219,20 +219,20 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				}
 
 				//**** Change member username and password *****
-				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {					
-					try {						
+				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {
+					try {
 						LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
 						boolean changeUsername = !StringUtil.isEmpty(profile.getUsername()) && !profile.getUsername().equals(loginTable.getUserLogin());
 						boolean changePassword = !StringUtil.isEmpty(profile.getNewPassword()) && !StringUtil.isEmpty(profile.getNewPasswordRepeat());
-						
+
 						if (changeUsername || changePassword) {
 							String userLogin = loginTable.getUserLogin();
 							String userPassword = null;
-							
+
 							if (changeUsername) {
 								userLogin = profile.getUsername();
 							}
-							
+
 							if (changePassword) {
 								String passwordVerificationErrors = verifyPassword(loginTable, profile);
 								if (StringUtil.isEmpty(passwordVerificationErrors)) {
@@ -241,7 +241,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 									errors += passwordVerificationErrors;
 								}
 							}
-							
+
 							if (userPassword == null) {
 								loginTable.setUserLogin(userLogin);
 								loginTable.setLastChanged(IWTimestamp.getTimestampRightNow());
@@ -250,12 +250,12 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 							} else {
 								LoginDBHandler.updateLogin(((Integer) userIDO.getPrimaryKey()).intValue(), userLogin, userPassword);
 							}
-							
+
 							LoginInfo info = LoginDBHandler.getLoginInfo(loginTable);
 							info.store();
 						}
-					} catch (Exception e1) {
-						getLogger().log(Level.WARNING, "Could not change the user password for member with personal id: " + userPersonalId, e1);
+					} catch (Exception e) {
+						getLogger().log(Level.WARNING, "Could not change the user password for member with personal id: " + userPersonalId, e);
 						String errMsg = iwrb.getLocalizedString("user_update.could_not_change_password.error", "Could not change the user password for user with personal id: {0}. \n");
 						errors += MessageFormat.format(errMsg, userPersonalId);
 					}
@@ -346,7 +346,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 					try {
 						AddressBusiness addressBusiness = getServiceInstance(AddressBusiness.class);
 						com.idega.core.location.data.Address address = userIDO.getUsersMainAddress();
-						
+
 						if (profile.getAddress() != null) {
 							Country country = addressBusiness.getCountryHome().findByCountryName(profile.getAddress().getCountry());
 							com.idega.core.location.data.PostalCode pc = null;
@@ -355,9 +355,11 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 							} else {
 								pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(profile.getAddress().getPostalCode(), profile.getAddress().getCity(), country);
 							}
-							String streetName = addressBusiness.getStreetNameFromAddressString(profile.getAddress().getStreetAddress());
-							String streetNumber = addressBusiness.getStreetNumberFromAddressString(profile.getAddress().getStreetAddress());
+							String streetAddress = profile.getAddress().getStreetAddress();
+							String streetName = addressBusiness.getStreetNameFromAddressString(streetAddress);
+							String streetNumber = addressBusiness.getStreetNumberFromAddressString(streetAddress);
 							if (address != null) {
+								address.setStreetAddressNominative(streetAddress);
 								address.setStreetName(streetName);
 								address.setStreetNumber(streetNumber);
 								address.setPostalCode(pc);
@@ -367,7 +369,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								UserBusiness userBusiness = getServiceInstance(UserBusiness.class);
 								userBusiness.updateUsersMainAddressOrCreateIfDoesNotExist(
 										userIDO,
-										profile.getAddress().getStreetAddress(),
+										streetAddress,
 										pc,
 										country,
 										profile.getAddress().getCity(),
@@ -376,18 +378,18 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 										null
 								);
 							}
-						} else if (!StringUtil.isEmpty(profile
-								.getStreetAndNumber())
-								|| !StringUtil.isEmpty(profile.getPostalCode())
-								|| !StringUtil.isEmpty(profile.getCity())) {
-							
+						} else if (
+								!StringUtil.isEmpty(profile.getStreetAndNumber()) ||
+								!StringUtil.isEmpty(profile.getPostalCode()) ||
+								!StringUtil.isEmpty(profile.getCity())
+						) {
 							String streetAndNumber = profile.getStreetAndNumber();
 							String postalCode = profile.getPostalCode();
 							String city = profile.getCity();
-							
+
 							if (address == null) {
 								com.idega.core.location.data.PostalCode pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city);
-								
+
 								UserBusiness userBusiness = getServiceInstance(UserBusiness.class);
 								userBusiness.updateUsersMainAddressOrCreateIfDoesNotExist(
 										userIDO,
@@ -403,23 +405,24 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								if (StringUtil.isEmpty(streetAndNumber)) {
 									streetAndNumber = address.getStreetAddress();
 								}
-								
+
 								if (StringUtil.isEmpty(postalCode)) {
 									postalCode = address.getPostalCode() == null ? null : address.getPostalCode().getPostalCode();
 								}
-								
+
 								if (StringUtil.isEmpty(city)) {
 									city = address.getCity();
 								}
-								
+
 								Country country = address.getCountry();
 								com.idega.core.location.data.PostalCode pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city, country);
 
 								String streetName = addressBusiness.getStreetNameFromAddressString(streetAndNumber);
 								String streetNumber = addressBusiness.getStreetNumberFromAddressString(streetAndNumber);
-								
+
 								address.setStreetName(streetName);
 								address.setStreetNumber(streetNumber);
+								address.setStreetAddressNominative(streetAndNumber);
 								address.setPostalCode(pc);
 								address.setCity(city);
 								address.store();
@@ -467,7 +470,9 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			errors += errorMsg;
 			errors += " \n";
 		} finally {
-			CoreUtil.clearIDOCaches();
+			if (StringUtil.isEmpty(errors)) {
+				CoreUtil.clearIDOCaches();
+			}
 		}
 
 		//Create return result
