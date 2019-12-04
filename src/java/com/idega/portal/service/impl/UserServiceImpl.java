@@ -422,7 +422,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 								Country country = address.getCountry();
 								if (country == null) {
-									String countryISO = locale.getISO3Country();
+									String countryISO = locale.getCountry();
 									if (!StringUtil.isEmpty(countryISO)) {
 										try {
 											CountryHome countryHome = (CountryHome) IDOLookup.getHome(Country.class);
