@@ -89,6 +89,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
@@ -112,6 +113,8 @@ import com.idega.core.contact.data.bean.EmailType;
 import com.idega.core.file.data.ICFile;
 import com.idega.core.location.business.AddressBusiness;
 import com.idega.core.location.data.Country;
+import com.idega.core.location.data.CountryHome;
+import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.model.DataElement;
@@ -180,10 +183,13 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 		String errors = CoreConstants.EMPTY;
 		try {
-			User user = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
+			IWContext iwc = new IWContext(request, response, context);
+			User user = SecurityUtil.getInstance().getAuthorizedUser(iwc);
 			if (user == null) {
 				return result;
 			}
+
+			Locale locale = iwc.getCurrentLocale();
 
 			List<DataElement> dataToLoad = null;
 			if (profile.getFilter() == null || ListUtil.isEmpty(profile.getFilter().getDataToLoad())) {
@@ -415,7 +421,21 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								}
 
 								Country country = address.getCountry();
-								com.idega.core.location.data.PostalCode pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city, country);
+								if (country == null) {
+									String countryISO = locale.getISO3Country();
+									if (!StringUtil.isEmpty(countryISO)) {
+										try {
+											CountryHome countryHome = (CountryHome) IDOLookup.getHome(Country.class);
+											country = countryHome.findByIsoAbbreviation(countryISO);
+										} catch (Exception e) {}
+									}
+								}
+								com.idega.core.location.data.PostalCode pc = null;
+								if (!StringUtil.isEmpty(postalCode)) {
+									pc = country == null ?
+										addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city) :
+										addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city, country);
+								}
 
 								String streetName = addressBusiness.getStreetNameFromAddressString(streetAndNumber);
 								String streetNumber = addressBusiness.getStreetNumberFromAddressString(streetAndNumber);
