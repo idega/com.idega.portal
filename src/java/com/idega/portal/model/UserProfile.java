@@ -244,9 +244,6 @@ public class UserProfile extends User {
 						this.postalCode = postalCode.getPostalCode();
 					}
 				}
-				if (StringUtil.isEmpty(this.postalCode)) {
-					Logger.getLogger(getClass().getName()).warning("Postal code is unknown for " + user + " and address " + address);
-				}
 
 				//Full address
 				StringBuilder sbFullAddress = new StringBuilder();
