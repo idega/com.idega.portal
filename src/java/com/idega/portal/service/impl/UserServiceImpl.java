@@ -234,20 +234,28 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 									StringUtil.isEmpty(profile.getUsername()) ?
 											profile.getLogin() :
 											profile.getUsername();
-							loginTable = LoginDBHandler.createLogin(
-									userIDO,
-									login,
-									profile.getPassword(),
-									Boolean.TRUE,
-									IWTimestamp.RightNow(),
-									-1,
-									Boolean.FALSE,
-									Boolean.TRUE,
-									Boolean.FALSE,
-									null
-							);
+							String password = profile.getPassword();
+							if (!StringUtil.isEmpty(login) && !StringUtil.isEmpty(password)) {
+								loginTable = LoginDBHandler.createLogin(
+										userIDO,
+										login,
+										password,
+										Boolean.TRUE,
+										IWTimestamp.RightNow(),
+										-1,
+										Boolean.FALSE,
+										Boolean.TRUE,
+										Boolean.FALSE,
+										null
+								);
+							}
 						} else {
-							boolean changeUsername = !StringUtil.isEmpty(profile.getUsername()) && !profile.getUsername().equals(loginTable.getUserLogin());
+							String login = StringUtil.isEmpty(profile.getUsername()) ?
+									user.getPersonalID() :
+									StringUtil.isEmpty(profile.getUsername()) ?
+											profile.getLogin() :
+											profile.getUsername();
+							boolean changeUsername = !StringUtil.isEmpty(login) && !login.equals(loginTable.getUserLogin());
 							boolean changePassword = !StringUtil.isEmpty(profile.getNewPassword()) && !StringUtil.isEmpty(profile.getNewPasswordRepeat());
 
 							if (changeUsername || changePassword) {
@@ -255,11 +263,11 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								String userPassword = null;
 
 								if (changeUsername) {
-									userLogin = profile.getUsername();
+									userLogin = login;
 								}
 
 								if (changePassword) {
-									String passwordVerificationErrors = verifyPassword(loginTable, profile);
+									String passwordVerificationErrors = profile.getClass().getName().equals(UserProfile.class.getName()) ? verifyPassword(loginTable, profile) : null;
 									if (StringUtil.isEmpty(passwordVerificationErrors)) {
 										userPassword = profile.getNewPassword();
 									} else {
