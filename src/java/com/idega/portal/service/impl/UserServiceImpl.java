@@ -228,12 +228,13 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {
 					try {
 						LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
+						String login = StringUtil.isEmpty(profile.getUsername()) ?
+								user.getPersonalID() :
+								StringUtil.isEmpty(profile.getUsername()) ?
+										profile.getLogin() :
+										profile.getUsername();
+						login = StringUtil.isEmpty(login) ? profile.getLogin() : login;
 						if (loginTable == null) {
-							String login = StringUtil.isEmpty(profile.getUsername()) ?
-									user.getPersonalID() :
-									StringUtil.isEmpty(profile.getUsername()) ?
-											profile.getLogin() :
-											profile.getUsername();
 							String password = profile.getPassword();
 							if (!StringUtil.isEmpty(login) && !StringUtil.isEmpty(password)) {
 								loginTable = LoginDBHandler.createLogin(
@@ -250,11 +251,6 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								);
 							}
 						} else {
-							String login = StringUtil.isEmpty(profile.getUsername()) ?
-									user.getPersonalID() :
-									StringUtil.isEmpty(profile.getUsername()) ?
-											profile.getLogin() :
-											profile.getUsername();
 							boolean changeUsername = !StringUtil.isEmpty(login) && !login.equals(loginTable.getUserLogin());
 							boolean changePassword = !StringUtil.isEmpty(profile.getNewPassword()) && !StringUtil.isEmpty(profile.getNewPasswordRepeat());
 
