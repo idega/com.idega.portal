@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -78,12 +79,13 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 			Locale localeToUse = null;
 			Locale defaultLocale = getApplication().getDefaultLocale();
 			Locale currentLocale = getCurrentLocale();
-			if (defaultLocale != null
-					&& currentLocale != null
-					&& !defaultLocale.toString().equals(
-							currentLocale.toString())
-					&& ICLocaleBusiness.isLocaleInUse(currentLocale.toString())) {
-				localeToUse = currentLocale;
+			Cookie localeCookie = iwc == null ? null : iwc.getCookie("currentLocale");
+			if (defaultLocale != null && currentLocale != null && !defaultLocale.toString().equals(currentLocale.toString()) && ICLocaleBusiness.isLocaleInUse(currentLocale.toString())) {
+				if (localeCookie == null) {
+					localeToUse = defaultLocale;
+				} else {
+					localeToUse = currentLocale;
+				}
 			}
 			localeToUse = localeToUse == null ? defaultLocale : localeToUse;
 			localeToUse = localeToUse == null ? Locale.ENGLISH : localeToUse;
