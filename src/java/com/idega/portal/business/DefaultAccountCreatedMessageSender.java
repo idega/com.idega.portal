@@ -1,7 +1,10 @@
 package com.idega.portal.business;
 
 import java.util.Locale;
+import java.util.logging.Level;
 
+import com.idega.block.process.message.business.MessageBusiness;
+import com.idega.core.business.DefaultSpringBean;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
@@ -12,7 +15,9 @@ import com.idega.util.CoreConstants;
 import com.idega.util.SendMail;
 import com.idega.util.StringUtil;
 
-public class DefaultAccountCreatedMessageSender implements MessageSender{
+public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implements MessageSender {
+
+	@Override
 	public void sendUserMessages(
 			User user,
 			Locale locale
@@ -24,7 +29,7 @@ public class DefaultAccountCreatedMessageSender implements MessageSender{
 		String body = getBody(user, iwrb);
 		sendUserMessages(user, subject, body);
 	}
-	
+
 	protected String getSubject(
 			User user,
 			IWResourceBundle iwrb
@@ -34,7 +39,7 @@ public class DefaultAccountCreatedMessageSender implements MessageSender{
 				"Account was created"
 		);
 	}
-	
+
 	protected String getBody(
 			User user,
 			IWResourceBundle iwrb
@@ -57,19 +62,28 @@ public class DefaultAccountCreatedMessageSender implements MessageSender{
 		body += "\n\n" + team;
 		return body;
 	}
+
 	protected String getBundleIdentifier() {
 		return PortalConstants.IW_BUNDLE_IDENTIFIER;
 	}
-	
+
 	protected void sendUserMessages(
 			User user,
 			String subject,
 			String body
 	) throws Exception {
+		try {
+			MessageBusiness messageBusiness = getServiceInstance(MessageBusiness.class);
+			messageBusiness.createUserMessage(null, getLegacyUser(user), subject, body, false);
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error creating message for " + user, e);
+		}
+
 		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
 		IWMainApplicationSettings settings = iwma.getSettings();
 		String emailTo = user.getEmailAddress();
 		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
 		SendMail.send(from, emailTo, null, null, null, null, subject, body);
 	}
+
 }
