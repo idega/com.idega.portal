@@ -38,6 +38,9 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
+import com.idega.core.location.data.Address;
+import com.idega.core.location.data.AddressHome;
+import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.business.AccountCreatedMessageSender;
@@ -74,6 +77,7 @@ import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
+import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
 import com.idega.util.expression.ELUtil;
@@ -321,6 +325,20 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				user.setMetaData(MetadataConstants.USER_REAL_COMPANY_META_DATA_KEY, company.getGroupId().toString());
 				user.store();
 				CoreUtil.clearIDOCaches();
+
+				String addressId = company.getAddressId();
+				if (StringHandler.isNumeric(addressId)) {
+					try {
+						AddressHome addressHome = (AddressHome) IDOLookup.getHome(Address.class);
+						Address address = addressHome.findByPrimaryKey(Integer.valueOf(addressId));
+						user.addAddress(address);
+						user.store();
+					} catch (Exception e) {
+						getLogger().log(Level.WARNING, "Error updating user's address by company's address ID: " + addressId, e);
+					}
+				} else {
+					getLogger().warning("Unknown address for company " + user);
+				}
 
 				String defaultRolesForCompanyProp = getSettings().getProperty("dashboard.default_roles_for_company");
 				if (!StringUtil.isEmpty(defaultRolesForCompanyProp)) {
