@@ -3,14 +3,12 @@ package com.idega.portal.model;
 import java.io.Serializable;
 import java.util.Base64;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.idega.block.article.bean.ArticleItemBean;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
 public class Article implements Serializable {
 
 	private static final long serialVersionUID = -4033780636343840369L;
@@ -19,6 +17,7 @@ public class Article implements Serializable {
 			url,
 			teaser;
 
+	@XmlElement
 	public String getUrl() {
 		return url;
 	}
@@ -27,6 +26,7 @@ public class Article implements Serializable {
 		this.url = url;
 	}
 
+	@XmlElement
 	public String getTeaser() {
 		return teaser;
 	}
@@ -52,6 +52,7 @@ public class Article implements Serializable {
 		}
 	}
 
+	@XmlElement
 	public String getTitle() {
 		return title;
 	}
@@ -60,6 +61,7 @@ public class Article implements Serializable {
 		this.title = title;
 	}
 
+	@XmlElement
 	public String getBody() {
 		return body;
 	}

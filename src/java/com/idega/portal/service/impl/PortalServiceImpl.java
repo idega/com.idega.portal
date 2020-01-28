@@ -1,5 +1,6 @@
 package com.idega.portal.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,6 +52,8 @@ import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LocalizedArticle;
+import com.idega.portal.model.LocalizedArticleList;
 import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
@@ -62,7 +65,10 @@ import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
 import com.idega.restful.exception.BadRequest;
+import com.idega.restful.exception.Forbidden;
 import com.idega.restful.exception.InternalServerError;
+import com.idega.restful.exception.NotFound;
+import com.idega.restful.exception.Unauthorized;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.CompanyHelper;
 import com.idega.user.business.GroupBusiness;
@@ -478,6 +484,46 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	public Result removeLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		return localizationService.removeLanguage(locale, request, response, context);
 	}
+	
+	@Override
+	public void localizeArticles(
+			LocalizedArticleList localizedArticlesList, 
+			HttpServletRequest request,
+			HttpServletResponse response, 
+			ServletContext context
+	) throws IOException {
+		IWContext iwc = new IWContext(request, response, context);
+		User user = SecurityUtil.getInstance().getAuthorizedUser(iwc);
+		if(user == null) {
+			throw new Unauthorized();
+		}
+		if(!SecurityUtil.getInstance().hasAnyRole(
+				iwc, 
+				user, 
+				Arrays.asList("dashboard.admin")
+		)) {
+			throw new Forbidden();
+		}
+		List<LocalizedArticle> articles = localizedArticlesList.getArticles();
+		if(ListUtil.isEmpty(articles)) {
+			return;
+		}
+		ArrayList<ArticleItemBean> articlesToSave = new ArrayList<>();
+		for(LocalizedArticle article: articles) {
+			ArticleItemBean bean = new ArticleItemBean();
+			bean.setResourcePath(article.getUrl());
+			bean.setLanguage(article.getLanguage());
+			bean.load();
+			bean.setBody(article.getBody());
+			bean.setHeadline(article.getTitle());
+			articlesToSave.add(bean);
+		}
+		
+		// Saving after everything to had better chance of transaction like behavior
+		for(ArticleItemBean bean: articlesToSave) {
+			bean.store();
+		}
+	}
 
 	@Override
 	public Result doPing(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
@@ -510,6 +556,33 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error loading article at " + uri, e);
 		}
+		return article;
+	}
+	
+	@Override
+	public Article getLocalizedArticle(
+			String url, 
+			String language,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	) throws IOException {
+		ArticleItemBean bean = new ArticleItemBean();
+		bean.setResourcePath(url);
+		bean.setLanguage(language);
+		bean.load();
+		if(!bean.getExists()) {
+			throw new NotFound(
+					"Article (" 
+							+ url 
+							+ ") not found for language (" 
+							+ language 
+							+ ")"
+			);
+		}
+		Article article = new Article();
+		article.setTitle(bean.getHeadline());
+		article.setBody(bean.getBody());
 		return article;
 	}
 
@@ -735,5 +808,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		validateUpdatePasswordToken(token);
 		return "\"" + token + "\"";
 	}
+
 
 }

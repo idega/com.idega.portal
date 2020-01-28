@@ -17,6 +17,8 @@ public interface PortalGateway extends PortalService, UserService {
 								AVAILABLE = "/available",
 								ADD = "/add",
 								REMOVE = "/remove",
+								
+								LOCALIZE_ARTICLES = LANGUAGE + LOCALIZE + "/articles",
 
 								LOGOUT = "/logout",
 								LOGIN = "/login",
@@ -37,6 +39,7 @@ public interface PortalGateway extends PortalService, UserService {
 								PASSWORD_TOKEN_PASSWORD = PASSWORD_TOKEN_BY_ID + "/password",
 
 								ARTICLE = "/article",
-								ARTICLES = "/articles";
+								ARTICLES = "/articles",
+								ARTICLE_LOCALIZED = ARTICLE + "/{language}";
 
 }
