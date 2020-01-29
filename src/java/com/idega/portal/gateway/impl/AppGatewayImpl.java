@@ -24,6 +24,7 @@ import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
+import com.idega.portal.model.UserProfile;
 import com.idega.portal.service.AppService;
 import com.idega.restful.business.DefaultRestfulService;
 
@@ -82,6 +83,18 @@ public class AppGatewayImpl extends DefaultRestfulService implements AppGateway 
 	@Path(AppGateway.CREDENTIALS)
 	public Result isValidLogin(UserAccount credentials) {
 		return appService.isValidLogin(credentials);
+	}
+
+	@Override
+	@GET
+	@Path(PortalGateway.USER)
+	public UserProfile getCitizenProfile(
+			@QueryParam("personalId") String personalId,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return appService.getCitizenProfile(personalId, request, response, context);
 	}
 
 }

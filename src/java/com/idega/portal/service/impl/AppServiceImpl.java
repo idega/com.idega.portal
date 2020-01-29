@@ -18,11 +18,14 @@ import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.portal.PortalConstants;
+import com.idega.portal.model.DataElement;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
+import com.idega.portal.model.UserProfile;
 import com.idega.portal.service.AppService;
 import com.idega.portal.service.PortalService;
+import com.idega.user.dao.UserDAO;
 import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.StringUtil;
@@ -35,6 +38,9 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 	@Autowired
 	@Qualifier(PortalConstants.QUALIFIER_PORTAL)
 	private PortalService portalService;
+
+	@Autowired
+	private UserDAO userDAO;
 
 	@Override
 	public PortalSettings getDashboardSettings(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
@@ -85,6 +91,30 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 		}
 
 		return result;
+	}
+
+	@Override
+	public UserProfile getCitizenProfile(String personalId, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		if (StringUtil.isEmpty(personalId)) {
+			return null;
+		}
+
+		personalId = personalId.trim();
+		if (StringUtil.isEmpty(personalId) || personalId.length() < 10) {
+			return null;
+		}
+
+		try {
+			com.idega.user.data.bean.User user = null;
+			try {
+				user = userDAO.getUser(personalId);
+			} catch (Exception e) {}
+			return user == null ? null : new UserProfile(user, getCurrentLocale(), DataElement.GENERAL);
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting user by personal ID: " + personalId, e);
+		}
+
+		return null;
 	}
 
 }
