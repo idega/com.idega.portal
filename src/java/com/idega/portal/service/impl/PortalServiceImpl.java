@@ -251,9 +251,16 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				lastName = userNames.getLastName();
 			}
 
-			if (company == null && !userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale())) {
-				account.setErrorMessage(iwrb.getLocalizedString("account.provide_valid_personal_id", "Please provide valid personal ID"));
-				return account;
+			if (company == null) {
+				boolean validatePersonalId = getSettings().getBoolean("portal.validate_p_id_" + request.getServerName(), true);
+				boolean error = false;
+				if (validatePersonalId) {
+					error = !userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale());
+				}
+				if (error) {
+					account.setErrorMessage(iwrb.getLocalizedString("account.provide_valid_personal_id", "Please provide valid personal ID"));
+					return account;
+				}
 			}
 
 			Group companyGroup = null;
