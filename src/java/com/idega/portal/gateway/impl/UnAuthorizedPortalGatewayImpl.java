@@ -1,5 +1,6 @@
 package com.idega.portal.gateway.impl;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -27,6 +28,7 @@ import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LocalizedArticleList;
 import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
@@ -34,6 +36,7 @@ import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
 import com.idega.portal.service.PortalService;
 import com.idega.restful.business.DefaultRestfulService;
+import com.idega.restful.exception.Unauthorized;
 
 @Component
 @Path(PortalGateway.PORTAL)
@@ -127,6 +130,18 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 			@Context ServletContext context
 	) {
 		return null;
+	}
+	
+	@Override
+	@POST
+	@Path(PortalGateway.LOCALIZE_ARTICLES)
+	public void localizeArticles(
+			LocalizedArticleList localizedArticlesMap, 
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response, 
+			@Context ServletContext context
+	) throws IOException {
+		throw new Unauthorized();
 	}
 
 	@Override
@@ -240,6 +255,25 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	) {
 		return portalService.getArticleByURI(
 				uri,
+				request,
+				response,
+				context
+		);
+	}
+	
+	@GET
+	@Path(PortalGateway.ARTICLE_LOCALIZED)
+	@Override
+	public Article getLocalizedArticle(
+			@QueryParam("url") String url,
+			@PathParam("language") String language,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) throws IOException {
+		return portalService.getLocalizedArticle(
+				url,
+				language,
 				request,
 				response,
 				context

@@ -1,5 +1,6 @@
 package com.idega.portal.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -11,6 +12,7 @@ import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LocalizedArticleList;
 import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
@@ -38,7 +40,14 @@ public interface PortalService {
 	public Result setLocalization(Localization localization, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result setLocalizations(Localizations localizations, HttpServletRequest request, HttpServletResponse response, ServletContext context);
-
+	
+	void localizeArticles(
+			LocalizedArticleList localizedArticlesMap,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	) throws IOException;
+	
 	public List<LanguageData> getAvailableLanguages(HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result addLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context);
@@ -48,6 +57,14 @@ public interface PortalService {
 	public Result doPing(HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Article getArticleByURI(String uri, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+	
+	Article getLocalizedArticle(
+			String url,
+			String language,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	) throws IOException;
 
 	public ArticleList getArticlesByCategory(String category, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 

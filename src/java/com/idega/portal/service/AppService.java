@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
+import com.idega.portal.model.UserProfile;
 
 public interface AppService {
 
@@ -15,5 +16,7 @@ public interface AppService {
 	public String logout(HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result isValidLogin(UserAccount credentials);
+
+	public UserProfile getCitizenProfile(String personalId, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 }
