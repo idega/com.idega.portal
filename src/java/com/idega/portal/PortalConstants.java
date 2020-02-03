@@ -33,4 +33,8 @@ public class PortalConstants {
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 
+	public static final String METADATA_CONTACT_BY_EMAIL = "CONTACT_BY_EMAIL";
+	public static final String METADATA_CONTACT_BY_SMS = "CONTACT_BY_SMS";
+	public static final String METADATA_CONTACT_BY_MY_MESSAGES = "CONTACT_BY_MY_MESSAGES";
+
 }

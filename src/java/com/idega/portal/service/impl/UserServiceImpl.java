@@ -507,6 +507,28 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 						}
 					}
 				}
+
+				//Save contact flags
+				if (dataToLoad.contains(DataElement.CONTACT_BY) || dataToLoad.contains(DataElement.ALL)) {
+						try {
+							if (profile.getContactByEmail() != null) {
+								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL, profile.getContactByEmail().toString());
+							} else {
+								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL, "false");
+							}
+							if (profile.getContactBySMS() != null) {
+								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_SMS, profile.getContactBySMS().toString());
+							} else {
+								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_SMS, "false");
+							}
+							if (profile.getContactByMyMessages() != null) {
+								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES, profile.getContactByMyMessages().toString());
+							} else {
+								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES, "false");
+							}
+							userIDO.store();
+						} catch (Exception e) {}
+				}
 			}
 		} catch (Exception e) {
 			String errorMsg = "Error updating user: " + e.getLocalizedMessage();

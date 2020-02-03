@@ -83,6 +83,11 @@ public class UserProfile extends User {
 
 	private Boolean selected;
 
+	private Boolean contactByEmail;
+	private Boolean contactBySMS;
+	private Boolean contactByMyMessages;
+
+
 	public UserProfile() {
 		super();
 	}
@@ -107,6 +112,21 @@ public class UserProfile extends User {
 		if (loginTable != null) {
 			this.username = loginTable.getUserLogin();
 		}
+
+		//Get the contact flags
+		String contactByEmailStr = user.getMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL);
+		if (!StringUtil.isEmpty(contactByEmailStr)) {
+			setContactByEmail(Boolean.valueOf(contactByEmailStr));
+		}
+		String contactBySMSStr = user.getMetaData(PortalConstants.METADATA_CONTACT_BY_SMS);
+		if (!StringUtil.isEmpty(contactBySMSStr)) {
+			setContactBySMS(Boolean.valueOf(contactBySMSStr));
+		}
+		String contactByMyMessagesStr = user.getMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES);
+		if (!StringUtil.isEmpty(contactByMyMessagesStr)) {
+			setContactByMyMessages(Boolean.valueOf(contactByMyMessagesStr));
+		}
+
 	}
 
 	public UserProfile(com.idega.user.data.User user) {
@@ -350,6 +370,27 @@ public class UserProfile extends User {
 				Logger.getLogger(getClass().getName()).log(Level.WARNING, "Error getting user's login for user: " + user, eLogin);
 			}
 		}
+
+		//Get the contact flags
+		if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.CONTACT_BY) && userIDO != null) {
+			try {
+				String contactByEmailStr = userIDO.getMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL);
+				if (!StringUtil.isEmpty(contactByEmailStr)) {
+					setContactByEmail(Boolean.valueOf(contactByEmailStr));
+				}
+				String contactBySMSStr = userIDO.getMetaData(PortalConstants.METADATA_CONTACT_BY_SMS);
+				if (!StringUtil.isEmpty(contactBySMSStr)) {
+					setContactBySMS(Boolean.valueOf(contactBySMSStr));
+				}
+				String contactByMyMessagesStr = userIDO.getMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES);
+				if (!StringUtil.isEmpty(contactByMyMessagesStr)) {
+					setContactByMyMessages(Boolean.valueOf(contactByMyMessagesStr));
+				}
+			} catch (Exception eLogin) {
+				Logger.getLogger(getClass().getName()).log(Level.WARNING, "Error getting user's CONTACT BY from metadata for user: " + userIDO, eLogin);
+			}
+		}
+
 
 	}
 
@@ -664,6 +705,30 @@ public class UserProfile extends User {
 
 	public void setSelected(Boolean selected) {
 		this.selected = selected;
+	}
+
+	public Boolean getContactByEmail() {
+		return contactByEmail;
+	}
+
+	public void setContactByEmail(Boolean contactByEmail) {
+		this.contactByEmail = contactByEmail;
+	}
+
+	public Boolean getContactBySMS() {
+		return contactBySMS;
+	}
+
+	public void setContactBySMS(Boolean contactBySMS) {
+		this.contactBySMS = contactBySMS;
+	}
+
+	public Boolean getContactByMyMessages() {
+		return contactByMyMessages;
+	}
+
+	public void setContactByMyMessages(Boolean contactByMyMessages) {
+		this.contactByMyMessages = contactByMyMessages;
 	}
 
 	@Override

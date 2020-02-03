@@ -16,7 +16,8 @@ public enum DataElement {
 	IMAGE,
 	GENDER,
 	FAMILY,
-	LOGIN;
+	LOGIN,
+	CONTACT_BY;
 
 	@JsonCreator
 	public static DataElement fromValue(String value) {
