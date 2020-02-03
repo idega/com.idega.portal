@@ -11,7 +11,7 @@ public class LocalizedArticle extends Article implements JAXBNatural {
 
 	private static final long serialVersionUID = -8185357128248745429L;
 	
-	private String language;
+	private String locale;
 	
 	public LocalizedArticle() {
 		super();
@@ -19,16 +19,16 @@ public class LocalizedArticle extends Article implements JAXBNatural {
 	
 	public LocalizedArticle(ArticleItemBean article) {
 		super(article);
-		this.language = article.getLanguage();
+		this.locale = article.getLanguage();
 	}
 
 	@XmlElement
-	public String getLanguage() {
-		return language;
+	public String getLocale() {
+		return locale;
 	}
 
-	public void setLanguage(String language) {
-		this.language = language;
+	public void setLocale(String locale) {
+		this.locale = locale;
 	}
 	
 

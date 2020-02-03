@@ -40,6 +40,7 @@ public interface PortalGateway extends PortalService, UserService {
 
 								ARTICLE = "/article",
 								ARTICLES = "/articles",
-								ARTICLE_LOCALIZED = ARTICLE + "/{language}";
+								ARTICLE_LOCALIZED = ARTICLE + "/{language}",
+								LOCALIZED_ARTICLE = "/localized-article";
 
 }

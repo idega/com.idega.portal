@@ -6,8 +6,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -517,9 +519,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 		ArrayList<ArticleItemBean> articlesToSave = new ArrayList<>();
 		for(LocalizedArticle article: articles) {
+			String localeString = article.getLocale();
+			String language = localeString.substring(0, 2);
 			ArticleItemBean bean = new ArticleItemBean();
 			bean.setResourcePath(article.getUrl());
-			bean.setLanguage(article.getLanguage());
+			bean.setLanguage(language);
 			bean.load();
 			bean.setBody(article.getBody());
 			bean.setHeadline(article.getTitle());
@@ -530,6 +534,41 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		for(ArticleItemBean bean: articlesToSave) {
 			bean.store();
 		}
+	}
+	
+	@Override
+	public List<LocalizedArticle> getLocalizedArticles(
+			List<String> uris,
+			List<String> locales,
+			HttpServletRequest request,
+			HttpServletResponse response, ServletContext context
+	) throws IOException {
+		List<LocalizedArticle> articles = new ArrayList<LocalizedArticle>();
+		Map<String,String> languages = new HashMap<>(locales.size());
+		for(String locale: locales) {
+			String language = locale.substring(0, 2);
+			languages.put(language, locale);
+		}
+		for(String resourcePath: uris) {
+			for (Map.Entry<String, String> entry : languages.entrySet()) {
+				String language = entry.getKey();
+				String locale = entry.getValue();
+				ArticleItemBean bean = new ArticleItemBean();
+				bean.setResourcePath(resourcePath);
+				bean.setLanguage(language);
+				bean.load();
+				if(!bean.getExists()) {
+					continue;
+				}
+				LocalizedArticle article = new LocalizedArticle();
+				article.setTitle(bean.getHeadline());
+				article.setBody(bean.getBody());
+				article.setUrl(resourcePath);
+				article.setLocale(locale);
+				articles.add(article);
+			}
+		}
+		return articles;
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import com.idega.portal.model.ArticleList;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LocalizedArticle;
 import com.idega.portal.model.LocalizedArticleList;
 import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
@@ -42,10 +43,17 @@ public interface PortalService {
 	public Result setLocalizations(Localizations localizations, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 	
 	void localizeArticles(
-			LocalizedArticleList localizedArticlesMap,
+			LocalizedArticleList localizedArticlesList,
 			HttpServletRequest request,
 			HttpServletResponse response,
 			ServletContext context
+	) throws IOException;
+	
+	List<LocalizedArticle> getLocalizedArticles(
+			List<String> uris,
+			List<String> locales,
+			HttpServletRequest request,
+			HttpServletResponse response, ServletContext context
 	) throws IOException;
 	
 	public List<LanguageData> getAvailableLanguages(HttpServletRequest request, HttpServletResponse response, ServletContext context);

@@ -30,6 +30,7 @@ import com.idega.portal.model.Filter;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
+import com.idega.portal.model.LocalizedArticle;
 import com.idega.portal.model.LocalizedArticleList;
 import com.idega.portal.model.LoginResult;
 import com.idega.portal.model.PortalMenu;
@@ -192,6 +193,23 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 				request, 
 				response, 
 				context
+		);
+	}
+	
+	@Override
+	@GET
+	@Path(PortalGateway.LOCALIZED_ARTICLE)
+	public List<LocalizedArticle> getLocalizedArticles(
+			@QueryParam("uri")List<String> uris,
+			@QueryParam("locale")List<String> locales,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response, @Context ServletContext context
+	) throws IOException {
+		return portalService.getLocalizedArticles(
+				uris, 
+				locales, 
+				request, 
+				response, context
 		);
 	}
 
