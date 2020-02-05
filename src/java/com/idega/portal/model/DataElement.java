@@ -17,7 +17,10 @@ public enum DataElement {
 	GENDER,
 	FAMILY,
 	LOGIN,
-	CONTACT_BY;
+	CONTACT_BY,
+	CONTACT_BY_EMAIL,
+	CONTACT_BY_SMS,
+	CONTACT_BY_MY_MESSAGES;
 
 	@JsonCreator
 	public static DataElement fromValue(String value) {
