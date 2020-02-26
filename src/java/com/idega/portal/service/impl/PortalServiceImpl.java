@@ -260,6 +260,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			if (company == null) {
+				boolean validateCompanyId = getSettings().getBoolean("portal.validate_com_id_" + request.getServerName(), true);
+				if (!validateCompanyId) {
+					company = companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
+				}
+			}
+			if (company == null) {
 				boolean validatePersonalId = getSettings().getBoolean("portal.validate_p_id_" + request.getServerName(), true);
 				boolean error = false;
 				if (validatePersonalId) {
@@ -493,12 +499,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	public Result removeLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		return localizationService.removeLanguage(locale, request, response, context);
 	}
-	
+
 	@Override
 	public void localizeArticles(
-			LocalizedArticleList localizedArticlesList, 
+			LocalizedArticleList localizedArticlesList,
 			HttpServletRequest request,
-			HttpServletResponse response, 
+			HttpServletResponse response,
 			ServletContext context
 	) throws IOException {
 		IWContext iwc = new IWContext(request, response, context);
@@ -507,8 +513,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			throw new Unauthorized();
 		}
 		if(!SecurityUtil.getInstance().hasAnyRole(
-				iwc, 
-				user, 
+				iwc,
+				user,
 				Arrays.asList("dashboard.admin")
 		)) {
 			throw new Forbidden();
@@ -529,13 +535,13 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			bean.setHeadline(article.getTitle());
 			articlesToSave.add(bean);
 		}
-		
+
 		// Saving after everything to had better chance of transaction like behavior
 		for(ArticleItemBean bean: articlesToSave) {
 			bean.store();
 		}
 	}
-	
+
 	@Override
 	public List<LocalizedArticle> getLocalizedArticles(
 			List<String> uris,
@@ -604,10 +610,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 		return article;
 	}
-	
+
 	@Override
 	public Article getLocalizedArticle(
-			String url, 
+			String url,
 			String language,
 			HttpServletRequest request,
 			HttpServletResponse response,
@@ -619,10 +625,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		bean.load();
 		if(!bean.getExists()) {
 			throw new NotFound(
-					"Article (" 
-							+ url 
-							+ ") not found for language (" 
-							+ language 
+					"Article ("
+							+ url
+							+ ") not found for language ("
+							+ language
 							+ ")"
 			);
 		}
