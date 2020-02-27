@@ -568,7 +568,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				}
 				LocalizedArticle article = new LocalizedArticle();
 				article.setTitle(bean.getHeadline());
-				article.setBody(bean.getBody());
+				String body = bean.getBody();
+				article.setBody(body);
+				article.setBodyRaw(body);
 				article.setUrl(resourcePath);
 				article.setLocale(locale);
 				articles.add(article);
@@ -604,7 +606,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			article = new Article();
 			article.setTitle(articleItemBean.getHeadline());
-			article.setBody(articleItemBean.getBody());
+			String body = articleItemBean.getBody();
+			article.setBody(body);
+			article.setBodyRaw(body);
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error loading article at " + uri, e);
 		}
@@ -634,7 +638,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 		Article article = new Article();
 		article.setTitle(bean.getHeadline());
-		article.setBody(bean.getBody());
+		String body = bean.getBody();
+		article.setBody(body);
+		article.setBodyRaw(body);
 		return article;
 	}
 

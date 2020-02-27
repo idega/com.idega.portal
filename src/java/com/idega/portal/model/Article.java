@@ -12,8 +12,9 @@ import com.idega.block.article.bean.ArticleItemBean;
 public class Article implements Serializable {
 
 	private static final long serialVersionUID = -4033780636343840369L;
-	private String title, 
-			body, 
+	private String title,
+			body,
+			bodyRaw,
 			url,
 			teaser;
 
@@ -41,13 +42,16 @@ public class Article implements Serializable {
 
 	public Article(ArticleItemBean article) {
 		super();
+
 		this.title = article.getHeadline();
-		if (article.getBody() != null) {
-			this.body = Base64.getEncoder().encodeToString(article.getBody().getBytes());
+		String body = article.getBody();
+		if (body != null) {
+			this.bodyRaw = body;
+			this.body = Base64.getEncoder().encodeToString(body.getBytes());
 		}
 		this.url = article.getResourcePath();
 		String teaser = article.getTeaser();
-		if(teaser != null) {
+		if (teaser != null) {
 			this.teaser = teaser;
 		}
 	}
@@ -68,6 +72,15 @@ public class Article implements Serializable {
 
 	public void setBody(String body) {
 		this.body = body;
+	}
+
+	@XmlElement
+	public String getBodyRaw() {
+		return bodyRaw;
+	}
+
+	public void setBodyRaw(String bodyRaw) {
+		this.bodyRaw = bodyRaw;
 	}
 
 }
