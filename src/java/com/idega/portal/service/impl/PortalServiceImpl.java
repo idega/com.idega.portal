@@ -217,6 +217,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				company = companyHelper.getCompanyInfo(account.getPersonalId());
 			} catch (Exception e) {}
 
+			if (account.isPersonAsCompany() && company == null) {
+				//	Creating company with citizen's personal ID
+				company = companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
+			}
+
 			com.idega.user.data.User user = null;
 			UserBusiness userBusiness = getUserBusiness();
 

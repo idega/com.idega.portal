@@ -15,7 +15,7 @@ public class UserAccount implements Serializable {
 	private String username;
 
 	private String personalId;
-	
+
 	private String email;
 
 	private String password;
@@ -28,6 +28,8 @@ public class UserAccount implements Serializable {
 
 	private String uuid;
 
+	private boolean personAsCompany;
+
 	public String getUsername() {
 		return username;
 	}
@@ -35,7 +37,7 @@ public class UserAccount implements Serializable {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	
+
 	public String getPersonalId() {
 		return personalId;
 	}
@@ -91,4 +93,13 @@ public class UserAccount implements Serializable {
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
+
+	public boolean isPersonAsCompany() {
+		return personAsCompany;
+	}
+
+	public void setPersonAsCompany(boolean personAsCompany) {
+		this.personAsCompany = personAsCompany;
+	}
+
 }
