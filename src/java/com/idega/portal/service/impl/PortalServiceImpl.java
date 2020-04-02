@@ -213,7 +213,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				return account;
 			}
 
-			boolean validateCompanyId = getSettings().getBoolean("portal.validate_com_id_" + request.getServerName(), true);
+			String serverName = request.getServerName();
+			boolean validateCompanyId = getSettings().getBoolean("portal.validate_com_id_" + serverName, true);
+			boolean validatePersonalId = getSettings().getBoolean("portal.validate_p_id_" + serverName, true);
 
 			String personalId = account.getPersonalId();
 			if (StringUtil.isEmpty(personalId)) {
@@ -225,6 +227,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 				if (account.isPersonAsCompany()) {
 					validateCompanyId = false;
+				} else {
+					validatePersonalId = false;
 				}
 			}
 
@@ -286,7 +290,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				}
 			}
 			if (company == null) {
-				boolean validatePersonalId = getSettings().getBoolean("portal.validate_p_id_" + request.getServerName(), true);
 				boolean error = false;
 				if (validatePersonalId) {
 					error = !userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale());
