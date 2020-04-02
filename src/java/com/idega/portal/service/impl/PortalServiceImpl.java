@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -212,6 +213,21 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				return account;
 			}
 
+			boolean validateCompanyId = getSettings().getBoolean("portal.validate_com_id_" + request.getServerName(), true);
+
+			String personalId = account.getPersonalId();
+			if (StringUtil.isEmpty(personalId)) {
+				IWTimestamp now = IWTimestamp.RightNow();
+				String date = now.getDateString("ddMMYY");
+				String id = String.format("%04d", new Random().nextInt(10000));
+				personalId = date.concat(id);
+				account.setPersonalId(personalId);
+
+				if (account.isPersonAsCompany()) {
+					validateCompanyId = false;
+				}
+			}
+
 			UserDataBean company = null;
 			try {
 				company = companyHelper.getCompanyInfo(account.getPersonalId());
@@ -265,7 +281,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			if (company == null) {
-				boolean validateCompanyId = getSettings().getBoolean("portal.validate_com_id_" + request.getServerName(), true);
 				if (!validateCompanyId) {
 					company = companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
 				}
