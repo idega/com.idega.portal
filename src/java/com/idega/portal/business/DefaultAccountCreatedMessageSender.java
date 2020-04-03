@@ -20,13 +20,14 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 	@Override
 	public void sendUserMessages(
 			User user,
-			Locale locale
+			Locale locale,
+			boolean personalIdAsUserName
 	) throws Exception {
 		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
 		IWBundle bundle = iwma.getBundle(getBundleIdentifier());
 		IWResourceBundle iwrb = bundle.getResourceBundle(locale);
 		String subject = getSubject(user, iwrb);
-		String body = getBody(user, iwrb);
+		String body = getBody(user, iwrb, personalIdAsUserName);
 		sendUserMessages(user, subject, body);
 	}
 
@@ -42,21 +43,32 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 
 	protected String getBody(
 			User user,
-			IWResourceBundle iwrb
+			IWResourceBundle iwrb,
+			boolean personalIdAsUserName
 	) {
 		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
 		IWMainApplicationSettings settings = iwma.getSettings();
 		Object[] paremeters = {user.getDisplayName()};
-		String body = iwrb.getLocalizedAndFormattedString(
-				"message.email.account_created.body",
-				"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
-				paremeters
-		);
+		String body = null;
+		if (personalIdAsUserName) {
+			body = iwrb.getLocalizedAndFormattedString(
+					"message.email.account_created.body",
+					"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
+					paremeters
+			);
+		} else {
+			body = iwrb.getLocalizedAndFormattedString(
+					"message.email.account_created.body_user_name_as_email",
+					"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in with your user name and the password you chose yourself.",
+					paremeters
+			);
+		}
+
 		String team = iwrb.getLocalizedString(
 				"message.email.account_created.body.with_regards",
 				null
 		);
-		if(StringUtil.isEmpty(team)) {
+		if (StringUtil.isEmpty(team)) {
 			team = settings.getProperty("with_regards_text", "Idega");
 		}
 		body += "\n\n" + team;

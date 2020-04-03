@@ -216,9 +216,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			String serverName = request.getServerName();
 			boolean validateCompanyId = getSettings().getBoolean("portal.validate_com_id_" + serverName, true);
 			boolean validatePersonalId = getSettings().getBoolean("portal.validate_p_id_" + serverName, true);
+			boolean personalIdProvided = true;
 
 			String personalId = account.getPersonalId();
 			if (StringUtil.isEmpty(personalId)) {
+				personalIdProvided = false;
 				IWTimestamp now = IWTimestamp.RightNow();
 				String date = now.getDateString("ddMMYY");
 				String id = String.format("%04d", new Random().nextInt(10000));
@@ -405,7 +407,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				if (email == null) {
 					getLogger().log(Level.WARNING, "Error updating email: " + account.getEmail() + " for user (ID: " + user.getPrimaryKey().toString() + ")");
 				}
-				sendAccountCreatedMessage(user, iwc.getLocale());
+				sendAccountCreatedMessage(user, iwc.getLocale(), personalIdProvided);
 			}
 			account.setUserId(user.getPrimaryKey().toString());
 			account.setErrorMessage(null);
@@ -419,11 +421,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	private void sendAccountCreatedMessage(
 			com.idega.user.data.User legacyUser,
-			Locale locale
+			Locale locale,
+			boolean personalIdAsUserName
 	) throws Exception {
 		User user = getUser(legacyUser);
-		for(MessageSender sender : accountCreatedMessagesSenders) {
-			sender.sendUserMessages(user, locale);
+		for (MessageSender sender : accountCreatedMessagesSenders) {
+			sender.sendUserMessages(user, locale, personalIdAsUserName);
 		}
 	}
 
