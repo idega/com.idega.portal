@@ -53,6 +53,8 @@ public class PortalSettings implements Serializable {
 
 	private List<String> systemRoles = new ArrayList<String>();
 
+	private EndUserLicenseAgreement eula;
+
 	public String getName() {
 		return name;
 	}
@@ -304,9 +306,17 @@ public class PortalSettings implements Serializable {
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
 	}
-	
+
 	public List<String> getSystemRoles() {
 		return systemRoles;
+	}
+
+	public EndUserLicenseAgreement getEula() {
+		return eula;
+	}
+
+	public void setEula(EndUserLicenseAgreement eula) {
+		this.eula = eula;
 	}
 
 }

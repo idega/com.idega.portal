@@ -41,21 +41,21 @@ public interface PortalService {
 	public Result setLocalization(Localization localization, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result setLocalizations(Localizations localizations, HttpServletRequest request, HttpServletResponse response, ServletContext context);
-	
+
 	void localizeArticles(
 			LocalizedArticleList localizedArticlesList,
 			HttpServletRequest request,
 			HttpServletResponse response,
 			ServletContext context
 	) throws IOException;
-	
+
 	List<LocalizedArticle> getLocalizedArticles(
 			List<String> uris,
 			List<String> locales,
 			HttpServletRequest request,
 			HttpServletResponse response, ServletContext context
 	) throws IOException;
-	
+
 	public List<LanguageData> getAvailableLanguages(HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result addLanguage(String locale, HttpServletRequest request, HttpServletResponse response, ServletContext context);
@@ -65,7 +65,7 @@ public interface PortalService {
 	public Result doPing(HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Article getArticleByURI(String uri, HttpServletRequest request, HttpServletResponse response, ServletContext context);
-	
+
 	Article getLocalizedArticle(
 			String url,
 			String language,
@@ -85,11 +85,11 @@ public interface PortalService {
 			HttpServletResponse response,
 			ServletContext context
 	);
-	
+
 	public String isUpdatePasswordLinkValid(
-			String token, 
-			HttpServletRequest request, 
-			HttpServletResponse response, 
+			String token,
+			HttpServletRequest request,
+			HttpServletResponse response,
 			ServletContext context
 	);
 

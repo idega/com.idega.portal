@@ -178,24 +178,24 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 				context
 		);
 	}
-	
+
 	@Override
 	@POST
 	@Path(PortalGateway.LOCALIZE_ARTICLES)
 	public void localizeArticles(
-			LocalizedArticleList localizedArticlesMap, 
+			LocalizedArticleList localizedArticlesMap,
 			@Context HttpServletRequest request,
-			@Context HttpServletResponse response, 
+			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) throws IOException {
 		portalService.localizeArticles(
-				localizedArticlesMap, 
-				request, 
-				response, 
+				localizedArticlesMap,
+				request,
+				response,
 				context
 		);
 	}
-	
+
 	@Override
 	@GET
 	@Path(PortalGateway.LOCALIZED_ARTICLE)
@@ -206,9 +206,9 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 			@Context HttpServletResponse response, @Context ServletContext context
 	) throws IOException {
 		return portalService.getLocalizedArticles(
-				uris, 
-				locales, 
-				request, 
+				uris,
+				locales,
+				request,
 				response, context
 		);
 	}
@@ -382,7 +382,7 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 				context
 		);
 	}
-	
+
 	@GET
 	@Path(PortalGateway.ARTICLE_LOCALIZED)
 	@Override
@@ -441,34 +441,45 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 			@PathParam("tokenId")String token,
 			String newPassword,
 			@Context HttpServletRequest request,
-			@Context HttpServletResponse response, 
+			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
 		return portalService.doUpdatePassword(
-				token, 
-				newPassword, 
-				request, 
-				response, 
+				token,
+				newPassword,
+				request,
+				response,
 				context
 		);
 	}
-	
-	
+
+
 	@GET
 	@Path(PortalGateway.PASSWORD_TOKEN_BY_ID)
 	@Override
 	public String isUpdatePasswordLinkValid(
-			@PathParam("tokenId")String token, 
-			@Context HttpServletRequest request, 
-			@Context HttpServletResponse response, 
+			@PathParam("tokenId")String token,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
 		return portalService.isUpdatePasswordLinkValid(
-				token, 
-				request, 
-				response, 
+				token,
+				request,
+				response,
 				context
 		);
+	}
+
+	@Override
+	@GET
+	@Path(PortalGateway.USER + PortalGateway.AGREEMENT)
+	public Result setUserReadAgreement(
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return userService.setUserReadAgreement(request, response, context);
 	}
 
 }

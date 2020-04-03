@@ -19,4 +19,6 @@ public interface UserService {
 
 	public Result setProfilePicture(InputStream stream, FormDataContentDisposition info, String personalId, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
+	public Result setUserReadAgreement(HttpServletRequest request, HttpServletResponse response, ServletContext context);
+
 }

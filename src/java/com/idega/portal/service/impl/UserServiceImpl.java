@@ -704,4 +704,28 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		return null;
 	}
 
+	@Override
+	public Result setUserReadAgreement(HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		com.idega.user.data.User user = null;
+		try {
+			IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
+			Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.eula_error", "Error"));
+
+			User authorizedUser = SecurityUtil.getInstance().getAuthorizedUser(new IWContext(request, response, context));
+			if (authorizedUser == null) {
+				return result;
+			}
+
+			user = getLegacyUser(authorizedUser);
+			user.setMetaData(PortalConstants.METADATA_EULA_AGREED, Boolean.TRUE.toString());
+			user.store();
+
+			return new Result(javax.ws.rs.core.Response.Status.OK.getStatusCode(), Boolean.TRUE.toString(), iwrb.getLocalizedString("citizen_profile.eula_success", "Success"));
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error marking " + user + " read agreement", e);
+		}
+
+		return null;
+	}
+
 }

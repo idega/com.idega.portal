@@ -29,12 +29,14 @@ public class PortalConstants {
 								PROPERTY_FOOTER_WORKING_HOURS = "footer.working_hours",
 
 								PROPERTY_PORTAL_OAUTH_CLIENTS = "portal_oauth_clients",
-								PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID = "portal.localizer_bundle_id";
+								PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID = "portal.localizer_bundle_id",
+
+								METADATA_CONTACT_BY_EMAIL = "CONTACT_BY_EMAIL",
+								METADATA_CONTACT_BY_SMS = "CONTACT_BY_SMS",
+								METADATA_CONTACT_BY_MY_MESSAGES = "CONTACT_BY_MY_MESSAGES",
+
+								METADATA_EULA_AGREED = "eula_agreed";
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
-
-	public static final String METADATA_CONTACT_BY_EMAIL = "CONTACT_BY_EMAIL";
-	public static final String METADATA_CONTACT_BY_SMS = "CONTACT_BY_SMS";
-	public static final String METADATA_CONTACT_BY_MY_MESSAGES = "CONTACT_BY_MY_MESSAGES";
 
 }

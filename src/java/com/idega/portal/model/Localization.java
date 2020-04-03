@@ -20,6 +20,17 @@ public class Localization implements Serializable {
 
 	private String localization;
 
+	public Localization() {
+		super();
+	}
+
+	public Localization(String localizedKey, String localization) {
+		this();
+
+		this.localizedKey = localizedKey;
+		this.localization = localization;
+	}
+
 	public String getBundleIdentifier() {
 		return bundleIdentifier;
 	}
