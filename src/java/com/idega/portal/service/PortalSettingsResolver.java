@@ -104,9 +104,7 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 
 			if (user != null) {
 				settings.setLoggedIn(Boolean.TRUE);
-				com.idega.block.oauth2.server.authentication.bean.User usr = new com.idega.block.oauth2.server.authentication.bean.User(user);
-				usr.setUuid(user.getUniqueId());
-				settings.setUser(usr);
+				settings.setUser(new com.idega.block.oauth2.server.authentication.bean.User(user));
 
 				settings.setMenus(getMenus(user));
 
