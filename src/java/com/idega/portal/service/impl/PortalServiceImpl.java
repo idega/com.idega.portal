@@ -122,10 +122,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Autowired
 	private PasswordTokenBusiness passwordTokenBusiness;
 
-	@Autowired(required=false)
+	@Autowired(required = false)
 	private List<AccountCreatedMessageSender> customAccountCreatedMessagesSenders;
 
-	@Autowired
+	@Autowired(required = false)
 	private CompanyHelper companyHelper;
 
 	private List<? extends MessageSender> accountCreatedMessagesSenders;
@@ -236,12 +236,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			UserDataBean company = null;
 			try {
-				company = companyHelper.getCompanyInfo(account.getPersonalId());
+				company = companyHelper == null ? null : companyHelper.getCompanyInfo(account.getPersonalId());
 			} catch (Exception e) {}
 
 			if (account.isPersonAsCompany() && company == null) {
 				//	Creating company with citizen's personal ID
-				company = companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
+				company = companyHelper == null ? null : companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
 			}
 
 			com.idega.user.data.User user = null;
@@ -288,7 +288,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			if (company == null) {
 				if (!validateCompanyId) {
-					company = companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
+					company = companyHelper == null ? null : companyHelper.doCreateCompany(account.getName(), account.getPersonalId());
 				}
 			}
 			if (company == null) {
