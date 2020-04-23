@@ -57,7 +57,7 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 	}
 
 	@Override
-	public Result isValidLogin(UserAccount credentials) {
+	public Result isValidLogin(UserAccount credentials, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		Result result = new Result(Status.BAD_REQUEST.getStatusCode(), Boolean.FALSE.toString());
 		if (credentials == null) {
 			return result;
@@ -80,7 +80,7 @@ public class AppServiceImpl extends DefaultSpringBean implements AppService {
 				return result;
 			}
 
-			LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(getIWApplicationContext());
+			LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(request);
 			if (loginBusiness.verifyPassword(getUser(user), username, password)) {
 				result.setStatus(Status.OK.getStatusCode());
 				result.setName(Boolean.TRUE.toString());

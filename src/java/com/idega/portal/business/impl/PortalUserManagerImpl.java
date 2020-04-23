@@ -2,6 +2,9 @@ package com.idega.portal.business.impl;
 
 import java.util.logging.Level;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +29,6 @@ import com.idega.presentation.IWContext;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
-import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.RequestUtil;
 import com.idega.util.StringUtil;
@@ -43,7 +45,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 	private OAuth2Service oauth2Service;
 
 	@Override
-	public AccessToken getAccessToken(String uuid, String clientId, String type) {
+	public AccessToken getAccessToken(String uuid, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		try {
 			if (StringUtil.isEmpty(uuid)) {
 				getLogger().warning("UUID is not provided");
@@ -65,7 +67,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 				}
 			}
 
-			IWContext iwc = CoreUtil.getIWContext();
+			IWContext iwc = new IWContext(request, response, context);
 			LoginTableHome loginTableHome = (LoginTableHome) IDOLookup.getHome(LoginTable.class);
 			LoginTable userLogin = loginTableHome.findByLogin(userName);
 			LoggedInUserCredentials credentials = new LoggedInUserCredentials(
@@ -95,7 +97,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 			if (getSettings().getBoolean("portal.publish_event_for_token", false)) {
 				User user = getUser(userLogin.getUser());
 				LoginBusinessBean loginBusiness = LoginBusinessBean.getLoginBusinessBean(iwc);
-				loginBusiness.doPublishLoggedInEvent(iwc.getRequest(), user, userName, type);
+				loginBusiness.doPublishLoggedInEvent(request, response, context, user, userName, type);
 			}
 
 			return new AccessToken(token, userName);

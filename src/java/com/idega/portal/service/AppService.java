@@ -15,7 +15,7 @@ public interface AppService {
 
 	public String logout(HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
-	public Result isValidLogin(UserAccount credentials);
+	public Result isValidLogin(UserAccount credentials, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public UserProfile getCitizenProfile(String personalId, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
