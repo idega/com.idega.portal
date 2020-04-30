@@ -832,7 +832,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			return success;
 		} catch (Exception e) {
 			String errorLocalizedKey = "login_failed";
-			error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+			error = iwrb == null ? "Login failed" : iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
 			getLogger().log(Level.WARNING, error + ". Username: " + username + ", password: " + password, e);
 			return new LoginResult(-1, error, errorLocalizedKey);
 		}
