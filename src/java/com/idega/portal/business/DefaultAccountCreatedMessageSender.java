@@ -5,13 +5,15 @@ import java.util.logging.Level;
 
 import com.idega.block.process.message.business.MessageBusiness;
 import com.idega.core.business.DefaultSpringBean;
+import com.idega.core.contact.data.Email;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
-import com.idega.user.data.bean.User;
+import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
+import com.idega.util.EmailValidator;
 import com.idega.util.SendMail;
 import com.idega.util.StringUtil;
 
@@ -21,14 +23,15 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 	public void sendUserMessages(
 			User user,
 			Locale locale,
-			boolean personalIdAsUserName
+			boolean personalIdAsUserName,
+			String emailAddress
 	) throws Exception {
 		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
 		IWBundle bundle = iwma.getBundle(getBundleIdentifier());
 		IWResourceBundle iwrb = bundle.getResourceBundle(locale);
 		String subject = getSubject(user, iwrb);
 		String body = getBody(user, iwrb, personalIdAsUserName);
-		sendUserMessages(user, subject, body);
+		sendUserMessages(user, subject, body, emailAddress);
 	}
 
 	protected String getSubject(
@@ -82,18 +85,26 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 	protected void sendUserMessages(
 			User user,
 			String subject,
-			String body
+			String body,
+			String emailAddress
 	) throws Exception {
 		try {
 			MessageBusiness messageBusiness = getServiceInstance(MessageBusiness.class);
-			messageBusiness.createUserMessage(null, getLegacyUser(user), subject, body, false);
+			messageBusiness.createUserMessage(null, user, subject, body, false);
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error creating message for " + user, e);
 		}
 
 		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
 		IWMainApplicationSettings settings = iwma.getSettings();
-		String emailTo = user.getEmailAddress();
+
+		String emailTo = emailAddress;
+		try {
+			Email email = user.getUsersEmail();
+			String address = email.getEmailAddress();
+			emailTo = EmailValidator.getInstance().isValid(address) ? address : emailTo;
+		} catch (Exception e) {}
+
 		String from = settings.getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "staff@idega.com");
 		SendMail.send(from, emailTo, null, null, null, null, subject, body);
 	}

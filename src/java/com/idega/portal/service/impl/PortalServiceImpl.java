@@ -139,7 +139,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
         	return;
         }
         accountCreatedMessagesSenders = customAccountCreatedMessagesSenders;
-
     }
 
 	private StandardGroup getStandardGroup() {
@@ -407,7 +406,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				if (email == null) {
 					getLogger().log(Level.WARNING, "Error updating email: " + account.getEmail() + " for user (ID: " + user.getPrimaryKey().toString() + ")");
 				}
-				sendAccountCreatedMessage(user, iwc.getLocale(), personalIdProvided);
+				sendAccountCreatedMessage(user, iwc.getLocale(), personalIdProvided, account.getEmail());
 			}
 			account.setUserId(user.getPrimaryKey().toString());
 			account.setErrorMessage(null);
@@ -420,13 +419,13 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	private void sendAccountCreatedMessage(
-			com.idega.user.data.User legacyUser,
+			com.idega.user.data.User user,
 			Locale locale,
-			boolean personalIdAsUserName
+			boolean personalIdAsUserName,
+			String emailAddress
 	) throws Exception {
-		User user = getUser(legacyUser);
-		for (MessageSender sender : accountCreatedMessagesSenders) {
-			sender.sendUserMessages(user, locale, personalIdAsUserName);
+		for (MessageSender sender: accountCreatedMessagesSenders) {
+			sender.sendUserMessages(user, locale, personalIdAsUserName, emailAddress);
 		}
 	}
 
@@ -535,10 +534,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	) throws IOException {
 		IWContext iwc = new IWContext(request, response, context);
 		User user = SecurityUtil.getInstance().getAuthorizedUser(iwc);
-		if(user == null) {
+		if (user == null) {
 			throw new Unauthorized();
 		}
-		if(!SecurityUtil.getInstance().hasAnyRole(
+		if (!SecurityUtil.getInstance().hasAnyRole(
 				iwc,
 				user,
 				Arrays.asList("dashboard.admin")
@@ -546,10 +545,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			throw new Forbidden();
 		}
 		List<LocalizedArticle> articles = localizedArticlesList.getArticles();
-		if(ListUtil.isEmpty(articles)) {
+		if (ListUtil.isEmpty(articles)) {
 			return;
 		}
-		ArrayList<ArticleItemBean> articlesToSave = new ArrayList<>();
+		List<ArticleItemBean> articlesToSave = new ArrayList<>();
 		for(LocalizedArticle article: articles) {
 			String localeString = article.getLocale();
 			String language = localeString.substring(0, 2);
@@ -563,7 +562,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		// Saving after everything to had better chance of transaction like behavior
-		for(ArticleItemBean bean: articlesToSave) {
+		for (ArticleItemBean bean: articlesToSave) {
 			bean.store();
 		}
 	}
@@ -577,7 +576,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	) throws IOException {
 		List<LocalizedArticle> articles = new ArrayList<LocalizedArticle>();
 		Map<String,String> languages = new HashMap<>(locales.size());
-		for(String locale: locales) {
+		for (String locale: locales) {
 			String language = locale.substring(0, 2);
 			languages.put(language, locale);
 		}
