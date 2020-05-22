@@ -454,10 +454,23 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Override
 	@Transactional
 	public String doRemindPassword(String ssn, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		if (StringUtil.isEmpty(ssn)) {
+			throw new BadRequest("User '"+ssn+"' not found");
+		}
+
 		IWContext iwc = new IWContext(request, response, context);
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER), iwc);
 
 		User user = userDAO.getUser(ssn);
+		if (user == null) {
+			LoginTable loginTable = null;
+			try {
+				loginTable = LoginDBHandler.getUserLoginByUserName(ssn);
+			} catch (Exception e) {}
+			if (loginTable != null && loginTable.getUserId() > 0) {
+				user = userDAO.getUser(loginTable.getUserId());
+			}
+		}
 		if (user == null) {
 			throw new BadRequest("User '"+ssn+"' not found");
 		}
