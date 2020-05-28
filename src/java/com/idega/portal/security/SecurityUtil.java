@@ -310,7 +310,7 @@ public class SecurityUtil {
 
 		AccessController accessController = IWMainApplication.getDefaultIWMainApplication().getAccessController();
 
-		Set<String> userRoles = accessController.getAllRolesForUser(user);
+		Set<String> userRoles = accessController.getAllRolesForUser(iwc, user);
 		if (!ListUtil.isEmpty(userRoles)) {
 			for (String role: roles) {
 				if (userRoles.contains(role)) {
@@ -340,7 +340,7 @@ public class SecurityUtil {
 
 		List<String> result = new ArrayList<String>();
 
-		Set<String> userRoles = accessController.getAllRolesForUser(user);
+		Set<String> userRoles = accessController.getAllRolesForUser(iwc, user);
 		if (!ListUtil.isEmpty(userRoles)) {
 			Set<String> tmp = new HashSet<>(ALL_ROLES);
 			for (String role: tmp) {
