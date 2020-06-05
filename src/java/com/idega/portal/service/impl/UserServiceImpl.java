@@ -545,6 +545,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		if (StringUtil.isEmpty(errors)) {
 			result.setStatus(Status.OK.getStatusCode());
 			result.setName(Boolean.TRUE.toString());
+			result.setValue(null);
 		} else {
 			result.setStatus(Status.OK.getStatusCode());
 			result.setName(Boolean.FALSE.toString());
