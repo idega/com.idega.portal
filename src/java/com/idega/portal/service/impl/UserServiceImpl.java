@@ -178,6 +178,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 		Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
 
 		if (profile == null) {
+			getLogger().warning("Data not provided");
 			return result;
 		}
 
@@ -186,6 +187,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			IWContext iwc = new IWContext(request, response, context);
 			User user = SecurityUtil.getInstance().getAuthorizedUser(iwc);
 			if (user == null) {
+				getLogger().warning("User is unknown");
 				return result;
 			}
 
@@ -267,6 +269,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 									if (StringUtil.isEmpty(passwordVerificationErrors)) {
 										userPassword = profile.getNewPassword();
 									} else {
+										getLogger().warning("Password verification error: " + passwordVerificationErrors + ". Profile class: " + profile.getClass().getName());
 										errors += passwordVerificationErrors;
 									}
 								}
@@ -510,24 +513,24 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 				//Save contact flags
 				if (dataToLoad.contains(DataElement.CONTACT_BY) || dataToLoad.contains(DataElement.ALL)) {
-						try {
-							if (profile.getContactByEmail() != null) {
-								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL, profile.getContactByEmail().toString());
-							} else {
-								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL, "false");
-							}
-							if (profile.getContactBySMS() != null) {
-								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_SMS, profile.getContactBySMS().toString());
-							} else {
-								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_SMS, "false");
-							}
-							if (profile.getContactByMyMessages() != null) {
-								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES, profile.getContactByMyMessages().toString());
-							} else {
-								userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES, "false");
-							}
-							userIDO.store();
-						} catch (Exception e) {}
+					try {
+						if (profile.getContactByEmail() != null) {
+							userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL, profile.getContactByEmail().toString());
+						} else {
+							userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_EMAIL, "false");
+						}
+						if (profile.getContactBySMS() != null) {
+							userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_SMS, profile.getContactBySMS().toString());
+						} else {
+							userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_SMS, "false");
+						}
+						if (profile.getContactByMyMessages() != null) {
+							userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES, profile.getContactByMyMessages().toString());
+						} else {
+							userIDO.setMetaData(PortalConstants.METADATA_CONTACT_BY_MY_MESSAGES, "false");
+						}
+						userIDO.store();
+					} catch (Exception e) {}
 				}
 			}
 		} catch (Exception e) {
@@ -550,6 +553,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			result.setStatus(Status.OK.getStatusCode());
 			result.setName(Boolean.FALSE.toString());
 			result.setValue(errors);
+			getLogger().warning("Errors: " + errors);
 		}
 
 		return result;
