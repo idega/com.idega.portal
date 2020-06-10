@@ -55,6 +55,8 @@ public class PortalSettings implements Serializable {
 
 	private EndUserLicenseAgreement eula;
 
+	private Boolean validPersonalId = Boolean.FALSE;
+
 	public String getName() {
 		return name;
 	}
@@ -317,6 +319,14 @@ public class PortalSettings implements Serializable {
 
 	public void setEula(EndUserLicenseAgreement eula) {
 		this.eula = eula;
+	}
+
+	public Boolean getValidPersonalId() {
+		return validPersonalId;
+	}
+
+	public void setValidPersonalId(Boolean validPersonalId) {
+		this.validPersonalId = validPersonalId;
 	}
 
 }
