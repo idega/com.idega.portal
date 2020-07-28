@@ -22,6 +22,8 @@ public class OAuthInfo implements Serializable {
 
 	private Integer refreshTokenValiditySeconds;
 
+	private Boolean remember;
+
 	public OAuthInfo() {
 		super();
 	}
@@ -34,6 +36,7 @@ public class OAuthInfo implements Serializable {
 		this.grantType = grantType;
 		this.accessTokenValiditySeconds = accessTokenValiditySeconds;
 		this.refreshTokenValiditySeconds = refreshTokenValiditySeconds;
+		this.remember = accessTokenValiditySeconds != null && (accessTokenValiditySeconds == 31556926 || accessTokenValiditySeconds == 2592000);
 	}
 
 	public String getClientId() {
@@ -74,6 +77,14 @@ public class OAuthInfo implements Serializable {
 
 	public void setRefreshTokenValiditySeconds(Integer refreshTokenValiditySeconds) {
 		this.refreshTokenValiditySeconds = refreshTokenValiditySeconds;
+	}
+
+	public Boolean getRemember() {
+		return remember;
+	}
+
+	public void setRemember(Boolean remember) {
+		this.remember = remember;
 	}
 
 }

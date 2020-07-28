@@ -16,11 +16,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 
+import com.idega.block.login.business.OAuth2Service;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.localisation.business.ICLocaleBusiness;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.model.FooterData;
+import com.idega.portal.model.OAuth;
 import com.idega.portal.model.OAuthInfo;
 import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
@@ -36,9 +38,12 @@ import com.idega.util.text.Name;
 
 public class PortalSettingsResolver extends DefaultSpringBean {
 
-	@Autowired(required=false)
+	@Autowired(required = false)
 	@Qualifier("clientDetails")
 	private JdbcClientDetailsService clientDetailsService;
+
+	@Autowired(required = false)
+	private OAuth2Service oauth2Service;
 
 	@Autowired
 	private LocalizationService localizationService;
@@ -56,6 +61,14 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 		}
 
 		return clientDetailsService;
+	}
+
+	private OAuth2Service getOAuth2Service() {
+		if (this.oauth2Service == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+
+		return oauth2Service;
 	}
 
 	public PortalSettings getDashboardSettings(IWContext iwc) {
@@ -96,7 +109,14 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 			settings.setLogo("/images/main-logo.png");
 			settings.setFavicon("/images/favicon.ico");
 
-			settings.setOauthInfo(getOAuthSettings());
+			OAuth oAuth = new OAuth();
+			settings.setOauth(oAuth);
+			OAuth2Service oAuth2Service = getOAuth2Service();
+			if (oAuth2Service != null) {
+				oAuth.setDefaultClient(getOAuthInfo(oAuth2Service.getDefaultClientId()));
+				oAuth.setUnexpiringClient(getOAuthInfo(oAuth2Service.getUnexpiringClientId()));
+			}
+			oAuth.setAllClients(getOAuthSettings());
 
 			settings.setAuthorizationSettings(SecurityUtil.getInstance().getAllAuthorizationSettings());
 
@@ -182,6 +202,35 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 		return menus;
 	}
 
+	private OAuthInfo getOAuthInfo(String clientId) {
+		if (StringUtil.isEmpty(clientId)) {
+			return null;
+		}
+
+		ClientDetails client = null;
+		try {
+			client = getClientDetailsService().loadClientByClientId(clientId);
+		} catch (Exception e) {
+			getLogger().warning("Client " + clientId + " was not found");
+		}
+
+		return getOAuthInfo(client);
+	}
+
+	private OAuthInfo getOAuthInfo(ClientDetails client) {
+		if (client == null) {
+			return null;
+		}
+
+		return new OAuthInfo(
+				client.getClientId(),
+				client.getClientSecret(),
+				StringUtil.getValue(client.getAuthorizedGrantTypes()),
+				client.getAccessTokenValiditySeconds(),
+				client.getRefreshTokenValiditySeconds()
+		);
+	}
+
 	private List<OAuthInfo> getOAuthSettings() {
 		List<OAuthInfo> info = new ArrayList<>();
 		try {
@@ -192,13 +241,7 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 
 			for (ClientDetails clientDetails: clientsDetails) {
 				info.add(
-						new OAuthInfo(
-								clientDetails.getClientId(),
-								clientDetails.getClientSecret(),
-								StringUtil.getValue(clientDetails.getAuthorizedGrantTypes()),
-								clientDetails.getAccessTokenValiditySeconds(),
-								clientDetails.getRefreshTokenValiditySeconds()
-						)
+						getOAuthInfo(clientDetails)
 				);
 			}
 		} catch (Exception e) {

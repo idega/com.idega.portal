@@ -43,7 +43,7 @@ public class PortalSettings implements Serializable {
 
 	private String mainPortalLink, mainPortalLabel;
 
-	private List<OAuthInfo> oauthInfo;
+	private OAuth oauth;
 
 	private String datePattern, timePattern;
 
@@ -229,14 +229,6 @@ public class PortalSettings implements Serializable {
 		this.mainPortalLabel = mainPortalLabel;
 	}
 
-	public List<OAuthInfo> getOauthInfo() {
-		return oauthInfo;
-	}
-
-	public void setOauthInfo(List<OAuthInfo> oauthInfo) {
-		this.oauthInfo = oauthInfo;
-	}
-
 	public List<String> getCssFiles() {
 		return cssFiles;
 	}
@@ -327,6 +319,14 @@ public class PortalSettings implements Serializable {
 
 	public void setValidPersonalId(Boolean validPersonalId) {
 		this.validPersonalId = validPersonalId;
+	}
+
+	public OAuth getOauth() {
+		return oauth;
+	}
+
+	public void setOauth(OAuth oauth) {
+		this.oauth = oauth;
 	}
 
 }
