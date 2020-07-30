@@ -35,7 +35,14 @@ public class PortalConstants {
 								METADATA_CONTACT_BY_SMS = "CONTACT_BY_SMS",
 								METADATA_CONTACT_BY_MY_MESSAGES = "CONTACT_BY_MY_MESSAGES",
 
-								METADATA_EULA_AGREED = "eula_agreed";
+								METADATA_EULA_AGREED = "eula_agreed",
+
+								PAYMENT = "/payment",
+								INITIALIZATION = "/initialization",
+								AUTHORIZATION = "/authorization",
+								STATUS = "/status",
+								CALLBACK = "/cancel",
+								SUCCESS = "/success";
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 
