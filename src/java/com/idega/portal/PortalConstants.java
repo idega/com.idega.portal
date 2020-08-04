@@ -42,7 +42,15 @@ public class PortalConstants {
 								AUTHORIZATION = "/authorization",
 								STATUS = "/status",
 								CALLBACK = "/cancel",
-								SUCCESS = "/success";
+								SUCCESS = "/success",
+								PAYMENT_UNIQUE_ID = "payment_unique_id",
+
+								METADATA_PRICE = "price",
+								MERCHANT_TYPE = "MERCHANT_TYPE",
+								MERCHANT_ID = "MERCHANT_ID",
+								MERCHANT_CURRENCY = "MERCHANT_CURRENCY",
+								CREDIT_CARD_AUTHORIZATION_ENTRY = "credit_card_auth_entry",
+								CREDIT_CARD_AMOUNT = "credit_card_amount";
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 
