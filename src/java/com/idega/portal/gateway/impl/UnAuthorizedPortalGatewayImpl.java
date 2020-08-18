@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -132,19 +133,19 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	) {
 		return null;
 	}
-	
+
 	@Override
 	@POST
 	@Path(PortalGateway.LOCALIZE_ARTICLES)
 	public void localizeArticles(
-			LocalizedArticleList localizedArticlesMap, 
+			LocalizedArticleList localizedArticlesMap,
 			@Context HttpServletRequest request,
-			@Context HttpServletResponse response, 
+			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) throws IOException {
 		throw new Unauthorized();
 	}
-	
+
 	@Override
 	@GET
 	@Path(PortalGateway.LOCALIZED_ARTICLE)
@@ -155,9 +156,9 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 			@Context HttpServletResponse response, @Context ServletContext context
 	) throws IOException {
 		return portalService.getLocalizedArticles(
-				uris, 
-				locales, 
-				request, 
+				uris,
+				locales,
+				request,
 				response, context
 		);
 	}
@@ -278,7 +279,7 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 				context
 		);
 	}
-	
+
 	@GET
 	@Path(PortalGateway.ARTICLE_LOCALIZED)
 	@Override
@@ -329,7 +330,7 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	) {
 		return portalService.login(clientId, username, password, request, response, context);
 	}
-	
+
 	@POST
 	@Path(PortalGateway.PASSWORD_TOKEN_PASSWORD)
 	@Override
@@ -337,33 +338,45 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 			@PathParam("tokenId")String token,
 			String newPassword,
 			@Context HttpServletRequest request,
-			@Context HttpServletResponse response, 
+			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
 		return portalService.doUpdatePassword(
-				token, 
-				newPassword, 
-				request, 
-				response, 
+				token,
+				newPassword,
+				request,
+				response,
 				context
 		);
 	}
-	
+
 	@GET
 	@Path(PortalGateway.PASSWORD_TOKEN_BY_ID)
 	@Override
 	public String isUpdatePasswordLinkValid(
-			@PathParam("tokenId")String token, 
-			@Context HttpServletRequest request, 
-			@Context HttpServletResponse response, 
+			@PathParam("tokenId")String token,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
 		return portalService.isUpdatePasswordLinkValid(
-				token, 
-				request, 
-				response, 
+				token,
+				request,
+				response,
 				context
 		);
+	}
+
+	@Override
+	@GET
+	@Path(PortalGateway.FILE)
+	public Response getRepositoryFile(
+			@PathParam("identifier") String identifier,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.getRepositoryFile(identifier, request, response, context);
 	}
 
 }

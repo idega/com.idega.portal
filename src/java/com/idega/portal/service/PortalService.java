@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response;
 
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
@@ -92,5 +93,7 @@ public interface PortalService {
 			HttpServletResponse response,
 			ServletContext context
 	);
+
+	public Response getRepositoryFile(String identifier, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 }

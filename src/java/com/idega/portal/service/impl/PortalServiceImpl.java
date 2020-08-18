@@ -1,6 +1,8 @@
 package com.idega.portal.service.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +20,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,6 +48,8 @@ import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
+import com.idega.core.file.data.ICFile;
+import com.idega.core.file.data.ICFileHome;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.AddressHome;
 import com.idega.data.IDOLookup;
@@ -67,6 +75,7 @@ import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
+import com.idega.repository.jcr.JCRItem;
 import com.idega.restful.exception.BadRequest;
 import com.idega.restful.exception.Forbidden;
 import com.idega.restful.exception.InternalServerError;
@@ -84,6 +93,7 @@ import com.idega.user.data.bean.User;
 import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
+import com.idega.util.FileUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.StringHandler;
@@ -905,5 +915,55 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return "\"" + token + "\"";
 	}
 
+	private InputStream getStream(Object source) throws Exception {
+		if (source instanceof ICFile) {
+			return ((ICFile) source).getFileValue();
+		} else if (source instanceof JCRItem) {
+			return ((JCRItem) source).getInputStream();
+		}
+		return null;
+	}
+
+	@Override
+	public Response getRepositoryFile(String identifier, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		if (StringUtil.isEmpty(identifier)) {
+			return null;
+		}
+
+		String name = null;
+		try {
+			Object source = null;
+			if (identifier.indexOf(CoreConstants.SLASH) == -1) {
+				ICFileHome fileHome = (ICFileHome) IDOLookup.getHome(ICFile.class);
+				ICFile file = fileHome.findByUUID(identifier);
+				source = file;
+				name = file.getName();
+
+			} else {
+				JCRItem item = getRepositoryService().getRepositoryItemAsRootUser(identifier);
+				source = item;
+				name = item.getName();
+			}
+			InputStream stream = getStream(source);
+
+			StreamingOutput fileStream = new StreamingOutput() {
+
+				@Override
+				public void write(OutputStream output) throws IOException, WebApplicationException {
+					FileUtil.streamToOutputStream(stream, output);
+				}
+
+			};
+
+			return Response
+	                .ok(fileStream, MediaType.APPLICATION_OCTET_STREAM)
+	                .header("Content-Disposition", "attachment; filename =\"" + name + "\"")
+	                .build();
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting file " + identifier, e);
+		}
+
+		return null;
+	}
 
 }

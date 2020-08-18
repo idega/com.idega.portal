@@ -17,6 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -480,6 +481,18 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 			@Context ServletContext context
 	) {
 		return userService.setUserReadAgreement(request, response, context);
+	}
+
+	@Override
+	@GET
+	@Path(PortalGateway.FILE)
+	public Response getRepositoryFile(
+			@PathParam("identifier") String identifier,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.getRepositoryFile(identifier, request, response, context);
 	}
 
 }

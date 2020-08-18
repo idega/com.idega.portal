@@ -39,6 +39,8 @@ public interface PortalGateway extends PortalService, UserService {
 								PASSWORD_TOKEN_BY_ID = PASSWORD_TOKEN + "/{tokenId}",
 								PASSWORD_TOKEN_PASSWORD = PASSWORD_TOKEN_BY_ID + "/password",
 
+								FILE = "/file/{identifier}",
+
 								ARTICLE = "/article",
 								ARTICLES = "/articles",
 								ARTICLE_LOCALIZED = ARTICLE + "/{language}",
