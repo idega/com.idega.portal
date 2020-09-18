@@ -1,6 +1,7 @@
 package com.idega.portal.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -20,6 +21,10 @@ public class Paging implements Serializable {
 	private Integer page = 0;
 
 	private List<String> variables;
+
+	private Date dateFrom;
+
+	private Date dateTo;
 
 	public Long getTotalCount() {
 		return totalCount;
@@ -51,6 +56,22 @@ public class Paging implements Serializable {
 
 	public void setVariables(List<String> variables) {
 		this.variables = variables;
+	}
+
+	public Date getDateFrom() {
+		return dateFrom;
+	}
+
+	public void setDateFrom(Date dateFrom) {
+		this.dateFrom = dateFrom;
+	}
+
+	public Date getDateTo() {
+		return dateTo;
+	}
+
+	public void setDateTo(Date dateTo) {
+		this.dateTo = dateTo;
 	}
 
 	@Override
