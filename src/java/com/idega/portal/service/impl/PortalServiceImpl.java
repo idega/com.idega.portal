@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -41,6 +42,7 @@ import com.idega.block.login.business.PasswordTokenBusiness;
 import com.idega.block.login.data.PasswordTokenEntity;
 import com.idega.block.login.data.dao.PasswordTokenEntityDAO;
 import com.idega.block.login.presentation.Login;
+import com.idega.content.upload.business.UploadAreaBean;
 import com.idega.core.accesscontrol.business.AccessController;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
@@ -50,6 +52,7 @@ import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.core.file.data.ICFile;
 import com.idega.core.file.data.ICFileHome;
+import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.AddressHome;
 import com.idega.data.IDOLookup;
@@ -60,6 +63,7 @@ import com.idega.portal.business.DefaultAccountCreatedMessageSender;
 import com.idega.portal.business.MessageSender;
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
+import com.idega.portal.model.FileUploadResult;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
@@ -75,6 +79,7 @@ import com.idega.portal.service.LocalizationService;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.PortalSettingsResolver;
 import com.idega.presentation.IWContext;
+import com.idega.repository.RepositoryService;
 import com.idega.repository.jcr.JCRItem;
 import com.idega.restful.exception.BadRequest;
 import com.idega.restful.exception.Forbidden;
@@ -94,13 +99,18 @@ import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.FileUtil;
+import com.idega.util.IOUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
+import com.idega.util.datastructures.map.MapUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Name;
+import com.sun.jersey.core.header.ContentDisposition;
+import com.sun.jersey.multipart.FormDataBodyPart;
+import com.sun.jersey.multipart.FormDataMultiPart;
 
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -964,6 +974,125 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		return null;
+	}
+
+	@Override
+	public List<FileUploadResult> doUploadFilesToRepository(
+			FormDataMultiPart form,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	) {
+		if (form == null) {
+			getLogger().warning("Unknown parameters, can not upload file(s)");
+			return Arrays.asList(new FileUploadResult("FAILURE"));
+		}
+
+		String path = null;
+		try {
+			FormDataBodyPart uploadPath = form.getField("uploadPath");
+			if (uploadPath != null) {
+				path = uploadPath.getValueAs(String.class);
+			}
+			if (StringUtil.isEmpty(path)) {
+				path = CoreConstants.WEBDAV_SERVLET_URI + CoreConstants.PUBLIC_PATH + CoreConstants.SLASH;
+			} else {
+				if (!path.endsWith(CoreConstants.SLASH)) {
+					path = path + CoreConstants.SLASH;
+				}
+				if (!path.startsWith(CoreConstants.SLASH)) {
+					path = CoreConstants.SLASH + path;
+				}
+				if (!path.startsWith(CoreConstants.WEBDAV_SERVLET_URI)) {
+					path = CoreConstants.WEBDAV_SERVLET_URI + path;
+				}
+			}
+
+			IWContext iwc = new IWContext(request, response, context);
+			User admin = iwc.getAccessController().getAdministratorUser();
+			UploadAreaBean uploadHelper = ELUtil.getInstance().getBean(UploadAreaBean.BEAN_NAME);
+			Long maxSize = uploadHelper.getMaxFileSize(iwc);
+			RepositoryService repositoryService = getRepositoryService();
+
+			char[] exceptions = new char[] {'-', '_', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'};
+			boolean addPrefix = iwc.getApplicationSettings().getBoolean("blue_imp_upload.add_prefix", false);
+			int index = 0;
+			InputStream stream = null;
+			FormDataBodyPart filePart = null;
+			List<FileUploadResult> results = new ArrayList<>();
+			while ((filePart = form.getField("file_".concat(String.valueOf(index)))) != null) {
+				try {
+					ContentDisposition cd = filePart.getContentDisposition();
+					String originalName = cd.getFileName();
+
+					Long fileSize = null;
+					FormDataBodyPart fileSizeInfo = form.getField("fileSize_".concat(String.valueOf(index)));
+					if (fileSizeInfo != null) {
+						String sizeInfo = fileSizeInfo.getEntityAs(String.class);
+						if (StringHandler.isNumeric(sizeInfo)) {
+							fileSize = Long.valueOf(sizeInfo);
+						}
+					}
+
+					index++;
+
+					if (maxSize != null && fileSize != null && fileSize > maxSize) {
+						getLogger().warning("File " + filePart + " is too big: max size: " + maxSize + ", file's size: " + fileSize);
+						results.add(new FileUploadResult("FAILURE", null, originalName, null));
+						continue;
+					}
+
+					MediaType type = filePart.getMediaType();
+					stream = filePart.getEntityAs(InputStream.class);
+
+					String fileName = originalName;
+					fileName = StringHandler.stripNonRomanCharacters(fileName, exceptions);
+					if (addPrefix) {
+						fileName = UUID.randomUUID().toString().concat(CoreConstants.UNDER).concat(fileName);
+					}
+					String pathAndName = path + fileName;
+					boolean success = repositoryService.uploadFile(path, fileName, type == null ? MimeTypeUtil.resolveMimeTypeFromFileName(fileName) : type.toString(), stream);
+					if (!success) {
+						getLogger().warning("Failed to upload file " + filePart + " to " + path);
+						results.add(new FileUploadResult("FAILURE", fileName, originalName, pathAndName));
+						continue;
+					}
+
+					fileSize = (fileSize == null || fileSize <= 0) ? repositoryService.getLength(pathAndName, admin) : fileSize;
+
+					Map<String, Object> uploadResult = uploadHelper.getFileResponse(fileName, fileSize == null ? 0 : fileSize, pathAndName, -1, false);
+					if (MapUtil.isEmpty(uploadResult)) {
+						getLogger().warning("Failed to upload result for file " + filePart + " to " + path);
+						results.add(new FileUploadResult("FAILURE", fileName, originalName, pathAndName));
+						continue;
+					}
+
+					FileUploadResult result = new FileUploadResult("OK");
+					result.setOriginalName(originalName);
+					result.setName((String) uploadResult.get("name"));
+					result.setSize((Long) uploadResult.get("size"));
+					result.setUrl((String) uploadResult.get("url"));
+					result.setThumbnail_url((String) uploadResult.get("thumbnail_url"));
+					result.setDelete_url((String) uploadResult.get("delete_url"));
+					result.setDelete_type((String) uploadResult.get("delete_type"));
+					result.setMessage(CoreConstants.EMPTY);
+					results.add(result);
+				} finally {
+					IOUtil.close(stream);
+				}
+			}
+
+			if (ListUtil.isEmpty(results)) {
+				getLogger().warning("No files were uploaded " + form);
+				return Arrays.asList(new FileUploadResult("FAILURE"));
+			}
+
+			return results;
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error uploading file " + form + " to " + path, e);
+		}
+
+		return Arrays.asList(new FileUploadResult("FAILURE"));
 	}
 
 }

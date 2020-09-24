@@ -26,6 +26,7 @@ import com.idega.portal.PortalConstants;
 import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
+import com.idega.portal.model.FileUploadResult;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
@@ -39,6 +40,7 @@ import com.idega.portal.model.UserAccount;
 import com.idega.portal.service.PortalService;
 import com.idega.restful.business.DefaultRestfulService;
 import com.idega.restful.exception.Unauthorized;
+import com.sun.jersey.multipart.FormDataMultiPart;
 
 @Component
 @Path(PortalGateway.PORTAL)
@@ -377,6 +379,19 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 			@Context ServletContext context
 	) {
 		return portalService.getRepositoryFile(identifier, request, response, context);
+	}
+
+	@Override
+	@POST
+	@Path(PortalGateway.UPLOAD_FILES)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public List<FileUploadResult> doUploadFilesToRepository(
+			FormDataMultiPart form,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.doUploadFilesToRepository(form, request, response, context);
 	}
 
 }

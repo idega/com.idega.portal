@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
+import com.idega.portal.model.FileUploadResult;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
 import com.idega.portal.model.Localizations;
@@ -20,6 +21,7 @@ import com.idega.portal.model.PortalMenu;
 import com.idega.portal.model.PortalSettings;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserAccount;
+import com.sun.jersey.multipart.FormDataMultiPart;
 
 public interface PortalService {
 
@@ -95,5 +97,7 @@ public interface PortalService {
 	);
 
 	public Response getRepositoryFile(String identifier, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+
+	public List<FileUploadResult> doUploadFilesToRepository(FormDataMultiPart form, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 }
