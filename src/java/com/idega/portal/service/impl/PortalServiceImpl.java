@@ -965,9 +965,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			};
 
+			String type = MimeTypeUtil.resolveMimeTypeFromFileName(name);
+			type = StringUtil.isEmpty(type) ? MediaType.APPLICATION_OCTET_STREAM : type;
+			String object = MimeTypeUtil.MIME_TYPE_IOS_PASS.equals(type) ? "inline" : "attachment";
 			return Response
-	                .ok(fileStream, MediaType.APPLICATION_OCTET_STREAM)
-	                .header("Content-Disposition", "attachment; filename =\"" + name + "\"")
+	                .ok(fileStream, type)
+	                .header("Content-Disposition", object.concat("; filename=\"" + name + "\""))
 	                .build();
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting file " + identifier, e);
