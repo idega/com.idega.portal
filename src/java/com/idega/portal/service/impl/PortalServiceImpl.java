@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.FinderException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,6 +49,7 @@ import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.business.LoginState;
 import com.idega.core.accesscontrol.data.LoginTable;
+import com.idega.core.accesscontrol.data.LoginTableHome;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.core.file.data.ICFile;
@@ -1096,6 +1098,48 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		return Arrays.asList(new FileUploadResult("FAILURE"));
+	}
+
+	@Override
+	public Result isValidUserName(UserAccount userAccount, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		Result error = new Result(Status.BAD_REQUEST.getStatusCode(), Boolean.FALSE.toString());
+		Result success = new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
+		if (userAccount == null) {
+			getLogger().warning("Account information is not provided");
+			return error;
+		}
+
+		String userName = userAccount.getUsername();
+		if (StringUtil.isEmpty(userName)) {
+			return error;
+		}
+
+		try {
+			LoginTableHome loginInfo = (LoginTableHome) IDOLookup.getHome(LoginTable.class);
+			LoginTable login = loginInfo.findByLogin(userName);
+			if (login == null) {
+				return success;
+			}
+
+			String personalId = userAccount.getPersonalId();
+			if (StringUtil.isEmpty(personalId)) {
+				return error;
+			}
+
+			com.idega.core.user.data.User user = login.getUser();
+			String loginPersonalId = user == null ? null : user.getPersonalID();
+			if (StringUtil.isEmpty(loginPersonalId)) {
+				return error;
+			}
+
+			return personalId.equals(loginPersonalId) ? success : error;
+		} catch (FinderException e) {
+			return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error while checking if user name is valid: " + userName, e);
+		}
+
+		return error;
 	}
 
 }

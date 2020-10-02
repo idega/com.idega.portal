@@ -509,4 +509,16 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 		return portalService.doUploadFilesToRepository(form, request, response, context);
 	}
 
+	@POST
+	@Override
+	@Path(LOGIN + AVAILABLE)
+	public Result isValidUserName(
+			UserAccount userAccount,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.isValidUserName(userAccount, request, response, context);
+	}
+
 }

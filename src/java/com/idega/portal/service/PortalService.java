@@ -100,4 +100,6 @@ public interface PortalService {
 
 	public List<FileUploadResult> doUploadFilesToRepository(FormDataMultiPart form, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
+	public Result isValidUserName(UserAccount userAccount, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+
 }

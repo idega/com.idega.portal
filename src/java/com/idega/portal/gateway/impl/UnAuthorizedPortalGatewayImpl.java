@@ -394,4 +394,16 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 		return portalService.doUploadFilesToRepository(form, request, response, context);
 	}
 
+	@POST
+	@Override
+	@Path(PortalGateway.LOGIN + PortalGateway.AVAILABLE)
+	public Result isValidUserName(
+			UserAccount userAccount,
+			@Context HttpServletRequest request,
+			@Context HttpServletResponse response,
+			@Context ServletContext context
+	) {
+		return portalService.isValidUserName(userAccount, request, response, context);
+	}
+
 }
