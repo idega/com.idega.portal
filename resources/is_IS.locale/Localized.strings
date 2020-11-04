@@ -16,7 +16,7 @@ services.list_of_available_services=Listi yfir þjónustur í boði
 
 account.account_data_not_provided=Vantar að skrá upplýsingar fyrir nýskráningu
 account.provide_credentials=Vinsamlega skráðu aðgangsupplýsingar
-account.please_choose_different_user_name=Vinsamlega veldu annað notendanafn
+account.please_choose_different_user_name=Vinsamlega veldu annað notendanafn (annað netfang)
 account.failed_to_create_account=Nýskráning mistókst.
 account.provide_valid_personal_id=Vinsamlegast gefðu upp gilt persónuskilríki
 account.please_enter_username=Vinsamlega skráðu notendanafn
