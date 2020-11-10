@@ -43,6 +43,7 @@ public class PortalConstants {
 								STATUS = "/status",
 								CALLBACK = "/cancel",
 								SUCCESS = "/success",
+								STORE = "/store",
 								PAYMENT_UNIQUE_ID = "payment_unique_id",
 
 								METADATA_PRICE = "price",
