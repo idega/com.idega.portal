@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -482,35 +483,50 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		IWContext iwc = new IWContext(request, response, context);
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER), iwc);
+		UserBusiness userBusiness = getUserBusiness();
 
-		User user = userDAO.getUser(ssn);
+		com.idega.user.data.User user = null;
+		try {
+			user = userBusiness.getUser(ssn);
+		} catch (Exception e) {}
 		if (user == null) {
 			LoginTable loginTable = null;
 			try {
 				loginTable = LoginDBHandler.getUserLoginByUserName(ssn);
 			} catch (Exception e) {}
 			if (loginTable != null && loginTable.getUserId() > 0) {
-				user = userDAO.getUser(loginTable.getUserId());
+				try {
+					user = userBusiness.getUser(loginTable.getUserId());
+				} catch (Exception e) {}
 			}
 		}
 		if (user == null) {
-			throw new BadRequest("User '"+ssn+"' not found");
+			throw new BadRequest("User '" + ssn + "' not found");
 		}
-		String email = user.getEmailAddress();
-		if (StringUtil.isEmpty(email)) {
-			throw new BadRequest("User '"+ssn+"' does not have email address");
+
+		Email email = null;
+		try {
+			email = user.getUsersEmail();
+		} catch (Exception e) {}
+		if (email == null) {
+			Collection<Email> emails = user.getEmails();
+			email = ListUtil.isEmpty(emails) ? null : emails.iterator().next();
+		}
+		String emailAddress = email == null ? null : email.getEmailAddress();
+		if (StringUtil.isEmpty(emailAddress)) {
+			throw new BadRequest("User '" + ssn + "' does not have email address");
 		}
 		PasswordTokenEntity passwordToken = passwordTokenEntityDAO.create(
 				user.getUniqueId(),
 				iwc.getRemoteIpAddress(),
 				Long.valueOf(86400000) // 24 hours
 		);
-		sendPasswordResetLink(user, iwc, email, passwordToken, iwrb);
-		return email;
+		sendPasswordResetLink(user, iwc, emailAddress, passwordToken, iwrb);
+		return emailAddress;
 	}
 
 	private void sendPasswordResetLink(
-			User user,
+			com.idega.user.data.User user,
 			IWContext iwc,
 			String emailTo,
 			PasswordTokenEntity passwordToken,
