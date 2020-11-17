@@ -94,7 +94,6 @@ import com.idega.user.business.CompanyHelper;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.business.StandardGroup;
 import com.idega.user.business.UserBusiness;
-import com.idega.user.dao.UserDAO;
 import com.idega.user.data.Group;
 import com.idega.user.data.MetadataConstants;
 import com.idega.user.data.bean.User;
@@ -135,9 +134,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	@Qualifier("citizenStandardGroup")
 	@Autowired(required = false)
 	private StandardGroup standardGroup;
-
-	@Autowired
-	private UserDAO userDAO;
 
 	@Autowired
 	private PasswordTokenEntityDAO passwordTokenEntityDAO;
@@ -625,7 +621,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			HttpServletRequest request,
 			HttpServletResponse response, ServletContext context
 	) throws IOException {
-		List<LocalizedArticle> articles = new ArrayList<LocalizedArticle>();
+		List<LocalizedArticle> articles = new ArrayList<>();
 		Map<String,String> languages = new HashMap<>(locales.size());
 		for (String locale: locales) {
 			String language = locale.substring(0, 2);
@@ -726,7 +722,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			return null;
 		}
 
-		List<String> categories = new ArrayList<String>();
+		List<String> categories = new ArrayList<>();
 		categories.add(category);
 
 		List<ArticleEntity> articles = articleDAO.getByCategories(categories, null, 0);
@@ -749,7 +745,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		});
 
-		List<ArticleItemBean> articleBeans = new ArrayList<ArticleItemBean>();
+		List<ArticleItemBean> articleBeans = new ArrayList<>();
 		for (ArticleEntity article: articles) {
 			try {
 				String uri = article.getUri();
@@ -769,7 +765,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		ArticleList result = new ArticleList();
-		List<Article> art = new ArrayList<Article>();
+		List<Article> art = new ArrayList<>();
 		result.setArticles(art);
 		for (ArticleItemBean article: articleBeans) {
 			art.add(new Article(article));
