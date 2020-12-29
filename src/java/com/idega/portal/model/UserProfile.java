@@ -48,7 +48,6 @@ public class UserProfile extends User {
 
 	private String personalId;
 	private String phone;
-	private String email;
 
 	private String dateOfBirth;
 
@@ -101,7 +100,7 @@ public class UserProfile extends User {
 
 		id = user.getId();
 		personalId = user.getPersonalID();
-		email = user.getEmailAddress();
+		setEmail(user.getEmailAddress());
 		List<Phone> phones = user.getPhones();
 		if (!ListUtil.isEmpty(phones)) {
 			phone = phones.iterator().next().getNumber();
@@ -144,7 +143,7 @@ public class UserProfile extends User {
 			email = user.getUsersEmail();
 		} catch (Exception e) {}
 		if (email != null) {
-			this.email = email.getEmailAddress();
+			setEmail(email.getEmailAddress());
 		}
 		Collection<com.idega.core.contact.data.Phone> phones = null;
 		try {
@@ -400,14 +399,6 @@ public class UserProfile extends User {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
 	}
 
 	public void setPhones(List<Phone> phones) {
@@ -675,10 +666,12 @@ public class UserProfile extends User {
 		this.username = username;
 	}
 
+	@Override
 	public String getUuid() {
 		return uuid;
 	}
 
+	@Override
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
