@@ -173,7 +173,7 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
-		return null;
+		return portalService.getAvailableLanguages(request, response, context);
 	}
 
 	@Override
