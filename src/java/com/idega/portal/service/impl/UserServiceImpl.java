@@ -88,8 +88,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
@@ -106,10 +108,7 @@ import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginInfo;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.business.DefaultSpringBean;
-import com.idega.core.contact.dao.ContactDAO;
-import com.idega.core.contact.dao.EMailDAO;
 import com.idega.core.contact.dao.PhoneDAO;
-import com.idega.core.contact.data.bean.EmailType;
 import com.idega.core.file.data.ICFile;
 import com.idega.core.location.business.AddressBusiness;
 import com.idega.core.location.data.Country;
@@ -192,6 +191,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			}
 
 			Locale locale = iwc.getCurrentLocale();
+			UserBusiness userBusiness = getServiceInstance(iwc, UserBusiness.class);
 
 			List<DataElement> dataToLoad = null;
 			if (profile.getFilter() == null || ListUtil.isEmpty(profile.getFilter().getDataToLoad())) {
@@ -298,7 +298,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.EMAIL)) {
 					try {
 						//Validate emails
-						List<String> validEmailsList = new ArrayList<String>();
+						Set<String> validEmails = new HashSet<>();
 						if (!StringUtil.isEmpty(profile.getEmail())) {
 							String[] emailsArray = profile.getEmail().replace(CoreConstants.SPACE, CoreConstants.EMPTY).split(CoreConstants.COMMA);
 							if (emailsArray != null) {
@@ -306,7 +306,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								if (!ListUtil.isEmpty(emailsList)) {
 									for (String emailIn : emailsList) {
 										if (EmailValidator.getInstance().validateEmail(emailIn)) {
-											validEmailsList.add(emailIn);
+											validEmails.add(emailIn);
 										} else {
 											getLogger().log(Level.WARNING, "Invalid email: " + emailIn + " for member with personal id: " + userPersonalId);
 											String errMsg = iwrb.getLocalizedString("user_update.invalid_email.error", "Invalid email: {0} was not saved. \n");
@@ -318,16 +318,8 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 						}
 
 						//Save emails
-						EMailDAO emailDAO = ELUtil.getInstance().getBean(EMailDAO.class);
-						ContactDAO contactDAO = ELUtil.getInstance().getBean(ContactDAO.class);
-						EmailType emailTypeMain = contactDAO.getMainEmailType();
-						//Remove all emails
-						emailDAO.removeAllByUserId(Integer.valueOf(userIDO.getPrimaryKey().toString()));
-						//Create emails
-						if (!ListUtil.isEmpty(validEmailsList)) {
-							for (int i = 0; i < validEmailsList.size(); i++) {
-								emailDAO.createEmail(Integer.valueOf(userIDO.getPrimaryKey().toString()), validEmailsList.get(i), emailTypeMain);
-							}
+						if (!ListUtil.isEmpty(validEmails)) {
+							userBusiness.updateUserMail(userIDO, validEmails.iterator().next());
 						}
 					} catch (Exception eEmails) {
 						getLogger().log(Level.WARNING, "Could not change the user emails for user with personal id: " + userPersonalId, eEmails);
@@ -340,7 +332,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.PHONE)) {
 					try {
 						//Get phones from string and validate them
-						List<String> validPhonesList = new ArrayList<String>();
+						List<String> validPhonesList = new ArrayList<>();
 						if (!StringUtil.isEmpty(profile.getPhone())) {
 							String[] phonesArray = profile.getPhone().replace(CoreConstants.SPACE, CoreConstants.EMPTY).split(CoreConstants.COMMA);
 							if (phonesArray != null) {
@@ -399,7 +391,6 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 								address.setCity(profile.getAddress().getCity());
 								address.store();
 							} else {
-								UserBusiness userBusiness = getServiceInstance(UserBusiness.class);
 								userBusiness.updateUsersMainAddressOrCreateIfDoesNotExist(
 										userIDO,
 										streetAddress,
@@ -423,7 +414,6 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 							if (address == null) {
 								com.idega.core.location.data.PostalCode pc = addressBusiness.getPostalCodeAndCreateIfDoesNotExist(postalCode, city);
 
-								UserBusiness userBusiness = getServiceInstance(UserBusiness.class);
 								userBusiness.updateUsersMainAddressOrCreateIfDoesNotExist(
 										userIDO,
 										streetAndNumber,
