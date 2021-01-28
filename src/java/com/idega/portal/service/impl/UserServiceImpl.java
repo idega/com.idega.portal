@@ -229,9 +229,9 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				//**** Change member username and password *****
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {
 					try {
-						LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
+						LoginTable loginTable = LoginDBHandler.getUserLogin(userIDO);
 						String login = StringUtil.isEmpty(profile.getUsername()) ?
-								user.getPersonalID() :
+								userIDO.getPersonalID() :
 								StringUtil.isEmpty(profile.getUsername()) ?
 										profile.getLogin() :
 										profile.getUsername();
