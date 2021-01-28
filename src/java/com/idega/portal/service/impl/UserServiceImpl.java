@@ -304,8 +304,9 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 							if (emailsArray != null) {
 								List<String> emailsList = Arrays.asList(emailsArray);
 								if (!ListUtil.isEmpty(emailsList)) {
+									EmailValidator emailValidator = EmailValidator.getInstance();
 									for (String emailIn : emailsList) {
-										if (EmailValidator.getInstance().validateEmail(emailIn)) {
+										if (emailValidator.validateEmail(emailIn)) {
 											validEmails.add(emailIn);
 										} else {
 											getLogger().log(Level.WARNING, "Invalid email: " + emailIn + " for member with personal id: " + userPersonalId);
