@@ -26,8 +26,7 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 			boolean personalIdAsUserName,
 			String emailAddress
 	) throws Exception {
-		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
-		IWBundle bundle = iwma.getBundle(getBundleIdentifier());
+		IWBundle bundle = getBundle(getBundleIdentifier());
 		IWResourceBundle iwrb = bundle.getResourceBundle(locale);
 		String subject = getSubject(user, iwrb);
 		String body = getBody(user, iwrb, personalIdAsUserName);
@@ -56,13 +55,13 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 		if (personalIdAsUserName) {
 			body = iwrb.getLocalizedAndFormattedString(
 					"message.email.account_created.body",
-					"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
+					"Hi {0}.<br /><br />Registration completed. Your account is already active, so you can log in and use your social security number as the username and password you chose yourself.",
 					paremeters
 			);
 		} else {
 			body = iwrb.getLocalizedAndFormattedString(
 					"message.email.account_created.body_user_name_as_email",
-					"Hi {0}.\n\nRegistration completed. Your account is already active, so you can log in with your user name and the password you chose yourself.",
+					"Hi {0}.<br /><br />Registration completed. Your account is already active, so you can log in with your user name and the password you chose yourself.",
 					paremeters
 			);
 		}
@@ -72,9 +71,11 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 				null
 		);
 		if (StringUtil.isEmpty(team)) {
-			team = settings.getProperty("with_regards_text", "Idega");
+			team = settings.getProperty("with_regards_text", null);
 		}
-		body += "\n\n" + team;
+		if (!StringUtil.isEmpty(team)) {
+			body += "<br /><br />" + team;
+		}
 		return body;
 	}
 
