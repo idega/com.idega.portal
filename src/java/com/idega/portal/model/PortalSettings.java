@@ -57,6 +57,8 @@ public class PortalSettings implements Serializable {
 
 	private Boolean validPersonalId = Boolean.FALSE;
 
+	private Boolean showDateFilter = Boolean.FALSE;
+
 	public String getName() {
 		return name;
 	}
@@ -328,5 +330,15 @@ public class PortalSettings implements Serializable {
 	public void setOauth(OAuth oauth) {
 		this.oauth = oauth;
 	}
+
+	public Boolean getShowDateFilter() {
+		return showDateFilter;
+	}
+
+	public void setShowDateFilter(Boolean showDateFilter) {
+		this.showDateFilter = showDateFilter;
+	}
+
+
 
 }
