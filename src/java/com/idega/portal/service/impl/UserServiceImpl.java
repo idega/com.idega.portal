@@ -203,11 +203,14 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 			//Get the IDO user
 			com.idega.user.data.User userIDO = null;
 			String userPersonalId = CoreConstants.EMPTY;
-			if (profile != null && !StringUtil.isEmpty(profile.getPersonalID())) {
+			if (profile != null && (!StringUtil.isEmpty(profile.getPersonalID()) || !StringUtil.isEmpty(profile.getPersonalId()))) {
 				userPersonalId = profile.getPersonalID();
+				userPersonalId = StringUtil.isEmpty(userPersonalId) ? profile.getPersonalId() : userPersonalId;
 				userIDO = getUserByPersonalId(userPersonalId);
-			} else {
+			}
+			if (userIDO == null) {
 				userIDO = getLegacyUser(user);
+				getLogger().info("Editing profile (" + profile + ") of " + user);
 			}
 
 			//Change the user data
@@ -217,21 +220,20 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.GENERAL)) {
 					if (!StringUtil.isEmpty(profile.getName())) {
 						userIDO.setFullName(profile.getName());
-						userIDO.store();
 					}
 
-					if (!StringUtil.isEmpty(profile.getPersonalID())) {
-						userIDO.setPersonalID(profile.getPersonalID());
-						userIDO.store();
+					if (!StringUtil.isEmpty(userPersonalId)) {
+						userIDO.setPersonalID(userPersonalId);
 					}
+					userIDO.store();
 				}
 
 				//**** Change member username and password *****
 				if (dataToLoad.contains(DataElement.ALL) || dataToLoad.contains(DataElement.LOGIN)) {
 					try {
-						LoginTable loginTable = LoginDBHandler.getUserLogin(((Integer) userIDO.getPrimaryKey()).intValue());
+						LoginTable loginTable = LoginDBHandler.getUserLogin(userIDO);
 						String login = StringUtil.isEmpty(profile.getUsername()) ?
-								user.getPersonalID() :
+								userIDO.getPersonalID() :
 								StringUtil.isEmpty(profile.getUsername()) ?
 										profile.getLogin() :
 										profile.getUsername();
@@ -304,8 +306,9 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 							if (emailsArray != null) {
 								List<String> emailsList = Arrays.asList(emailsArray);
 								if (!ListUtil.isEmpty(emailsList)) {
+									EmailValidator emailValidator = EmailValidator.getInstance();
 									for (String emailIn : emailsList) {
-										if (EmailValidator.getInstance().validateEmail(emailIn)) {
+										if (emailValidator.validateEmail(emailIn)) {
 											validEmails.add(emailIn);
 										} else {
 											getLogger().log(Level.WARNING, "Invalid email: " + emailIn + " for member with personal id: " + userPersonalId);

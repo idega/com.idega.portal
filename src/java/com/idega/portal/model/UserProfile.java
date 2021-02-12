@@ -86,7 +86,6 @@ public class UserProfile extends User {
 	private Boolean contactBySMS;
 	private Boolean contactByMyMessages;
 
-
 	public UserProfile() {
 		super();
 	}
@@ -125,7 +124,6 @@ public class UserProfile extends User {
 		if (!StringUtil.isEmpty(contactByMyMessagesStr)) {
 			setContactByMyMessages(Boolean.valueOf(contactByMyMessagesStr));
 		}
-
 	}
 
 	public UserProfile(com.idega.user.data.User user) {
@@ -726,7 +724,7 @@ public class UserProfile extends User {
 
 	@Override
 	public String toString() {
-		return "ID: " + getId();
+		return "User ID: " + getId();
 	}
 
 }
