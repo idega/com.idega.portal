@@ -22,6 +22,8 @@ public class Paging implements Serializable {
 
 	private List<String> variables;
 
+	private List<String> statuses;
+
 	private Date dateFrom;
 
 	private Date dateTo;
@@ -72,6 +74,14 @@ public class Paging implements Serializable {
 
 	public void setDateTo(Date dateTo) {
 		this.dateTo = dateTo;
+	}
+
+	public List<String> getStatuses() {
+		return statuses;
+	}
+
+	public void setStatuses(List<String> statuses) {
+		this.statuses = statuses;
 	}
 
 	@Override
