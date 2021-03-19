@@ -28,6 +28,17 @@ public class Paging implements Serializable {
 
 	private Date dateTo;
 
+	public Paging() {
+		super();
+	}
+
+	public Paging(Integer page, Integer pageSize) {
+		this();
+
+		this.page = page;
+		this.pageSize = pageSize;
+	}
+
 	public Long getTotalCount() {
 		return totalCount;
 	}
