@@ -269,7 +269,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			String middleName = null;
 			String lastName = null;
 			String displayName = null;
-			String name = account.getName();
+			String name = StringUtil.isEmpty(account.getNameOfResponsiblePerson()) ? account.getName() : account.getNameOfResponsiblePerson();
 			Name userNames = null;
 			Integer genderId = null;
 
@@ -277,6 +277,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			if (company == null) {
 				try {
 					tmpUser = userBusiness.getUser(account.getPersonalId());
+				} catch (Exception e) {}
+			}
+			if (tmpUser == null && !StringUtil.isEmpty(account.getPersonalIdOfResponsiblePerson())) {
+				try {
+					tmpUser = userBusiness.getUser(account.getPersonalIdOfResponsiblePerson());
 				} catch (Exception e) {}
 			}
 			if (tmpUser == null) {
@@ -326,8 +331,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				companyGroup = groupBusiness.getGroupByGroupID(company.getGroupId());
 			}
 
+			String personalIdForUser = StringUtil.isEmpty(account.getPersonalIdOfResponsiblePerson()) ? account.getPersonalId() : account.getPersonalIdOfResponsiblePerson();
 			try {
-				user = userBusiness.getUser(account.getPersonalId());
+				user = userBusiness.getUser(personalIdForUser);
 			} catch (Exception e) {}
 
 			boolean newLogin = StringUtil.isEmpty(account.getUuid());
@@ -342,7 +348,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						firstName,
 						middleName,
 						lastName,
-						account.getPersonalId(),
+						personalIdForUser,
 						displayName,
 						null,						//	Description
 						genderId,					//	Gender
@@ -369,7 +375,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						middleName,
 						lastName,
 						displayName,
-						account.getPersonalId(),
+						personalIdForUser,
 						account.getEmail(),
 						null,
 						account.getUsername(),

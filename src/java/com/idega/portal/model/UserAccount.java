@@ -30,6 +30,10 @@ public class UserAccount implements Serializable {
 
 	private boolean personAsCompany;
 
+	private String nameOfResponsiblePerson;
+
+	private String personalIdOfResponsiblePerson;
+
 	public String getUsername() {
 		return username;
 	}
@@ -100,6 +104,22 @@ public class UserAccount implements Serializable {
 
 	public void setPersonAsCompany(boolean personAsCompany) {
 		this.personAsCompany = personAsCompany;
+	}
+
+	public String getNameOfResponsiblePerson() {
+		return nameOfResponsiblePerson;
+	}
+
+	public void setNameOfResponsiblePerson(String nameOfResponsiblePerson) {
+		this.nameOfResponsiblePerson = nameOfResponsiblePerson;
+	}
+
+	public String getPersonalIdOfResponsiblePerson() {
+		return personalIdOfResponsiblePerson;
+	}
+
+	public void setPersonalIdOfResponsiblePerson(String personalIdOfResponsiblePerson) {
+		this.personalIdOfResponsiblePerson = personalIdOfResponsiblePerson;
 	}
 
 }
