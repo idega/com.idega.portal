@@ -224,11 +224,27 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		try {
 			IWContext iwc = new IWContext(request, response, context);
+			UserBusiness userBusiness = getUserBusiness();
 
+			String uuid = account.getUuid();
 			LoginTable login = LoginDBHandler.getUserLoginByUserName(account.getUsername());
 			if (login != null) {
-				account.setErrorMessage(iwrb.getLocalizedString("account.please_choose_different_user_name", "Please choose different username"));
-				return account;
+				boolean error = true;
+
+				if (!StringUtil.isEmpty(uuid)) {
+					com.idega.user.data.User providedUser = null;
+					try {
+						providedUser = userBusiness.getUserByUniqueId(uuid);
+					} catch (Exception e) {}
+					if (providedUser != null && Integer.valueOf(providedUser.getId()).intValue() == login.getUserId()) {
+						error = false;
+					}
+				}
+
+				if (error) {
+					account.setErrorMessage(iwrb.getLocalizedString("account.please_choose_different_user_name", "Please choose different username"));
+					return account;
+				}
 			}
 
 			String serverName = request.getServerName();
@@ -263,7 +279,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			com.idega.user.data.User user = null;
-			UserBusiness userBusiness = getUserBusiness();
 
 			String firstName = null;
 			String middleName = null;
@@ -336,7 +351,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				user = userBusiness.getUser(personalIdForUser);
 			} catch (Exception e) {}
 
-			boolean newLogin = StringUtil.isEmpty(account.getUuid());
+			boolean newLogin = StringUtil.isEmpty(uuid);
 			if (newLogin) {
 				StandardGroup standardGroup = null;
 				if (companyGroup == null) {
@@ -369,7 +384,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			} else {
 				user = userBusiness.update(
 						user == null ? null : user.getId(),
-						account.getUuid(),
+						uuid,
 						null,
 						firstName,
 						middleName,
