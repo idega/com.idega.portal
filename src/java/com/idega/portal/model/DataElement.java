@@ -20,7 +20,8 @@ public enum DataElement {
 	CONTACT_BY,
 	CONTACT_BY_EMAIL,
 	CONTACT_BY_SMS,
-	CONTACT_BY_MY_MESSAGES;
+	CONTACT_BY_MY_MESSAGES,
+	COMPANY;
 
 	@JsonCreator
 	public static DataElement fromValue(String value) {
