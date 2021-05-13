@@ -819,7 +819,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			//	Check username
 			username = StringUtil.isEmpty(username) ? request.getHeader("username") : username;
-			if (StringUtil.isEmpty(username) || "undefined".equals(username)) {
+			if (StringUtil.isEmpty(username) || CoreConstants.UNDEFINED.equals(username)) {
 				error = "Username is not provided";
 				getLogger().warning(error);
 				return new LoginResult(-1, error, "login_error.username_is_not_provided");
@@ -827,7 +827,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			//	Check password
 			password = StringUtil.isEmpty(password) ? request.getHeader("password") : password;
-			if (StringUtil.isEmpty(password) || "undefined".equals(password)) {
+			if (StringUtil.isEmpty(password) || CoreConstants.UNDEFINED.equals(password)) {
 				error = "Password is not provided";
 				getLogger().warning(error + ". Username: " + username);
 				return new LoginResult(-1, error, "login_error.password_is_not_provided");
@@ -883,7 +883,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			clientId = StringUtil.isEmpty(clientId) ? request.getHeader("client_id") : clientId;
-			if (StringUtil.isEmpty(clientId) || "undefined".equals(clientId)) {
+			if (StringUtil.isEmpty(clientId) || CoreConstants.UNDEFINED.equals(clientId)) {
 				clientId = request.getParameter("client_id");
 			}
 			OAuthToken token = getOAuth2Service().getToken(request, clientId, username, password);
