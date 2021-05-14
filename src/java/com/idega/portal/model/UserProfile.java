@@ -317,6 +317,8 @@ public class UserProfile extends User {
 			}
 			if (dataToLoad.contains(DataElement.EMAIL)) {
 				setEmails(user.getEmails());
+			} else if (dataToLoad.contains(DataElement.GENERAL)) {
+				setEmail(user.getEmailAddress());
 			}
 		}
 
@@ -387,8 +389,6 @@ public class UserProfile extends User {
 				Logger.getLogger(getClass().getName()).log(Level.WARNING, "Error getting user's CONTACT BY from metadata for user: " + userIDO, eLogin);
 			}
 		}
-
-
 	}
 
 	public String getPhone() {
