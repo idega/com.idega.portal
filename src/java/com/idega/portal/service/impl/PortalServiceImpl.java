@@ -351,6 +351,12 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				user = userBusiness.getUser(personalIdForUser);
 			} catch (Exception e) {}
 
+			//If user is not found by personal id, searching by email
+			if (user == null && !StringUtil.isEmpty(account.getEmail())) {
+				getLogger().info("Did not find user by personal id: " + personalIdForUser + ". Will be searching by email: " + account.getEmail());
+				user = userBusiness.getUserByEmail(account.getPersonalId(), account.getEmail());
+			}
+
 			boolean newLogin = StringUtil.isEmpty(uuid);
 			if (newLogin) {
 				StandardGroup standardGroup = null;
