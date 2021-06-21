@@ -122,4 +122,8 @@ public class UserAccount implements Serializable {
 		this.personalIdOfResponsiblePerson = personalIdOfResponsiblePerson;
 	}
 
+	@Override
+	public String toString() {
+		return "UserAccount. username: " + getUsername() + ", personalId: " + getPersonalId() + ", email: " + getEmail() + ", userId: " + getUserId() + ", name: " + getName();
+	}
 }

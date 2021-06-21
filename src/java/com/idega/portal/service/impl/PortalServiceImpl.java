@@ -291,7 +291,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			com.idega.user.data.User tmpUser = null;
 			if (company == null) {
 				try {
-					tmpUser = userBusiness.getUser(account.getPersonalId());
+					tmpUser = userBusiness.getCorrectUserCheckedByEmail(account.getPersonalId(), account.getUsername());
+					getLogger().info("tmpUser: " + tmpUser);
 				} catch (Exception e) {}
 			}
 			if (tmpUser == null && !StringUtil.isEmpty(account.getPersonalIdOfResponsiblePerson())) {
@@ -348,14 +349,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			String personalIdForUser = StringUtil.isEmpty(account.getPersonalIdOfResponsiblePerson()) ? account.getPersonalId() : account.getPersonalIdOfResponsiblePerson();
 			try {
-				user = userBusiness.getUser(personalIdForUser);
+				user = userBusiness.getCorrectUserCheckedByEmail(personalIdForUser, account.getEmail());
+				getLogger().info("user by getCorrectUserCheckedByEmail. With params: personalIdForUser = " + personalIdForUser + ", email = " + account.getEmail() + ". User: " + user);
 			} catch (Exception e) {}
-
-			//If user is not found by personal id, searching by email
-			if (user == null && !StringUtil.isEmpty(account.getEmail())) {
-				getLogger().info("Did not find user by personal id: " + personalIdForUser + ". Will be searching by email: " + account.getEmail());
-				user = userBusiness.getUserByEmail(account.getPersonalId(), account.getEmail());
-			}
 
 			boolean newLogin = StringUtil.isEmpty(uuid);
 			if (newLogin) {
@@ -365,6 +361,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						standardGroup = getStandardGroup();
 					} catch (Throwable t) {}
 				}
+				getLogger().info("Creating a new login for: " + personalIdForUser);
 				user = userBusiness.createUserWithLogin(
 						firstName,
 						middleName,
@@ -388,6 +385,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						null
 				);
 			} else {
+				getLogger().info("Update login for: " + user);
 				user = userBusiness.update(
 						user == null ? null : user.getId(),
 						uuid,
