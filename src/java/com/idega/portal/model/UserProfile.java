@@ -242,9 +242,17 @@ public class UserProfile extends User {
 
 		IWResourceBundle iwrb = IWMainApplication.getDefaultIWMainApplication().getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(CoreUtil.getCurrentLocale());
 
-		//Address
+		//	Address
 		if (dataToLoad.contains(DataElement.ADDRESS) || dataToLoad.contains(DataElement.ALL)) {
 			Address address = user.getMainAddress();
+			if (address == null) {
+				List<Address> addresses = user.getAddresses();
+				if (!ListUtil.isEmpty(addresses)) {
+					for (Iterator<Address> iter = addresses.iterator(); (iter.hasNext() && address == null);) {
+						address = iter.next();
+					}
+				}
+			}
 			if (address != null) {
 				setAddress(new com.idega.block.oauth2.server.authentication.bean.Address(address, locale));
 				this.streetAndNumber = address.getAddress();
