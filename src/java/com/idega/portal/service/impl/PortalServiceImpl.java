@@ -232,12 +232,19 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				boolean error = true;
 
 				if (!StringUtil.isEmpty(uuid)) {
+					int userId = login.getUserId();
 					com.idega.user.data.User providedUser = null;
 					try {
 						providedUser = userBusiness.getUserByUniqueId(uuid);
 					} catch (Exception e) {}
-					if (providedUser != null && Integer.valueOf(providedUser.getId()).intValue() == login.getUserId()) {
+					if (providedUser != null && Integer.valueOf(providedUser.getId()).intValue() == userId) {
 						error = false;
+					} else {
+						getLogger().warning(
+								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + login.getUser() +
+								" (ID: " + userId + "). Login can not be used by another user " +
+								(providedUser == null ? CoreConstants.EMPTY : (providedUser + " (ID: " + providedUser.getId() + ")"))
+						);
 					}
 				}
 
@@ -336,6 +343,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 					error = !userBusiness.validatePersonalId(account.getPersonalId(), getCurrentLocale());
 				}
 				if (error) {
+					getLogger().warning("Provided invalid personal ID: " + account.getPersonalId());
 					account.setErrorMessage(iwrb.getLocalizedString("account.provide_valid_personal_id", "Please provide valid personal ID"));
 					return account;
 				}
@@ -350,7 +358,8 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			String personalIdForUser = StringUtil.isEmpty(account.getPersonalIdOfResponsiblePerson()) ? account.getPersonalId() : account.getPersonalIdOfResponsiblePerson();
 			try {
 				user = userBusiness.getCorrectUserCheckedByEmail(personalIdForUser, account.getEmail());
-				getLogger().info("user by getCorrectUserCheckedByEmail. With params: personalIdForUser = " + personalIdForUser + ", email = " + account.getEmail() + ". User: " + user);
+				getLogger().info("user by getCorrectUserCheckedByEmail. With params: personalIdForUser = " + personalIdForUser + ", email = " + account.getEmail() +
+						". User: " + user);
 			} catch (Exception e) {}
 
 			boolean newLogin = StringUtil.isEmpty(uuid);
