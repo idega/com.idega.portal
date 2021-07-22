@@ -239,6 +239,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 					} catch (Exception e) {}
 					if (providedUser != null && Integer.valueOf(providedUser.getId()).intValue() == userId) {
 						error = false;
+						getLogger().info(
+								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + login.getUser() +
+								" (ID: " + userId + "). Login can be used because it belongs to the same person " +
+								(providedUser == null ? CoreConstants.EMPTY : (providedUser + " (ID: " + providedUser.getId() + ")"))
+						);
 					} else {
 						getLogger().warning(
 								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + login.getUser() +
@@ -370,7 +375,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						standardGroup = getStandardGroup();
 					} catch (Throwable t) {}
 				}
-				getLogger().info("Creating a new login for: " + personalIdForUser);
+				getLogger().info("Creating a new login (username: '" + account.getEmail()+ "') for: " + personalIdForUser);
 				user = userBusiness.createUserWithLogin(
 						firstName,
 						middleName,
@@ -394,7 +399,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						null
 				);
 			} else {
-				getLogger().info("Update login for: " + user);
+				getLogger().info("Update login for: " + user + " (ID: " + (user == null ? "unknown" : user.getId()) + ")");
 				user = userBusiness.update(
 						user == null ? null : user.getId(),
 						uuid,
