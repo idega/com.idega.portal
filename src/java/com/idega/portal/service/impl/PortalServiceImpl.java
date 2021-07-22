@@ -1157,6 +1157,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		String userName = userAccount.getUsername();
 		if (StringUtil.isEmpty(userName)) {
+			getLogger().warning("Username is not provided. Received data: " + userAccount);
 			return error;
 		}
 
@@ -1169,20 +1170,50 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			String personalId = userAccount.getPersonalId();
 			if (StringUtil.isEmpty(personalId)) {
+				getLogger().warning("Personal ID is not provided. Received data: " + userAccount);
 				return error;
 			}
 
-			com.idega.core.user.data.User user = login.getUser();
+			personalId = personalId.trim();
+			personalId = StringHandler.getNumbersOnly(personalId);
+
+			com.idega.user.data.User user = login.getUser();
 			String loginPersonalId = user == null ? null : user.getPersonalID();
 			if (StringUtil.isEmpty(loginPersonalId)) {
+				getLogger().warning("Personal ID not found for user " + user + " (ID: " + (user == null ? "unknown" : user.getId()) + ") with username '" + userName +
+						"'. Received data: " + userAccount);
 				return error;
 			}
 
-			return personalId.equals(loginPersonalId) ? success : error;
+			if (personalId.equals(loginPersonalId)) {
+				return success;
+			}
+
+			UserBusiness userBusiness = getServiceInstance(UserBusiness.class);
+			if (userBusiness.validatePersonalId(loginPersonalId)) {
+				getLogger().warning("Personal ID ('" + loginPersonalId + "') of found user " + user + " (ID: " + (user == null ? "unknown" : user.getId()) +
+						") is valid and not equals to provided one ('" + personalId + "'). Username '" + userName +
+						"' is taken and can not be used by other user. Received data: " + userAccount);
+				return error;
+			}
+
+			String providedName = userAccount.getName();
+			String name = user == null ? null : user.getName();
+			if (!StringUtil.isEmpty(providedName) && !StringUtil.isEmpty(name) && providedName.equalsIgnoreCase(name)) {
+				getLogger().info("Personal ID ('" + loginPersonalId + "') of found user " + user + " (ID: " + (user == null ? "unknown" : user.getId()) +
+						") is invalid and not equals to provided one ('" + personalId +
+						"'). But names (provided: '" + providedName + "', found: '" + name + "') are the same: considering username '" + userName +
+						"' as not taken and can be used by the same person. Received data: " + userAccount);
+				return success;
+			}
+
+			getLogger().warning("Username '" + userName + "' is already taken by " + user + " (ID: " + (user == null ? "unknown" : user.getId()) +
+					". Received data: " + userAccount);
+			return error;
 		} catch (FinderException e) {
 			return new Result(Status.OK.getStatusCode(), Boolean.TRUE.toString());
 		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Error while checking if user name is valid: " + userName, e);
+			getLogger().log(Level.WARNING, "Error while checking if user name is valid: " + userName + ". Received data: " + userAccount, e);
 		}
 
 		return error;
