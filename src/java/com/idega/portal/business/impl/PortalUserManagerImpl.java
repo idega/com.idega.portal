@@ -1,5 +1,7 @@
 package com.idega.portal.business.impl;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
 
 import javax.servlet.ServletContext;
@@ -22,6 +24,7 @@ import com.idega.core.accesscontrol.data.LoginTableHome;
 import com.idega.core.accesscontrol.event.LoggedInUserCredentials;
 import com.idega.core.accesscontrol.event.LoggedInUserCredentials.LoginType;
 import com.idega.core.business.DefaultSpringBean;
+import com.idega.core.contact.data.Email;
 import com.idega.data.IDOLookup;
 import com.idega.portal.business.PortalUserManager;
 import com.idega.portal.model.Result;
@@ -30,6 +33,7 @@ import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
+import com.idega.util.ListUtil;
 import com.idega.util.RequestUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
@@ -121,6 +125,30 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 		return new Result(Response.Status.OK.getStatusCode(), Boolean.TRUE.toString());
 	}
 
+	private String getEmailAddress(com.idega.user.data.User user) {
+		if (user == null) {
+			return null;
+		}
+
+		try {
+			Collection<Email> emails = user.getEmails();
+			if (ListUtil.isEmpty(emails)) {
+				return null;
+			}
+
+			String emailAddress = null;
+			for (Iterator<Email> iter = emails.iterator(); (iter.hasNext() && StringUtil.isEmpty(emailAddress));) {
+				Email email = iter.next();
+				emailAddress = email == null ? null : email.getEmailAddress();
+			}
+			return emailAddress;
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting email for " + user, e);
+		}
+
+		return null;
+	}
+
 	private String getLoginNameByUUID(String uuid) {
 		if (StringUtil.isEmpty(uuid)) {
 			getLogger().warning("UUID is not provided");
@@ -140,9 +168,15 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 		LoginTable login = LoginDBHandler.getUserLogin(user);
 		if (login == null) {
 			try {
+				String username = user.getPersonalID();
+				if (getSettings().getBoolean("portal.email_as_username", false)) {
+					String email = getEmailAddress(user);
+					username = StringUtil.isEmpty(email) ? username : email;
+				}
+
 				login = LoginDBHandler.createLogin(
 						user,
-						user.getPersonalID(),
+						username,
 						user.getUniqueId(),
 						Boolean.TRUE,
 						IWTimestamp.RightNow(),
