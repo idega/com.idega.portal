@@ -566,7 +566,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		String systemName = iwrb.getLocalizedString("message.email.password_remind.body.system_name", "Idega");
 		String message = iwrb.getLocalizedAndFormattedString(
 				"message.email.password_remind.body",
-				"Hi {0}.\n\nA new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL (the URL must be inserted as one continuous line in the browser):\n\n{3}\n\nThis URL is active for 1 day after the request was received, after having to repeat the password change request.",
+				"Hi {0}.<br /><br />A new password for {1} has been requested in the {2} database. To set a new password, it is necessary to open the following URL " +
+				"(the URL must be inserted as one continuous line in the browser):<br /><br />{3}<br /><br />This URL is active for 1 day after the request was received, after " +
+				"having to repeat the password change request.",
 				new Object[] {
 					user.getDisplayName(),
 					user.getFirstName(),
