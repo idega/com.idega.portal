@@ -1193,7 +1193,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			if (personalId.equals(loginPersonalId)) {
-				success.setValue(user.getUniqueId());
+				if (user != null) {
+					success.setValue(user.getUniqueId());
+				}
 				return success;
 			}
 
