@@ -1193,6 +1193,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			}
 
 			if (personalId.equals(loginPersonalId)) {
+				success.setValue(user.getUniqueId());
 				return success;
 			}
 
@@ -1211,6 +1212,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						") is invalid and not equals to provided one ('" + personalId +
 						"'). But names (provided: '" + providedName + "', found: '" + name + "') are the same: considering username '" + userName +
 						"' as not taken and can be used by the same person. Received data: " + userAccount);
+				if (user != null) {
+					success.setValue(user.getUniqueId());
+				}
 				return success;
 			}
 
