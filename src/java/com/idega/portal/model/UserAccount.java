@@ -124,6 +124,7 @@ public class UserAccount implements Serializable {
 
 	@Override
 	public String toString() {
-		return "UserAccount. username: " + getUsername() + ", personalId: " + getPersonalId() + ", email: " + getEmail() + ", userId: " + getUserId() + ", name: " + getName();
+		return "UserAccount. username: " + getUsername() + ", personalId: " + getPersonalId() + ", email: " + getEmail() + ", userId: " + getUserId() + ", name: " + getName() +
+				", UUID: " + getUuid();
 	}
 }
