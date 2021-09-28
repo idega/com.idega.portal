@@ -74,7 +74,7 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 			team = settings.getProperty("with_regards_text", null);
 		}
 		if (!StringUtil.isEmpty(team)) {
-			body += "<br /><br />" + team;
+			body += "\n\n" + team;
 		}
 		return body;
 	}
