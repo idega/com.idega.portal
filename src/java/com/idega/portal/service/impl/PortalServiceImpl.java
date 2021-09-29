@@ -59,8 +59,6 @@ import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.AddressHome;
 import com.idega.data.IDOLookup;
-import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.business.AccountCreatedMessageSender;
@@ -585,17 +583,13 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		);
 
 		//With regards text
-		String team = iwrb.getLocalizedString(
-				"message.email.account_created.body.with_regards",
-				null
-		);
-		if (StringUtil.isEmpty(team)) {
-			IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
-			IWMainApplicationSettings settings = iwma.getSettings();
-			team = settings.getProperty("with_regards_text", null);
+		String key = "message.email.account_created.body.with_regards";
+		String regards = iwrb.getLocalizedString(key, key);
+		if (StringUtil.isEmpty(regards) || regards.equals(key)) {
+			regards = getSettings().getProperty("with_regards_text");
 		}
-		if (!StringUtil.isEmpty(team)) {
-			message += "\n\n" + team;
+		if (!StringUtil.isEmpty(regards) && !regards.equals(key)) {
+			message += "<br /><br />" + regards;
 		}
 
 		passwordTokenBusiness.notifyRegisteredUser(

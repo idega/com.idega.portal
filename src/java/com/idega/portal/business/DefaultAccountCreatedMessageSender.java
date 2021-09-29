@@ -48,8 +48,6 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 			IWResourceBundle iwrb,
 			boolean personalIdAsUserName
 	) {
-		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
-		IWMainApplicationSettings settings = iwma.getSettings();
 		Object[] paremeters = {user.getDisplayName()};
 		String body = null;
 		if (personalIdAsUserName) {
@@ -66,15 +64,13 @@ public class DefaultAccountCreatedMessageSender extends DefaultSpringBean implem
 			);
 		}
 
-		String team = iwrb.getLocalizedString(
-				"message.email.account_created.body.with_regards",
-				null
-		);
-		if (StringUtil.isEmpty(team)) {
-			team = settings.getProperty("with_regards_text", null);
+		String key = "message.email.account_created.body.with_regards";
+		String regards = iwrb.getLocalizedString(key, key);
+		if (StringUtil.isEmpty(regards) || regards.equals(key)) {
+			regards = getSettings().getProperty("with_regards_text");
 		}
-		if (!StringUtil.isEmpty(team)) {
-			body += "\n\n" + team;
+		if (!StringUtil.isEmpty(regards) && !regards.equals(key)) {
+			body += "<br /><br />" + regards;
 		}
 		return body;
 	}
