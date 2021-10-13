@@ -134,6 +134,11 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 				settings.setFirstName(nameUtil.getFirstName());
 				settings.setMiddleName(nameUtil.getMiddleName());
 				settings.setLastName(nameUtil.getLastName());
+
+				String email = user.getEmailAddress();
+				if (!StringUtil.isEmpty(email)) {
+					settings.getUser().setEmail(email);
+				}
 			}
 
 			FooterData footerData = getFooterData();
