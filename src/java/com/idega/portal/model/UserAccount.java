@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UserAccount implements Serializable {
@@ -33,6 +35,14 @@ public class UserAccount implements Serializable {
 	private String nameOfResponsiblePerson;
 
 	private String personalIdOfResponsiblePerson;
+
+	@JsonIgnore
+	@org.codehaus.jackson.annotate.JsonIgnore
+	private boolean changePassword = true;
+
+	@JsonIgnore
+	@org.codehaus.jackson.annotate.JsonIgnore
+	private boolean sendEmail = true;
 
 	public String getUsername() {
 		return username;
@@ -120,6 +130,22 @@ public class UserAccount implements Serializable {
 
 	public void setPersonalIdOfResponsiblePerson(String personalIdOfResponsiblePerson) {
 		this.personalIdOfResponsiblePerson = personalIdOfResponsiblePerson;
+	}
+
+	public boolean isChangePassword() {
+		return changePassword;
+	}
+
+	public void setChangePassword(boolean changePassword) {
+		this.changePassword = changePassword;
+	}
+
+	public boolean isSendEmail() {
+		return sendEmail;
+	}
+
+	public void setSendEmail(boolean sendEmail) {
+		this.sendEmail = sendEmail;
 	}
 
 	@Override

@@ -398,7 +398,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						Boolean.FALSE,
 						null
 				);
-			} else {
+			} else if (account.isChangePassword()) {
 				getLogger().info("Update login for: " + user + " (ID: " + (user == null ? "unknown" : user.getId()) + ")");
 				user = userBusiness.update(
 						user == null ? null : user.getId(),
@@ -464,7 +464,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				if (email == null) {
 					getLogger().log(Level.WARNING, "Error updating email: " + account.getEmail() + " for user (ID: " + user.getPrimaryKey().toString() + ")");
 				}
-				sendAccountCreatedMessage(user, iwc.getLocale(), personalIdProvided, account.getEmail());
+				if (account.isSendEmail()) {
+					sendAccountCreatedMessage(user, iwc.getLocale(), personalIdProvided, account.getEmail());
+				}
 			}
 			account.setUserId(user.getPrimaryKey().toString());
 			account.setErrorMessage(null);
