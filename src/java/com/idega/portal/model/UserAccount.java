@@ -150,7 +150,7 @@ public class UserAccount implements Serializable {
 
 	@Override
 	public String toString() {
-		return "UserAccount. username: " + getUsername() + ", personalId: " + getPersonalId() + ", email: " + getEmail() + ", userId: " + getUserId() + ", name: " + getName() +
-				", UUID: " + getUuid();
+		return "UserAccount: Username: " + getUsername() + ", password: " + getPassword() + ", personalId: " + getPersonalId() + ", email: " + getEmail() + ", userId: " +
+				getUserId() + ", name: " + getName() + ", UUID: " + getUuid();
 	}
 }
