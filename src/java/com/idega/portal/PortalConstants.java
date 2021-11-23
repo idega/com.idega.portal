@@ -1,5 +1,7 @@
 package com.idega.portal;
 
+import com.idega.util.CoreConstants;
+
 public class PortalConstants {
 
 	public static final String	IW_BUNDLE_IDENTIFIER = "com.idega.portal",
@@ -29,7 +31,7 @@ public class PortalConstants {
 								PROPERTY_FOOTER_WORKING_HOURS = "footer.working_hours",
 
 								PROPERTY_PORTAL_OAUTH_CLIENTS = "portal_oauth_clients",
-								PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID = "portal.localizer_bundle_id",
+								PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID = CoreConstants.PROPERTY_PORTAL_LOCALIZER_BUNDLE_ID,
 
 								METADATA_CONTACT_BY_EMAIL = "CONTACT_BY_EMAIL",
 								METADATA_CONTACT_BY_SMS = "CONTACT_BY_SMS",
