@@ -949,6 +949,30 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		if (StringUtil.isEmpty(newPassword)) {
 			throw new BadRequest("Password can not be empty");
 		}
+
+		String toRemove = getSettings().getProperty("portal.remove_quotes_for_psw", StringUtil.getValue(Arrays.asList(CoreConstants.QOUTE_MARK, CoreConstants.QOUTE_SINGLE_MARK)));
+		if (!StringUtil.isEmpty(toRemove)) {
+			List<String> quotes = StringUtil.getValuesFromString(toRemove, CoreConstants.COMMA);
+			if (!ListUtil.isEmpty(quotes)) {
+				for (String quote: quotes) {
+					if (StringUtil.isEmpty(quote)) {
+						continue;
+					}
+
+					if (newPassword.startsWith(quote)) {
+						newPassword = newPassword.substring(1);
+					}
+					if (newPassword.endsWith(quote)) {
+						newPassword = newPassword.substring(0, newPassword.length() - 1);
+					}
+				}
+
+				if (StringUtil.isEmpty(newPassword)) {
+					throw new BadRequest("Password can not be empty");
+				}
+			}
+		}
+
 		validateUpdatePasswordToken(token);
 		com.idega.user.data.User user = passwordTokenBusiness.completePasswordReset(
 				token,
@@ -963,8 +987,6 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 						+ "'"
 			);
 		}
-
-		CoreUtil.clearAllCaches();
 
 		return Boolean.TRUE.toString();
 	}
