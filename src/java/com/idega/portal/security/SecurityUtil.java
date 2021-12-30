@@ -185,7 +185,7 @@ public class SecurityUtil {
 		Method m = null;
 		for (Iterator<Method> methodsIter = Arrays.asList(methods).iterator(); (m == null && methodsIter.hasNext());) {
 			m = methodsIter.next();
-			if (!methodName.equals(m.getName())) {
+			if (!methodName.equals(m.getName()) || m.getAnnotation(Path.class) == null) {
 				m = null;
 			}
 		}
@@ -338,7 +338,7 @@ public class SecurityUtil {
 
 		AccessController accessController = iwc.getAccessController();
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		Set<String> userRoles = accessController.getAllRolesForUser(iwc, user);
 		if (!ListUtil.isEmpty(userRoles)) {
