@@ -28,6 +28,8 @@ public class Paging implements Serializable {
 
 	private Date dateTo;
 
+	private String searchId;
+
 	public Paging() {
 		super();
 	}
@@ -93,6 +95,14 @@ public class Paging implements Serializable {
 
 	public void setStatuses(List<String> statuses) {
 		this.statuses = statuses;
+	}
+
+	public String getSearchId() {
+		return searchId;
+	}
+
+	public void setSearchId(String searchId) {
+		this.searchId = searchId;
 	}
 
 	@Override
