@@ -223,6 +223,16 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		}
 
 		try {
+			//Fix the personal ids
+			if (account != null) {
+				if (!StringUtil.isEmpty(account.getPersonalId())) {
+					account.setPersonalId(account.getPersonalId().replaceAll(CoreConstants.MINUS, CoreConstants.EMPTY));
+				}
+				if (!StringUtil.isEmpty(account.getPersonalIdOfResponsiblePerson())) {
+					account.setPersonalIdOfResponsiblePerson(account.getPersonalIdOfResponsiblePerson().replaceAll(CoreConstants.MINUS, CoreConstants.EMPTY));
+				}
+			}
+
 			IWContext iwc = new IWContext(request, response, context);
 			UserBusiness userBusiness = getUserBusiness();
 
