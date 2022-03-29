@@ -24,6 +24,8 @@ public class Paging implements Serializable {
 
 	private List<String> statuses;
 
+	private List<String> codes;
+
 	private Date dateFrom;
 
 	private Date dateTo;
@@ -103,6 +105,14 @@ public class Paging implements Serializable {
 
 	public void setSearchId(String searchId) {
 		this.searchId = searchId;
+	}
+
+	public List<String> getCodes() {
+		return codes;
+	}
+
+	public void setCodes(List<String> codes) {
+		this.codes = codes;
 	}
 
 	@Override
