@@ -32,6 +32,8 @@ public class Paging implements Serializable {
 
 	private String searchId;
 
+	private List<String> ids;
+
 	public Paging() {
 		super();
 	}
@@ -113,6 +115,14 @@ public class Paging implements Serializable {
 
 	public void setCodes(List<String> codes) {
 		this.codes = codes;
+	}
+
+	public List<String> getIds() {
+		return ids;
+	}
+
+	public void setIds(List<String> ids) {
+		this.ids = ids;
 	}
 
 	@Override
