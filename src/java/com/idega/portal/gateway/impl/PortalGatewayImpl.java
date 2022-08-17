@@ -42,7 +42,9 @@ import com.idega.portal.model.UserAccount;
 import com.idega.portal.model.UserProfile;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.UserService;
+import com.idega.presentation.IWContext;
 import com.idega.restful.business.DefaultRestfulService;
+import com.idega.user.data.bean.User;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.FormDataParam;
@@ -519,6 +521,12 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 			@Context ServletContext context
 	) {
 		return portalService.isValidUserName(userAccount, request, response, context);
+	}
+
+	@Override
+	public Result setProfile(UserProfile profile, IWContext iwc, User user) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

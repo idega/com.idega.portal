@@ -173,6 +173,19 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 	@Override
 	public Result setProfile(UserProfile profile, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+		IWContext iwc = new IWContext(request, response, context);
+		User user = SecurityUtil.getInstance().getAuthorizedUser(iwc);
+		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
+		Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
+		if (user == null) {
+			getLogger().warning("User is unknown");
+			return result;
+		}
+		return setProfile(profile, iwc, user);
+	}
+
+	@Override
+	public Result setProfile(UserProfile profile, IWContext iwc, User user) {
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
 		Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
 
@@ -183,14 +196,14 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 
 		String errors = CoreConstants.EMPTY;
 		try {
-			IWContext iwc = new IWContext(request, response, context);
-			User user = SecurityUtil.getInstance().getAuthorizedUser(iwc);
-			if (user == null) {
-				getLogger().warning("User is unknown");
-				return result;
-			}
 
-			Locale locale = iwc.getCurrentLocale();
+			Locale locale = null;
+			if (iwc != null) {
+				locale = iwc.getCurrentLocale();
+			}
+			if (locale == null) {
+				locale = getCurrentLocale();
+			}
 			UserBusiness userBusiness = getServiceInstance(iwc, UserBusiness.class);
 
 			List<DataElement> dataToLoad = null;
