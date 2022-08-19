@@ -29,9 +29,9 @@ import com.idega.idegaweb.IWResourceBundle;
 import com.idega.portal.PortalConstants;
 import com.idega.presentation.Image;
 import com.idega.user.bean.UserDataBean;
-import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.bean.Gender;
+import com.idega.user.helpers.UserHelper;
 import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
@@ -157,70 +157,72 @@ public class UserProfile extends User {
 			this.username = loginTable.getUserLogin();
 		}
 
-		UserApplicationEngine userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
-		UserDataBean userDataBean = userApplicationEngine.getUserInfo(user);
-		StringBuilder sb = new StringBuilder();
+		UserHelper userHelper = ELUtil.getInstance().getBean(UserHelper.USER_HELPER_BEAN);
+		UserDataBean userDataBean = userHelper.getUserInfo(user);
+		if (userDataBean != null) {
+			StringBuilder sb = new StringBuilder();
 
-		streetAndNumber = userDataBean.getStreetNameAndNumber();
-		String line = streetAndNumber;
-		if (!StringUtil.isEmpty(line)) {
-			sb.append(line);
-		}
-
-		line = userDataBean.getProvince();
-		if (!StringUtil.isEmpty(line)) {
-			if (sb.length() > 0) {
-				sb.append(CoreConstants.COMMA)
-				.append(CoreConstants.SPACE);
+			streetAndNumber = userDataBean.getStreetNameAndNumber();
+			String line = streetAndNumber;
+			if (!StringUtil.isEmpty(line)) {
+				sb.append(line);
 			}
 
-			sb.append(line);
-		}
+			line = userDataBean.getProvince();
+			if (!StringUtil.isEmpty(line)) {
+				if (sb.length() > 0) {
+					sb.append(CoreConstants.COMMA)
+					.append(CoreConstants.SPACE);
+				}
 
-		city = userDataBean.getCity();
-		line = city;
-		if (!StringUtil.isEmpty(line)) {
-			if (sb.length() > 0) {
-				sb.append(CoreConstants.COMMA)
-				.append(CoreConstants.SPACE);
+				sb.append(line);
 			}
 
-			sb.append(line);
-		}
+			city = userDataBean.getCity();
+			line = city;
+			if (!StringUtil.isEmpty(line)) {
+				if (sb.length() > 0) {
+					sb.append(CoreConstants.COMMA)
+					.append(CoreConstants.SPACE);
+				}
 
-		line = userDataBean.getCommune();
-		if (!StringUtil.isEmpty(line)) {
-			if (sb.length() > 0) {
-				sb.append(CoreConstants.COMMA)
-				.append(CoreConstants.SPACE);
+				sb.append(line);
 			}
 
-			sb.append(line);
-		}
+			line = userDataBean.getCommune();
+			if (!StringUtil.isEmpty(line)) {
+				if (sb.length() > 0) {
+					sb.append(CoreConstants.COMMA)
+					.append(CoreConstants.SPACE);
+				}
 
-		line = userDataBean.getCountryName();
-		if (!StringUtil.isEmpty(line)) {
-			if (sb.length() > 0) {
-				sb.append(CoreConstants.COMMA)
-				.append(CoreConstants.SPACE);
+				sb.append(line);
 			}
 
-			sb.append(line);
-		}
+			line = userDataBean.getCountryName();
+			if (!StringUtil.isEmpty(line)) {
+				if (sb.length() > 0) {
+					sb.append(CoreConstants.COMMA)
+					.append(CoreConstants.SPACE);
+				}
 
-		postalCode = userDataBean.getPostalCodeId();
-		line = userDataBean.getPostalBox();
-		if (!StringUtil.isEmpty(line)) {
-			if (sb.length() > 0) {
-				sb.append(CoreConstants.COMMA)
-				.append(CoreConstants.SPACE);
+				sb.append(line);
 			}
 
-			sb.append(line);
-		}
+			postalCode = userDataBean.getPostalCodeId();
+			line = userDataBean.getPostalBox();
+			if (!StringUtil.isEmpty(line)) {
+				if (sb.length() > 0) {
+					sb.append(CoreConstants.COMMA)
+					.append(CoreConstants.SPACE);
+				}
 
-		if (!StringUtil.isEmpty(sb.toString())) {
-			this.fullAddress = sb.toString();
+				sb.append(line);
+			}
+
+			if (!StringUtil.isEmpty(sb.toString())) {
+				this.fullAddress = sb.toString();
+			}
 		}
 	}
 

@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.idega.portal.model.Filter;
 import com.idega.portal.model.Result;
 import com.idega.portal.model.UserProfile;
-import com.idega.presentation.IWContext;
-import com.idega.user.data.bean.User;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public interface UserService {
@@ -22,7 +20,5 @@ public interface UserService {
 	public Result setProfilePicture(InputStream stream, FormDataContentDisposition info, String personalId, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result setUserReadAgreement(HttpServletRequest request, HttpServletResponse response, ServletContext context);
-
-	public Result setProfile(UserProfile profile, IWContext iwc, User user);
 
 }
