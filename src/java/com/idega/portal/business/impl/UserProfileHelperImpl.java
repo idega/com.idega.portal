@@ -54,7 +54,12 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 	@Override
 	public Result setProfile(IWContext iwc, UserProfile profile, User user) {
 		IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
-		Result result = new Result(Boolean.FALSE.toString(), iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
+		return setProfile(iwc, iwrb, profile, user, true);
+	}
+
+	@Override
+	public Result setProfile(IWContext iwc, IWResourceBundle iwrb, UserProfile profile, User user, boolean clearCaches) {
+		Result result = new Result(Boolean.FALSE.toString(), iwrb == null ? null : iwrb.getLocalizedString("citizen_profile.please_provide_data", "Please provide data"));
 
 		if (profile == null) {
 			getLogger().warning("Data not provided");
@@ -169,7 +174,9 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 						}
 					} catch (Exception e) {
 						getLogger().log(Level.WARNING, "Could not change the user password for member with personal id: " + userPersonalId, e);
-						String errMsg = iwrb.getLocalizedString("user_update.could_not_change_password.error", "Could not change the user password for user with personal id: {0}. \n");
+						String errMsg = iwrb == null ?
+								CoreConstants.EMPTY :
+								iwrb.getLocalizedString("user_update.could_not_change_password.error", "Could not change the user password for user with personal id: {0}. \n");
 						errors += MessageFormat.format(errMsg, userPersonalId);
 					}
 				}
@@ -190,7 +197,9 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 											validEmails.add(emailIn);
 										} else {
 											getLogger().log(Level.WARNING, "Invalid email: " + emailIn + " for member with personal id: " + userPersonalId);
-											String errMsg = iwrb.getLocalizedString("user_update.invalid_email.error", "Invalid email: {0} was not saved. \n");
+											String errMsg = iwrb == null ?
+													CoreConstants.EMPTY :
+													iwrb.getLocalizedString("user_update.invalid_email.error", "Invalid email: {0} was not saved. \n");
 											errors += MessageFormat.format(errMsg, emailIn);
 										}
 									}
@@ -204,7 +213,9 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 						}
 					} catch (Exception eEmails) {
 						getLogger().log(Level.WARNING, "Could not change the user emails for user with personal id: " + userPersonalId, eEmails);
-						String errMsg = iwrb.getLocalizedString("user_update.could_not_change_emails.error", "Could not change the user emails for user with personal id: {0}. \n");
+						String errMsg = iwrb == null ?
+								CoreConstants.EMPTY :
+								iwrb.getLocalizedString("user_update.could_not_change_emails.error", "Could not change the user emails for user with personal id: {0}. \n");
 						errors += MessageFormat.format(errMsg, userPersonalId);
 					}
 				}
@@ -224,7 +235,9 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 											validPhonesList.add(phonein);
 										} else {
 											getLogger().log(Level.WARNING, "Invalid phone: " + phonein + " for member with personal id: " + userPersonalId);
-											String errMsg = iwrb.getLocalizedString("user_update.invalid_phone.error", "Invalid phone: {0} was not saved. \n");
+											String errMsg = iwrb == null ?
+													CoreConstants.EMPTY :
+													iwrb.getLocalizedString("user_update.invalid_phone.error", "Invalid phone: {0} was not saved. \n");
 											errors += MessageFormat.format(errMsg, phonein);
 										}
 									}
@@ -242,7 +255,9 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 						}
 					} catch (Exception ePhones) {
 						getLogger().log(Level.WARNING, "Could not change the user phones for user with personal id: " + userPersonalId, ePhones);
-						String errMsg = iwrb.getLocalizedString("user_update.could_not_change_phones.error", "Could not change the user phones for user with personal id: {0}. \n");
+						String errMsg = iwrb == null ?
+								CoreConstants.EMPTY :
+								iwrb.getLocalizedString("user_update.could_not_change_phones.error", "Could not change the user phones for user with personal id: {0}. \n");
 						errors += MessageFormat.format(errMsg, userPersonalId);
 					}
 				}
@@ -349,7 +364,9 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 						}
 					} catch (Exception eAddr) {
 						getLogger().log(Level.WARNING, "Could not update the user address for user with personal id: " + userPersonalId, eAddr);
-						String errMsg = iwrb.getLocalizedString(
+						String errMsg = iwrb == null ?
+								CoreConstants.EMPTY :
+								iwrb.getLocalizedString(
 								"user_update.could_not_update_user_address.error",
 								"Could not update the user address for user with personal id: {0}. \n"
 						);
@@ -413,7 +430,7 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 			errors += errorMsg;
 			errors += " \n";
 		} finally {
-			if (StringUtil.isEmpty(errors)) {
+			if (StringUtil.isEmpty(errors) && clearCaches) {
 				CoreUtil.clearIDOCaches();
 			}
 		}
