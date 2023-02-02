@@ -34,6 +34,8 @@ public class Paging implements Serializable {
 
 	private List<String> ids;
 
+	private String caseListType;
+
 	public Paging() {
 		super();
 	}
@@ -123,6 +125,14 @@ public class Paging implements Serializable {
 
 	public void setIds(List<String> ids) {
 		this.ids = ids;
+	}
+
+	public String getCaseListType() {
+		return caseListType;
+	}
+
+	public void setCaseListType(String caseListType) {
+		this.caseListType = caseListType;
 	}
 
 	@Override
