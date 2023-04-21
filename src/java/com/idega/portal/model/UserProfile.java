@@ -19,6 +19,7 @@ import com.idega.block.oauth2.server.authentication.bean.User;
 import com.idega.business.IBOLookup;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.data.LoginTable;
+import com.idega.core.contact.dao.PhoneDAO;
 import com.idega.core.contact.data.bean.Email;
 import com.idega.core.contact.data.bean.Phone;
 import com.idega.core.location.data.bean.Address;
@@ -143,12 +144,19 @@ public class UserProfile extends User {
 		if (email != null) {
 			setEmail(email.getEmailAddress());
 		}
-		Collection<com.idega.core.contact.data.Phone> phones = null;
-		try {
-			phones = user.getPhones();
-		} catch (Exception e) {}
+
+		PhoneDAO phoneDAO = ELUtil.getInstance().getBean(PhoneDAO.BEAN_NAME);
+		Collection<Phone> phones = phoneDAO.getPhones(id);
 		if (!ListUtil.isEmpty(phones)) {
-			phone = phones.iterator().next().getNumber();
+			for (Iterator<Phone> iter = phones.iterator(); (iter.hasNext() && StringUtil.isEmpty(phone));) {
+				Phone ph = iter.next();
+				String number = ph == null ? null : ph.getNumber();
+				if (StringUtil.isEmpty(number)) {
+					continue;
+				}
+
+				phone = number;
+			}
 		}
 		setName(user.getName());
 		uuid = user.getUniqueId();
@@ -157,9 +165,16 @@ public class UserProfile extends User {
 			this.username = loginTable.getUserLogin();
 		}
 
-		UserHelper userHelper = ELUtil.getInstance().getBean(UserHelper.USER_HELPER_BEAN);
-		UserDataBean userDataBean = userHelper.getUserInfo(user);
-		if (userDataBean != null) {
+		com.idega.core.location.data.Address address = null;
+		try {
+			UserBusiness userBusiness = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(), UserBusiness.class);
+			address = userBusiness.getUsersMainAddress(user);
+		} catch (Exception e) {}
+		if (address != null) {
+			UserHelper userHelper = ELUtil.getInstance().getBean(UserHelper.USER_HELPER_BEAN);
+			UserDataBean userDataBean = new UserDataBean();
+			userHelper.setAddress(userDataBean, address);
+
 			StringBuilder sb = new StringBuilder();
 
 			streetAndNumber = userDataBean.getStreetNameAndNumber();

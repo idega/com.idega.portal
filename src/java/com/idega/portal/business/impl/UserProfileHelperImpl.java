@@ -379,8 +379,8 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 					Integer genderIdFromProfile = profile.getGenderId();
 					if (genderIdFromProfile != null) {
 						try {
-								userIDO.setGender(genderIdFromProfile);
-								userIDO.store();
+							userIDO.setGender(genderIdFromProfile);
+							userIDO.store();
 						} catch (Exception e) {}
 					}
 				}
