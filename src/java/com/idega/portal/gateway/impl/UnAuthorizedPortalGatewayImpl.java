@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.idega.io.DownloadWriter;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.gateway.PortalGateway;
 import com.idega.portal.model.Article;
@@ -374,11 +375,12 @@ public class UnAuthorizedPortalGatewayImpl extends DefaultRestfulService impleme
 	@Path(PortalGateway.FILE)
 	public Response getRepositoryFile(
 			@PathParam("identifier") String identifier,
+			@PathParam(DownloadWriter.PRM_FILE_TOKEN) String token,
 			@Context HttpServletRequest request,
 			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
-		return portalService.getRepositoryFile(identifier, request, response, context);
+		return portalService.getRepositoryFile(identifier, token, request, response, context);
 	}
 
 	@Override

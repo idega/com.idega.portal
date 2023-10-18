@@ -32,6 +32,7 @@ import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.portal.service.MediaResolver;
 import com.idega.presentation.IWContext;
+import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.FileUtil;
@@ -67,7 +68,7 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 		String requestURI = req.getRequestURI();
 		if (!StringUtil.isEmpty(requestURI) && requestURI.startsWith("/iw_cache")) {
 			try {
-				writeFileToResponse(requestURI, resp);
+				writeFileToResponse(requestURI, req, resp);
 			} catch (Exception e) {
 				LOGGER.log(Level.WARNING, "Error getting media: " + req.getRequestURI(), e);
 			}
@@ -78,8 +79,8 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 		super.doGet(req, resp);
 	}
 
-	private FileInfo getFileInfo(IWMainApplication iwma, Integer fileId) {
-		if (fileId == null || fileId <= 0) {
+	private FileInfo getFileInfo(IWMainApplication iwma, String fileUniqueId) {
+		if (StringUtil.isEmpty(fileUniqueId)) {
 			return null;
 		}
 
@@ -91,18 +92,18 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 			Map<String, MediaResolver> mediaResolvers = WebApplicationContextUtils.getWebApplicationContext(context).getBeansOfType(MediaResolver.class);
 			if (!MapUtil.isEmpty(mediaResolvers)) {
 				for (Iterator<MediaResolver> mediaResolversIter = mediaResolvers.values().iterator(); (fileInfo == null && mediaResolversIter.hasNext());) {
-					fileInfo = mediaResolversIter.next().getFileInfo(fileId);
+					fileInfo = mediaResolversIter.next().getFileInfo(fileUniqueId);
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, "Error getting file info: " + fileId, e);
+			LOGGER.log(Level.WARNING, "Error getting file info: " + fileUniqueId, e);
 		}
 
 		return fileInfo;
 	}
 
-	private void writeFileToResponse(String requestURI, HttpServletResponse response) throws Exception {
-		Integer fileId = MediaBusiness.getMediaId(requestURI);
+	private void writeFileToResponse(String requestURI, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		String fileUniqueId = MediaBusiness.getMediaId(requestURI);
 
 		String name = null, type = null;
 		Long size = Long.valueOf(0);
@@ -110,14 +111,24 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 
 		try {
 			IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
-			String url = CoreConstants.EMPTY;
-			if (fileId == null || fileId < 0) {
+			String url = CoreConstants.EMPTY, fileToken = null;
+			if (StringUtil.isEmpty(fileUniqueId)) {
 				url = requestURI;
 			} else {
-				url = ICFileSystemFactory.getFileSystem(iwma.getIWApplicationContext()).getFileURI(fileId);
+				IWContext iwc = new IWContext(request, response, request.getServletContext());
+				int underIndex = requestURI.indexOf(CoreConstants.UNDER);
+				if (underIndex != -1) {
+					String[] parts = requestURI.split(CoreConstants.UNDER);
+					fileToken = ArrayUtil.isEmpty(parts) || parts.length < 3 ? null : parts[2];
+				}
+				url = ICFileSystemFactory.getFileSystem(iwma.getIWApplicationContext()).getFileURI(iwc, fileUniqueId, fileToken);
 			}
 
-			FileInfo fileInfo = getFileInfo(iwma, fileId);
+			if (StringUtil.isEmpty(url)) {
+				return;
+			}
+
+			FileInfo fileInfo = getFileInfo(iwma, fileUniqueId);
 			if (fileInfo == null) {
 				String realPath = iwma.getApplicationRealPath();
 
@@ -132,9 +143,13 @@ public class PortalMediaServlet extends HttpServlet implements Filter {
 						source = new FileInputStream(tmp);
 					}
 				}
-				if (source == null && fileId != null && fileId > 0) {
+				if (source == null && !StringUtil.isEmpty(fileUniqueId)) {
 					ICFileHome fileHome = (ICFileHome) IDOLookup.getHome(ICFile.class);
-					ICFile file = fileHome.findByPrimaryKey(fileId);
+					ICFile file = fileHome.findByUUID(fileUniqueId);
+					if (StringUtil.isEmpty(fileToken) || !fileToken.equals(file.getToken())) {
+						return;
+					}
+
 					name = file.getName();
 					Integer sizeTmp = file.getFileSize();
 					size = sizeTmp == null ? null : sizeTmp.longValue();

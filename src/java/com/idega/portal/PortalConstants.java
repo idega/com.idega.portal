@@ -53,7 +53,9 @@ public class PortalConstants {
 								MERCHANT_ID = "MERCHANT_ID",
 								MERCHANT_CURRENCY = "MERCHANT_CURRENCY",
 								CREDIT_CARD_AUTHORIZATION_ENTRY = "credit_card_auth_entry",
-								CREDIT_CARD_AMOUNT = "credit_card_amount";
+								CREDIT_CARD_AMOUNT = "credit_card_amount",
+
+								ATTACHMENTS = "attachments";
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 

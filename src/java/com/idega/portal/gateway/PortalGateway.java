@@ -1,5 +1,6 @@
 package com.idega.portal.gateway;
 
+import com.idega.io.DownloadWriter;
 import com.idega.portal.service.PortalService;
 import com.idega.portal.service.UserService;
 
@@ -40,7 +41,7 @@ public interface PortalGateway extends PortalService, UserService {
 								PASSWORD_TOKEN_PASSWORD = PASSWORD_TOKEN_BY_ID + "/password",
 
 								UPLOAD_FILES = "/files/upload",
-								FILE = "/file/{identifier}",
+								FILE = "/file/{identifier}/{" + DownloadWriter.PRM_FILE_TOKEN + "}",
 
 								ARTICLE = "/article",
 								ARTICLES = "/articles",

@@ -244,6 +244,7 @@ public class UserServiceImpl extends DefaultSpringBean implements UserService {
 				file.setCreationDate(IWTimestamp.getTimestampRightNow());
 				file.setMimeType(mimeType);
 				file.setFileValue(newStream);
+				file.setPublic(true);
 				file.store();
 				Integer fileId = ((Integer) file.getPrimaryKey()).intValue();
 				return fileId;

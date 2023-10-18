@@ -96,7 +96,7 @@ public interface PortalService {
 			ServletContext context
 	);
 
-	public Response getRepositoryFile(String identifier, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+	public Response getRepositoryFile(String identifier, String fileToken, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public List<FileUploadResult> doUploadFilesToRepository(FormDataMultiPart form, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 

@@ -60,6 +60,7 @@ import com.idega.core.location.data.Address;
 import com.idega.core.location.data.AddressHome;
 import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWResourceBundle;
+import com.idega.jackrabbit.security.RepositoryAccessManager;
 import com.idega.portal.PortalConstants;
 import com.idega.portal.business.AccountCreatedMessageSender;
 import com.idega.portal.business.DefaultAccountCreatedMessageSender;
@@ -146,6 +147,9 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 	@Autowired(required = false)
 	private CompanyHelper companyHelper;
+
+	@Autowired
+	private RepositoryAccessManager repositoryAccessManager;
 
 	private List<? extends MessageSender> accountCreatedMessagesSenders;
 
@@ -1035,21 +1039,25 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public Response getRepositoryFile(String identifier, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+	public Response getRepositoryFile(String identifier, String fileToken, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		if (StringUtil.isEmpty(identifier)) {
 			return null;
 		}
 
 		String name = null;
 		try {
+			IWContext iwc = new IWContext(request, response, context);
+
 			Object source = null;
 			if (identifier.indexOf(CoreConstants.SLASH) == -1) {
 				ICFileHome fileHome = (ICFileHome) IDOLookup.getHome(ICFile.class);
 				ICFile file = fileHome.findByUUID(identifier);
-				source = file;
-				name = file.getName();
+				if (file != null && !StringUtil.isEmpty(fileToken) && fileToken.equals(file.getToken())) {
+					source = file;
+					name = file.getName();
+				}
 
-			} else {
+			} else if (repositoryAccessManager.hasPermission(iwc, identifier)) {
 				JCRItem item = getRepositoryService().getRepositoryItemAsRootUser(identifier);
 				source = item;
 				name = item.getName();
@@ -1098,8 +1106,23 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				path = uploadPath.getValueAs(String.class);
 			}
 			if (StringUtil.isEmpty(path)) {
-				path = CoreConstants.WEBDAV_SERVLET_URI + CoreConstants.PUBLIC_PATH + CoreConstants.SLASH;
+				path = CoreConstants.WEBDAV_SERVLET_URI + CoreConstants.PUBLIC_PATH + CoreConstants.SLASH + UUID.randomUUID().toString() + CoreConstants.SLASH;
 			} else {
+				if (path.indexOf(CoreConstants.UNDEFINED) != -1) {
+					String correctPath = getSettings().getProperty("portal.attachments_path", CoreConstants.PATH_FILES_ROOT.concat(CoreConstants.SLASH).concat(PortalConstants.ATTACHMENTS));
+					correctPath = StringUtil.isEmpty(correctPath) ? UUID.randomUUID().toString() : correctPath;
+
+					path = StringHandler.replace(path, CoreConstants.UNDEFINED, correctPath);
+					String doubleSlash = CoreConstants.SLASH.concat(CoreConstants.SLASH);
+					if (path.indexOf(doubleSlash) != -1) {
+						path = StringHandler.replace(path, doubleSlash, CoreConstants.SLASH);
+					}
+				}
+				if (!path.endsWith(CoreConstants.SLASH)) {
+					path = path + CoreConstants.SLASH;
+				}
+				path = path + UUID.randomUUID().toString() + CoreConstants.SLASH;
+
 				if (!path.endsWith(CoreConstants.SLASH)) {
 					path = path + CoreConstants.SLASH;
 				}

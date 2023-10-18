@@ -516,6 +516,7 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 				file.setCreationDate(IWTimestamp.getTimestampRightNow());
 				file.setMimeType(mimeType);
 				file.setFileValue(imageData);
+				file.setPublic(true);
 				file.store();
 				Integer fileId = ((Integer) file.getPrimaryKey()).intValue();
 				return fileId;

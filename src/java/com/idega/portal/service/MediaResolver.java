@@ -4,6 +4,6 @@ import com.idega.core.file.util.FileInfo;
 
 public interface MediaResolver {
 
-	public FileInfo getFileInfo(Integer fileId);
+	public FileInfo getFileInfo(String fileUniqueId);
 
 }
