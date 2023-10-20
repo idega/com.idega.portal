@@ -10,7 +10,7 @@ import com.idega.user.data.bean.User;
 
 public interface PortalUserManager {
 
-	public AccessToken getAccessToken(String uuid, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+	public AccessToken getAccessToken(String uuid, String token, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 	public Result logout(User user);
 

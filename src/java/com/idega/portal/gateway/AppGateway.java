@@ -13,6 +13,6 @@ public interface AppGateway extends AppService {
 								ACCESS_TOKEN = "/token",
 								CREDENTIALS = "/credentials";
 
-	public AccessToken getAccessToken(String uuid, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+	public AccessToken getAccessToken(String uuid, String token, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
 }

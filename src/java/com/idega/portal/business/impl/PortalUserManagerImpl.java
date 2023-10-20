@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.idega.block.login.bean.OAuthToken;
 import com.idega.block.login.business.OAuth2Service;
+import com.idega.block.login.business.PasswordTokenBusiness;
 import com.idega.block.oauth2.server.authentication.bean.AccessToken;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
@@ -48,17 +49,46 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 	@Autowired
 	private OAuth2Service oauth2Service;
 
+	@Autowired
+	private PasswordTokenBusiness passwordTokenBusiness;
+
 	@Override
-	public AccessToken getAccessToken(String uuid, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+	public AccessToken getAccessToken(String uuid, String token, String clientId, String type, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
 		try {
 			if (StringUtil.isEmpty(uuid)) {
 				getLogger().warning("UUID is not provided");
 				return new AccessToken();
 			}
 
+			if (StringUtil.isEmpty(token)) {
+				getLogger().warning("Token is not provided");
+				return new AccessToken();
+			}
+
 			String userName = getLoginNameByUUID(uuid);
 			if (StringUtil.isEmpty(userName)) {
 				getLogger().warning("Unable to get user's login name by UUID: '" + uuid + "'");
+				return new AccessToken();
+			}
+
+			boolean authorized = false;
+			String adminToken = getSettings().getProperty("portal.admin_token");
+			if (!StringUtil.isEmpty(adminToken) && adminToken.equals(token)) {
+				authorized = true;
+			}
+
+			if (!authorized && passwordTokenBusiness.isTokenValid(token)) {
+				authorized = true;
+			}
+
+			IWContext iwc = new IWContext(request, response, context);
+
+			if (!authorized) {
+				try {
+					webUtil.logOff(iwc);
+				} catch (Exception e) {}
+
+				getLogger().warning("Token '" + token + "' is not valid anymore");
 				return new AccessToken();
 			}
 
@@ -71,7 +101,6 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 				}
 			}
 
-			IWContext iwc = new IWContext(request, response, context);
 			LoginTableHome loginTableHome = (LoginTableHome) IDOLookup.getHome(LoginTable.class);
 			LoginTable userLogin = loginTableHome.findByLogin(userName);
 			LoggedInUserCredentials credentials = new LoggedInUserCredentials(
@@ -83,13 +112,14 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 					(Integer) userLogin.getPrimaryKey(),
 					type
 			);
-			OAuthToken token = oauth2Service.getToken(clientId, credentials);
-			if (token == null) {
+			OAuthToken oAuthToken = oauth2Service.getToken(clientId, credentials);
+			if (oAuthToken == null) {
 				getLogger().warning("Unable to get OAuth token for user name: '" + userName + "', UUID: " + uuid);
 				return new AccessToken();
 			}
 
-			getLogger().info("Created new token (" + token + ", refresh token: " + token.getRefresh_token() + ") for user name: '" + userName + "', UUID: " + uuid + ", client ID: " + clientId + " and type: " + type);
+			getLogger().info("Created new token (" + oAuthToken + ", refresh token: " + oAuthToken.getRefresh_token() + ") for user name: '" + userName + "', UUID: " + uuid +
+					", token: " + token + ", client ID: " + clientId + " and type: " + type);
 
 			if (StringUtil.isEmpty(type)) {
 				getLogger().warning("Unknown login type for UUID " + uuid);
@@ -104,7 +134,7 @@ public class PortalUserManagerImpl extends DefaultSpringBean implements PortalUs
 				loginBusiness.doPublishLoggedInEvent(request, response, context, user, userName, type);
 			}
 
-			return new AccessToken(token, userName);
+			return new AccessToken(oAuthToken, userName);
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting access token for UUID: " + uuid, e);
 			return new AccessToken();
