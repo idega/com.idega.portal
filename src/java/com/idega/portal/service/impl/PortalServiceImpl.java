@@ -247,6 +247,11 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 				if (!StringUtil.isEmpty(uuid)) {
 					int userId = login.getUserId();
+					com.idega.user.data.User userFromCredentials = null;
+					try {
+						userFromCredentials = login.getUser();
+					} catch (Exception e) {}
+
 					com.idega.user.data.User providedUser = null;
 					try {
 						providedUser = userBusiness.getUserByUniqueId(uuid);
@@ -254,15 +259,33 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 					if (providedUser != null && Integer.valueOf(providedUser.getId()).intValue() == userId) {
 						error = false;
 						getLogger().info(
-								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + login.getUser() +
+								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + userFromCredentials +
 								" (ID: " + userId + "). Login can be used because it belongs to the same person " +
 								(providedUser == null ? CoreConstants.EMPTY : (providedUser + " (ID: " + providedUser.getId() + ")"))
 						);
+
+					} else if (
+							providedUser != null &&
+							providedUser.getPersonalID() != null &&
+							userFromCredentials != null &&
+							userFromCredentials.getPersonalID() != null &&
+							providedUser.getPersonalID().equals(userFromCredentials.getPersonalID())
+					) {
+						error = false;
+						getLogger().info(
+								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + userFromCredentials +
+								" (ID: " + userId + "). Login can be used because it belongs to the same person " +
+								(providedUser == null ? CoreConstants.EMPTY : (providedUser + " (ID: " + providedUser.getId() + ")"))
+						);
+						login.setUser(providedUser);
+						login.store();
+
 					} else {
 						getLogger().warning(
-								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + login.getUser() +
-								" (ID: " + userId + "). Login can not be used by another user " +
-								(providedUser == null ? CoreConstants.EMPTY : (providedUser + " (ID: " + providedUser.getId() + ")"))
+								"Found login (" + login + ") with username '" + account.getUsername() + "' for user " + userFromCredentials +
+								" (ID: " + userId + ", personal ID: " + (userFromCredentials == null ? "unknown" : userFromCredentials.getPersonalID()) +
+								"). Login can not be used by another user " + (providedUser == null ? CoreConstants.EMPTY : (providedUser + " (ID: " + providedUser.getId() +
+								", personal ID: " + providedUser.getPersonalID() + ")"))
 						);
 					}
 				}
