@@ -431,11 +431,12 @@ public class PortalGatewayImpl extends DefaultRestfulService implements PortalGa
 			@FormParam("client_id") String clientId,
 			@FormParam("username") String username,
 			@FormParam("password") String password,
+			@FormParam("secondStepAuth") String secondStepAuth,
 			@Context HttpServletRequest request,
 			@Context HttpServletResponse response,
 			@Context ServletContext context
 	) {
-		return portalService.login(clientId, username, password, request, response, context);
+		return portalService.login(clientId, username, password, secondStepAuth, request, response, context);
 	}
 
 	@POST

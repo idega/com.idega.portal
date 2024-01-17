@@ -28,6 +28,9 @@ public class LoginResult implements Serializable {
 
 	private String uniqueId;
 
+	private String authState = AuthState.ONE_STEP.toString();
+
+
 	public LoginResult() {
 		super();
 	}
@@ -42,6 +45,12 @@ public class LoginResult implements Serializable {
 		this();
 
 		addError(status, error, errorLocalizedKey);
+	}
+
+	public LoginResult(String authState) {
+		this();
+
+		this.authState = authState;
 	}
 
 	public void addError(Integer status, String error, String errorLocalizedKey) {
@@ -93,5 +102,16 @@ public class LoginResult implements Serializable {
 	public void setUniqueId(String uniqueId) {
 		this.uniqueId = uniqueId;
 	}
+
+	public String getAuthState() {
+		return authState;
+	}
+
+	public void setAuthState(String authState) {
+		this.authState = authState;
+	}
+
+
+
 
 }

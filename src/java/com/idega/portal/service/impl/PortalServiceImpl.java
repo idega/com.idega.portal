@@ -3,6 +3,7 @@ package com.idega.portal.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.FinderException;
+import javax.mail.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,8 +51,10 @@ import com.idega.core.accesscontrol.business.AccessController;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginDBHandler;
 import com.idega.core.accesscontrol.business.LoginState;
+import com.idega.core.accesscontrol.dao.UserLoginDAO;
 import com.idega.core.accesscontrol.data.LoginTable;
 import com.idega.core.accesscontrol.data.LoginTableHome;
+import com.idega.core.accesscontrol.data.bean.UserLogin;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.core.file.data.ICFile;
@@ -59,6 +63,7 @@ import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.AddressHome;
 import com.idega.data.IDOLookup;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.jackrabbit.security.RepositoryAccessManager;
 import com.idega.portal.PortalConstants;
@@ -67,6 +72,7 @@ import com.idega.portal.business.DefaultAccountCreatedMessageSender;
 import com.idega.portal.business.MessageSender;
 import com.idega.portal.model.Article;
 import com.idega.portal.model.ArticleList;
+import com.idega.portal.model.AuthState;
 import com.idega.portal.model.FileUploadResult;
 import com.idega.portal.model.LanguageData;
 import com.idega.portal.model.Localization;
@@ -105,6 +111,7 @@ import com.idega.util.FileUtil;
 import com.idega.util.IOUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
+import com.idega.util.SendMail;
 import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 import com.idega.util.WebUtil;
@@ -152,6 +159,10 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	private RepositoryAccessManager repositoryAccessManager;
 
 	private List<? extends MessageSender> accountCreatedMessagesSenders;
+
+	@Autowired
+	private UserLoginDAO userLoginDAO;
+
 
 	@PostConstruct
     private void initAccountCreatedMessagesSenders() {
@@ -865,7 +876,15 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	}
 
 	@Override
-	public LoginResult login(String clientId, String username, String password, HttpServletRequest request, HttpServletResponse response, ServletContext context) {
+	public LoginResult login(
+			String clientId,
+			String username,
+			String password,
+			String secondStepAuth,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	) {
 		String error = null;
 		if (request == null) {
 			error = "Request is unknown";
@@ -922,51 +941,132 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 				}
 			}
 
-			if (!loginBusiness.logInUser(request, username, password)) {
-				LoginState state = LoginBusinessBean.internalGetState(iwc);
+			//**** Check, if 2-STEP auth is needed and use it *****
+
+			boolean useSecondStepAuth = getSettings().getBoolean("portal.use_2_step_auth", true);
+			boolean proceedWithLogin = false;
+
+			if (useSecondStepAuth) {
+
+				int secondsForSecondStepAuthValidity = getSettings().getInt("portal.2_step_auth_validity", 120);
+
+				//Check the login, if correct and get the user
 				String errorLocalizedKey = "login_failed";
-				error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
-				if (state != null) {
-					if (state.equals(LoginState.FAILED)) {
-						errorLocalizedKey = "login_failed";
-						error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+				User user = null;
+				UserLogin loginTable = getUserLoginDAO().findLoginByUsername(username);
+				if (loginTable == null || loginTable.getUser() == null || StringUtil.isEmpty(loginTable.getUser().getUniqueId())) {
+					errorLocalizedKey = "login_no_user";
+					error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid user");
+					getLogger().warning((error == null ? "Login failed" : error) + ". Username " + username + " and password: " + password);
+					return new LoginResult(-1, error, errorLocalizedKey);
+				}
 
-					} else if (state.equals(LoginState.USER_NOT_FOUND)) {
-						errorLocalizedKey = "login_no_user";
-						error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid user");
+				user = loginTable.getUser();
 
-					} else if (state.equals(LoginState.WRONG_PASSWORD)) {
-						errorLocalizedKey = "login_wrong";
-						error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password");
+				//Verify password
+				if (!loginBusiness.verifyPassword(loginTable, password)) {
+					errorLocalizedKey = "login_wrong";
+					error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password");
+					getLogger().warning((error == null ? "Login failed" : error) + ". Username " + username + " and password: " + password);
+					return new LoginResult(-1, error, errorLocalizedKey);
+				}
 
-					} else if (state.equals(LoginState.EXPIRED)) {
-						errorLocalizedKey = "login_expired";
-						error = iwrb.getLocalizedString(errorLocalizedKey, "Login expired");
 
-					} else if (state.equals(LoginState.FAILED_DISABLED_NEXT_TIME)){
-						errorLocalizedKey = "login_wrong_disabled_next_time";
-						error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password, access closed next time login fails");
+				//*** Proceed with 2-STEP auth ***
+
+				if (StringUtil.isEmpty(secondStepAuth)) {
+					//*** Generate a new 2-step auth key and send to the user ***
+					String secondStepAuthKey = generateSecondStepAuthKey(user, iwc, secondsForSecondStepAuthValidity);
+					if (!StringUtil.isEmpty(secondStepAuthKey)) {
+						return new LoginResult(AuthState.SECOND_STEP_AUTH.toString());
+					} else {
+						proceedWithLogin = true;
+					}
+
+				} else {
+					//*** Check, if 2-STEP auth key is correct/not overdue for the user. Generate a new 2-step auth key, if needed ***
+					boolean authKeyIsValid = isTokenValid(secondStepAuth);
+					if (authKeyIsValid) {
+						//Remove the token
+						PasswordTokenEntity tokenEntity = passwordTokenEntityDAO.findByToken(secondStepAuth);
+						if (tokenEntity != null && !StringUtil.isEmpty(tokenEntity.getUuid())) {
+							passwordTokenEntityDAO.removeByUUID(tokenEntity.getUuid());
+						}
+
+						//Proceed to login
+						proceedWithLogin = true;
+					} else {
+						//Incorrect 2-STEP auth key, return an error
+						LoginResult loginResult = new LoginResult(AuthState.SECOND_STEP_AUTH_INCORRECT.toString());
+						errorLocalizedKey = "incorrect_two_factor_auth_code";
+						error = iwrb.getLocalizedString(errorLocalizedKey, "Incorrect two factor authentication code.");
+						getLogger().warning((error == null ? "Login failed" : error) + ". Username " + username + " and password: " + password);
+						loginResult.addError(-1, error, errorLocalizedKey);
+						return loginResult;
 					}
 				}
-				getLogger().warning((error == null ? "Login failed" : error) + ". State: " + state + ", username " + username + " and password: " + password);
-				return new LoginResult(-1, error, errorLocalizedKey);
+
+			} else {
+				proceedWithLogin = true;
 			}
 
-			clientId = StringUtil.isEmpty(clientId) ? request.getHeader("client_id") : clientId;
-			if (StringUtil.isEmpty(clientId) || CoreConstants.UNDEFINED.equals(clientId)) {
-				clientId = request.getParameter("client_id");
-			}
-			OAuthToken token = getOAuth2Service().getToken(request, clientId, username, password);
-			if (token == null) {
-				error = "Failed to authorize, please try again a bit later";
-				getLogger().warning(error + ": did not get OAuth token for username " + username + " and password: " + password);
-				return new LoginResult(-1, error, "login_error.failed_to_get_oauth_token");
-			} else if (StringUtil.isEmpty(token.getScope())) {
-				token.setScope("read write trust");
+
+			//**** Actual LOGIN ****
+
+			if (proceedWithLogin) {
+				if (!loginBusiness.logInUser(request, username, password)) {
+					LoginState state = LoginBusinessBean.internalGetState(iwc);
+					String errorLocalizedKey = "login_failed";
+					error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+					if (state != null) {
+						if (state.equals(LoginState.FAILED)) {
+							errorLocalizedKey = "login_failed";
+							error = iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+
+						} else if (state.equals(LoginState.USER_NOT_FOUND)) {
+							errorLocalizedKey = "login_no_user";
+							error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid user");
+
+						} else if (state.equals(LoginState.WRONG_PASSWORD)) {
+							errorLocalizedKey = "login_wrong";
+							error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password");
+
+						} else if (state.equals(LoginState.EXPIRED)) {
+							errorLocalizedKey = "login_expired";
+							error = iwrb.getLocalizedString(errorLocalizedKey, "Login expired");
+
+						} else if (state.equals(LoginState.FAILED_DISABLED_NEXT_TIME)){
+							errorLocalizedKey = "login_wrong_disabled_next_time";
+							error = iwrb.getLocalizedString(errorLocalizedKey, "Invalid password, access closed next time login fails");
+						}
+					}
+					getLogger().warning((error == null ? "Login failed" : error) + ". State: " + state + ", username " + username + " and password: " + password);
+					return new LoginResult(-1, error, errorLocalizedKey);
+				}
+
+				clientId = StringUtil.isEmpty(clientId) ? request.getHeader("client_id") : clientId;
+				if (StringUtil.isEmpty(clientId) || CoreConstants.UNDEFINED.equals(clientId)) {
+					clientId = request.getParameter("client_id");
+				}
+				OAuthToken token = getOAuth2Service().getToken(request, clientId, username, password);
+				if (token == null) {
+					error = "Failed to authorize, please try again a bit later";
+					getLogger().warning(error + ": did not get OAuth token for username " + username + " and password: " + password);
+					return new LoginResult(-1, error, "login_error.failed_to_get_oauth_token");
+				} else if (StringUtil.isEmpty(token.getScope())) {
+					token.setScope("read write trust");
+				}
+
+				LoginResult success = new LoginResult(token);
+				return success;
 			}
 
-			LoginResult success = new LoginResult(token);
-			return success;
+
+			String errorLocalizedKey = "login_failed";
+			error = iwrb == null ? "Login failed" : iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
+			getLogger().warning(error + ". Username: " + username + ", password: " + password);
+			return new LoginResult(-1, error, errorLocalizedKey);
+
 		} catch (Exception e) {
 			String errorLocalizedKey = "login_failed";
 			error = iwrb == null ? "Login failed" : iwrb.getLocalizedString(errorLocalizedKey, "Login failed");
@@ -1322,5 +1422,114 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 		return error;
 	}
+
+	private UserLoginDAO getUserLoginDAO() {
+		if (userLoginDAO == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+		return userLoginDAO;
+	}
+
+
+	protected PasswordTokenBusiness getPasswordTokenBusiness() {
+		if (this.passwordTokenBusiness == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+
+		return this.passwordTokenBusiness;
+	}
+
+	private boolean isTokenValid(String token) {
+		return getPasswordTokenBusiness().isTokenValid(token);
+	}
+
+
+	private String generateSecondStepAuthKey(
+			User user,
+			IWContext iwc,
+			int secondsForSecondStepAuthValidity
+	) {
+		try {
+			if (user == null || StringUtil.isEmpty(user.getUniqueId())) {
+				return null;
+			}
+
+			//Get user email
+			String emailAddress = user.getEmailAddress();
+			if (
+					StringUtil.isEmpty(emailAddress)
+					&& !StringUtil.isEmpty(user.getFirstName())
+					&& (
+							User.ADMINISTRATOR_DEFAULT_NAME.equalsIgnoreCase(user.getFirstName())
+							|| user.getFirstName().equalsIgnoreCase("admin")
+					)
+			) {
+				emailAddress = getSettings().getProperty("administrator_email", "code@idega.com");
+			}
+			if (StringUtil.isEmpty(emailAddress)) {
+				return null;
+			}
+
+			//Generate the 2-STEP key - TOKEN
+			PasswordTokenEntity passwordToken = passwordTokenEntityDAO.create(
+					user.getUniqueId(),
+					iwc.getRemoteIpAddress(),
+					Long.valueOf(secondsForSecondStepAuthValidity * 1000), // 2 minutes by default
+					6
+			);
+
+			if (
+					passwordToken != null
+					&& !StringUtil.isEmpty(passwordToken.getToken())
+			) {
+				IWResourceBundle iwrb = getResourceBundle(getBundle(PortalConstants.IW_BUNDLE_IDENTIFIER));
+
+				String key = passwordToken.getToken();
+
+				String from = getSettings().getProperty(CoreConstants.PROP_SYSTEM_MAIL_FROM_ADDRESS, "no-reply@idega.com");
+
+				String emailSubject = iwrb.getLocalizedString("2_step_auth_email.subject", "Login verification {0}");
+				String serverName = getSettings().getProperty(IWMainApplication.PROPERTY_DEFAULT_SERVICE_URL);
+				if (StringUtil.isEmpty(serverName)) {
+					emailSubject = MessageFormat.format(emailSubject, CoreConstants.EMPTY);
+				} else {
+					emailSubject = MessageFormat.format(emailSubject, CoreConstants.BRACKET_LEFT + serverName + CoreConstants.BRACKET_RIGHT);
+				}
+
+				String emailBody = iwrb.getLocalizedString("2_step_auth_email.body", "<strong>Login Verification {0}</strong><br /><br />Your verification code:<br /><br /><span><strong>{1}</strong></span><br /><br />The verification code will be valid for {2} minutes. Please do not share this code with anyone.");
+				emailBody = MessageFormat.format(
+						emailBody,
+						StringUtil.isEmpty(serverName) ? CoreConstants.EMPTY : (CoreConstants.BRACKET_LEFT + serverName + CoreConstants.BRACKET_RIGHT),
+						key,
+						CoreConstants.EMPTY + (secondsForSecondStepAuthValidity / 60 )
+				);
+
+
+				//Send the mail to the user with the 2-STEP auth key/token
+				Message messageAfterEmailSending = SendMail.send(
+						from,
+						emailAddress,
+						null,
+						null,
+						from,
+						null,
+						emailSubject,
+						emailBody,
+						MimeTypeUtil.MIME_TYPE_HTML
+				);
+
+				if (messageAfterEmailSending != null) {
+					return key;
+				} else {
+					return null;
+				}
+			}
+
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error while trying to generate 2-STEP auth key for user: " + user, e);
+		}
+		return null;
+	}
+
 
 }

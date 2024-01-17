@@ -79,7 +79,15 @@ public interface PortalService {
 
 	public ArticleList getArticlesByCategory(String category, HttpServletRequest request, HttpServletResponse response, ServletContext context);
 
-	public LoginResult login(String clientId, String username, String password, HttpServletRequest request, HttpServletResponse response, ServletContext context);
+	public LoginResult login(
+			String clientId,
+			String username,
+			String password,
+			String secondStepAuth,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			ServletContext context
+	);
 
 	public String doUpdatePassword(
 			String token,
