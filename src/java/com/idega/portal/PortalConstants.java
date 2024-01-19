@@ -59,4 +59,12 @@ public class PortalConstants {
 
 	public static final Integer MIN_PASSWORD_LENGTH = 6;
 
+	public static final String APP_PROPERTY_USE_2_STEP_AUTH = "portal.use_2_step_auth";
+
+	public static final String APP_PROPERTY_2_STEP_AUTH_VALIDITY = "portal.2_step_auth_validity";
+
+	public static final String APP_PROPERTY_2_STEP_AUTH_SELECTABLE = "portal.2_step_auth_selectable";
+
+	public static final String METADATA_USER_2_STEP_AUTH_SELECTED = "portal.user_2_step_auth_selected";
+
 }

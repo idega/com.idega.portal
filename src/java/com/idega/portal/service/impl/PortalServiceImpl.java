@@ -943,12 +943,13 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 			//**** Check, if 2-STEP auth is needed and use it *****
 
-			boolean useSecondStepAuth = getSettings().getBoolean("portal.use_2_step_auth", true);
+			boolean useSecondStepAuth = getSettings().getBoolean(PortalConstants.APP_PROPERTY_USE_2_STEP_AUTH, false);
 			boolean proceedWithLogin = false;
 
 			if (useSecondStepAuth) {
 
-				int secondsForSecondStepAuthValidity = getSettings().getInt("portal.2_step_auth_validity", 120);
+				boolean secondStepAuthSelectable = getSettings().getBoolean(PortalConstants.APP_PROPERTY_2_STEP_AUTH_SELECTABLE, false);
+				int secondsForSecondStepAuthValidity = getSettings().getInt(PortalConstants.APP_PROPERTY_2_STEP_AUTH_VALIDITY, 120);
 
 				//Check the login, if correct and get the user
 				String errorLocalizedKey = "login_failed";
@@ -971,38 +972,49 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 					return new LoginResult(-1, error, errorLocalizedKey);
 				}
 
-
-				//*** Proceed with 2-STEP auth ***
-
-				if (StringUtil.isEmpty(secondStepAuth)) {
-					//*** Generate a new 2-step auth key and send to the user ***
-					String secondStepAuthKey = generateSecondStepAuthKey(user, iwc, secondsForSecondStepAuthValidity);
-					if (!StringUtil.isEmpty(secondStepAuthKey)) {
-						return new LoginResult(AuthState.SECOND_STEP_AUTH.toString());
-					} else {
-						proceedWithLogin = true;
-					}
-
+				//*** If 2-STEP auth is selectable - check, if user switched this feature on ***
+				String metadataUser2StepAuthSelected = user.getMetaData(PortalConstants.METADATA_USER_2_STEP_AUTH_SELECTED);
+				if (
+						secondStepAuthSelectable == true
+						&& (
+								StringUtil.isEmpty(metadataUser2StepAuthSelected)
+								|| metadataUser2StepAuthSelected.equalsIgnoreCase(Boolean.FALSE.toString())
+						)
+				) {
+					proceedWithLogin = true;
 				} else {
-					//*** Check, if 2-STEP auth key is correct/not overdue for the user. Generate a new 2-step auth key, if needed ***
-					boolean authKeyIsValid = isTokenValid(secondStepAuth);
-					if (authKeyIsValid) {
-						//Remove the token
-						PasswordTokenEntity tokenEntity = passwordTokenEntityDAO.findByToken(secondStepAuth);
-						if (tokenEntity != null && !StringUtil.isEmpty(tokenEntity.getUuid())) {
-							passwordTokenEntityDAO.removeByUUID(tokenEntity.getUuid());
+					//*** Proceed with 2-STEP auth ***
+
+					if (StringUtil.isEmpty(secondStepAuth)) {
+						//*** Generate a new 2-step auth key and send to the user ***
+						String secondStepAuthKey = generateSecondStepAuthKey(user, iwc, secondsForSecondStepAuthValidity);
+						if (!StringUtil.isEmpty(secondStepAuthKey)) {
+							return new LoginResult(AuthState.SECOND_STEP_AUTH.toString());
+						} else {
+							proceedWithLogin = true;
 						}
 
-						//Proceed to login
-						proceedWithLogin = true;
 					} else {
-						//Incorrect 2-STEP auth key, return an error
-						LoginResult loginResult = new LoginResult(AuthState.SECOND_STEP_AUTH_INCORRECT.toString());
-						errorLocalizedKey = "incorrect_two_factor_auth_code";
-						error = iwrb.getLocalizedString(errorLocalizedKey, "Incorrect two factor authentication code.");
-						getLogger().warning((error == null ? "Login failed" : error) + ". Username " + username + " and password: " + password);
-						loginResult.addError(-1, error, errorLocalizedKey);
-						return loginResult;
+						//*** Check, if 2-STEP auth key is correct/not overdue for the user. Generate a new 2-step auth key, if needed ***
+						boolean authKeyIsValid = isTokenValid(secondStepAuth);
+						if (authKeyIsValid) {
+							//Remove the token
+							PasswordTokenEntity tokenEntity = passwordTokenEntityDAO.findByToken(secondStepAuth);
+							if (tokenEntity != null && !StringUtil.isEmpty(tokenEntity.getUuid())) {
+								passwordTokenEntityDAO.removeByUUID(tokenEntity.getUuid());
+							}
+
+							//Proceed to login
+							proceedWithLogin = true;
+						} else {
+							//Incorrect 2-STEP auth key, return an error
+							LoginResult loginResult = new LoginResult(AuthState.SECOND_STEP_AUTH_INCORRECT.toString());
+							errorLocalizedKey = "incorrect_two_factor_auth_code";
+							error = iwrb.getLocalizedString(errorLocalizedKey, "Incorrect two factor authentication code.");
+							getLogger().warning((error == null ? "Login failed" : error) + ". Username " + username + " and password: " + password);
+							loginResult.addError(-1, error, errorLocalizedKey);
+							return loginResult;
+						}
 					}
 				}
 

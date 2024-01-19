@@ -109,6 +109,17 @@ public class UserProfileHelperImpl extends DefaultSpringBean implements UserProf
 						userIDO.setPersonalID(userPersonalId);
 					}
 					userIDO.store();
+
+					try {
+						//Allow 2-STEP authorization
+						if (profile.getAllow2StepAuth() != null) {
+							userIDO.setMetaData(PortalConstants.METADATA_USER_2_STEP_AUTH_SELECTED, profile.getAllow2StepAuth().toString());
+						} else {
+							userIDO.setMetaData(PortalConstants.METADATA_USER_2_STEP_AUTH_SELECTED, "false");
+						}
+						userIDO.store();
+					} catch (Exception e) {}
+
 				}
 
 				//**** Change member username and password *****

@@ -87,6 +87,10 @@ public class UserProfile extends User {
 	private Boolean contactBySMS;
 	private Boolean contactByMyMessages;
 
+	private Boolean allow2StepAuth = Boolean.FALSE;
+	private Boolean portal2StepAuthSelectable = Boolean.FALSE;
+
+
 	public UserProfile() {
 		super();
 	}
@@ -125,6 +129,20 @@ public class UserProfile extends User {
 		if (!StringUtil.isEmpty(contactByMyMessagesStr)) {
 			setContactByMyMessages(Boolean.valueOf(contactByMyMessagesStr));
 		}
+
+		//Allow 2-STEP auth
+		String allow2StepAuthTmp = user.getMetaData(PortalConstants.METADATA_USER_2_STEP_AUTH_SELECTED);
+		if (!StringUtil.isEmpty(allow2StepAuthTmp)) {
+			setAllow2StepAuth(Boolean.valueOf(allow2StepAuthTmp));
+		} else {
+			setAllow2StepAuth(Boolean.FALSE);
+		}
+		//Portal 2-STEP auth is selectable
+		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+		setPortal2StepAuthSelectable(
+				application.getSettings().getBoolean(PortalConstants.APP_PROPERTY_USE_2_STEP_AUTH, false) && application.getSettings().getBoolean(PortalConstants.APP_PROPERTY_2_STEP_AUTH_SELECTABLE, false)
+		);
+
 	}
 
 	public UserProfile(com.idega.user.data.User user) {
@@ -239,6 +257,20 @@ public class UserProfile extends User {
 				this.fullAddress = sb.toString();
 			}
 		}
+
+		//Allow 2-STEP auth
+		String allow2StepAuthTmp = user.getMetaData(PortalConstants.METADATA_USER_2_STEP_AUTH_SELECTED);
+		if (!StringUtil.isEmpty(allow2StepAuthTmp)) {
+			setAllow2StepAuth(Boolean.valueOf(allow2StepAuthTmp));
+		} else {
+			setAllow2StepAuth(Boolean.FALSE);
+		}
+		//Portal 2-STEP auth is selectable
+		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+		setPortal2StepAuthSelectable(
+				application.getSettings().getBoolean(PortalConstants.APP_PROPERTY_USE_2_STEP_AUTH, false) && application.getSettings().getBoolean(PortalConstants.APP_PROPERTY_2_STEP_AUTH_SELECTABLE, false)
+		);
+
 	}
 
 	public UserProfile(com.idega.user.data.bean.User user, Locale locale, DataElement... interestedIn) {
@@ -745,6 +777,22 @@ public class UserProfile extends User {
 
 	public void setContactByMyMessages(Boolean contactByMyMessages) {
 		this.contactByMyMessages = contactByMyMessages;
+	}
+
+	public Boolean getAllow2StepAuth() {
+		return allow2StepAuth;
+	}
+
+	public void setAllow2StepAuth(Boolean allow2StepAuth) {
+		this.allow2StepAuth = allow2StepAuth;
+	}
+
+	public Boolean getPortal2StepAuthSelectable() {
+		return portal2StepAuthSelectable;
+	}
+
+	public void setPortal2StepAuthSelectable(Boolean portal2StepAuthSelectable) {
+		this.portal2StepAuthSelectable = portal2StepAuthSelectable;
 	}
 
 	@Override
