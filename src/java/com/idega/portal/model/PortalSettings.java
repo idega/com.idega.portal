@@ -59,6 +59,8 @@ public class PortalSettings implements Serializable {
 
 	private Boolean showDateFilter = Boolean.FALSE;
 
+	private Boolean useRecaptchaForLogin = Boolean.FALSE;
+
 	public String getName() {
 		return name;
 	}
@@ -337,6 +339,14 @@ public class PortalSettings implements Serializable {
 
 	public void setShowDateFilter(Boolean showDateFilter) {
 		this.showDateFilter = showDateFilter;
+	}
+
+	public Boolean getUseRecaptchaForLogin() {
+		return useRecaptchaForLogin;
+	}
+
+	public void setUseRecaptchaForLogin(Boolean useRecaptchaForLogin) {
+		this.useRecaptchaForLogin = useRecaptchaForLogin;
 	}
 
 

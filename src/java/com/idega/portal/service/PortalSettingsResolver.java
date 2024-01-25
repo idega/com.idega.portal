@@ -180,6 +180,11 @@ public class PortalSettingsResolver extends DefaultSpringBean {
 					}
 				}
 			}
+
+			//Recaptcha flag
+			boolean useRecaptchaForLogin = getSettings().getBoolean(PortalConstants.APP_PROPERTY_USE_RECAPTCHA_FOR_LOGIN, false);
+			settings.setUseRecaptchaForLogin(useRecaptchaForLogin);
+
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting settings", e);
 		}

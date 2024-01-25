@@ -67,4 +67,8 @@ public class PortalConstants {
 
 	public static final String METADATA_USER_2_STEP_AUTH_SELECTED = "portal.user_2_step_auth_selected";
 
+	public static final String PORTAL_2_STEP_AUTH_HIDDEN_EMAIL = "portal.2_step_auth_hidden_email";
+
+	public static final String APP_PROPERTY_USE_RECAPTCHA_FOR_LOGIN = "portal.use_recaptcha_for_login";
+
 }

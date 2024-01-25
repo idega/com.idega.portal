@@ -46,6 +46,7 @@ import com.idega.block.login.business.PasswordTokenBusiness;
 import com.idega.block.login.data.PasswordTokenEntity;
 import com.idega.block.login.data.dao.PasswordTokenEntityDAO;
 import com.idega.block.login.presentation.Login;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.content.upload.business.UploadAreaBean;
 import com.idega.core.accesscontrol.business.AccessController;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
@@ -987,13 +988,22 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 
 					if (StringUtil.isEmpty(secondStepAuth)) {
 						//*** Generate a new 2-step auth key and send to the user ***
-						String secondStepAuthKey = generateSecondStepAuthKey(user, iwc, secondsForSecondStepAuthValidity);
-						if (!StringUtil.isEmpty(secondStepAuthKey)) {
-							return new LoginResult(AuthState.SECOND_STEP_AUTH.toString());
-						} else {
+						String emailAddress = getUserEmail(user);
+						if (StringUtil.isEmpty(emailAddress)) {
 							proceedWithLogin = true;
+						} else {
+							String secondStepAuthKey = generateSecondStepAuthKey(user, iwc, secondsForSecondStepAuthValidity, emailAddress);
+							if (!StringUtil.isEmpty(secondStepAuthKey)) {
+								LoginResult loginResult = new LoginResult(AuthState.SECOND_STEP_AUTH.toString());
+								List<AdvancedProperty> headerParams = new ArrayList<AdvancedProperty>();
+								headerParams.add(new AdvancedProperty(PortalConstants.PORTAL_2_STEP_AUTH_HIDDEN_EMAIL, getPartlyHiddenEmailAddress(emailAddress)));
+								headerParams.add(new AdvancedProperty(PortalConstants.APP_PROPERTY_2_STEP_AUTH_VALIDITY, String.valueOf(secondsForSecondStepAuthValidity)));
+								loginResult.setHeaderParams(headerParams);
+								return loginResult;
+							} else {
+								proceedWithLogin = true;
+							}
 						}
-
 					} else {
 						//*** Check, if 2-STEP auth key is correct/not overdue for the user. Generate a new 2-step auth key, if needed ***
 						boolean authKeyIsValid = isTokenValid(secondStepAuth);
@@ -1459,25 +1469,14 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 	private String generateSecondStepAuthKey(
 			User user,
 			IWContext iwc,
-			int secondsForSecondStepAuthValidity
+			int secondsForSecondStepAuthValidity,
+			String emailAddress
 	) {
 		try {
 			if (user == null || StringUtil.isEmpty(user.getUniqueId())) {
 				return null;
 			}
 
-			//Get user email
-			String emailAddress = user.getEmailAddress();
-			if (
-					StringUtil.isEmpty(emailAddress)
-					&& !StringUtil.isEmpty(user.getFirstName())
-					&& (
-							User.ADMINISTRATOR_DEFAULT_NAME.equalsIgnoreCase(user.getFirstName())
-							|| user.getFirstName().equalsIgnoreCase("admin")
-					)
-			) {
-				emailAddress = getSettings().getProperty("administrator_email", "code@idega.com");
-			}
 			if (StringUtil.isEmpty(emailAddress)) {
 				return null;
 			}
@@ -1543,5 +1542,54 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 		return null;
 	}
 
+	private String getUserEmail(User user) {
+		String emailAddress = null;
+		try {
+			emailAddress = user.getEmailAddress();
+			if (
+					StringUtil.isEmpty(emailAddress)
+					&& !StringUtil.isEmpty(user.getFirstName())
+					&& (
+							User.ADMINISTRATOR_DEFAULT_NAME.equalsIgnoreCase(user.getFirstName())
+							|| user.getFirstName().equalsIgnoreCase("admin")
+					)
+			) {
+				emailAddress = getSettings().getProperty("administrator_email", "code@idega.com");
+			}
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error while trying to get the email for user: " + user, e);
+		}
+		return emailAddress;
+	}
+
+
+	private String getPartlyHiddenEmailAddress(String emailAddress) {
+		String partlyHiddenEmailAddress = null;
+		try {
+			if (StringUtil.isEmpty(emailAddress)) {
+				return emailAddress;
+			}
+
+			String[] splittedEmail = emailAddress.split(CoreConstants.AT, 2);
+			if (splittedEmail.length == 2) {
+				String emailPre = splittedEmail[0];
+				if (emailPre.length() > 3) {
+					emailPre = emailPre.substring(0, 3);
+				} else if (emailPre.length() > 2) {
+					emailPre = emailPre.substring(0, 2);
+				} else if (emailPre.length() > 1) {
+					emailPre = emailPre.substring(0, 1);
+				}
+				emailPre = emailPre + "...";
+				partlyHiddenEmailAddress = emailPre + CoreConstants.AT + splittedEmail[1];
+			} else {
+				partlyHiddenEmailAddress = emailAddress;
+			}
+
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error while trying to make the email partly hidden by email: " + emailAddress, e);
+		}
+		return partlyHiddenEmailAddress;
+	}
 
 }
