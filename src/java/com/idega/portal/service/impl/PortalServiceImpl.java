@@ -950,7 +950,7 @@ public class PortalServiceImpl extends DefaultSpringBean implements PortalServic
 			if (useSecondStepAuth) {
 
 				boolean secondStepAuthSelectable = getSettings().getBoolean(PortalConstants.APP_PROPERTY_2_STEP_AUTH_SELECTABLE, false);
-				int secondsForSecondStepAuthValidity = getSettings().getInt(PortalConstants.APP_PROPERTY_2_STEP_AUTH_VALIDITY, 120);
+				int secondsForSecondStepAuthValidity = getSettings().getInt(PortalConstants.APP_PROPERTY_2_STEP_AUTH_VALIDITY, 300);
 
 				//Check the login, if correct and get the user
 				String errorLocalizedKey = "login_failed";
