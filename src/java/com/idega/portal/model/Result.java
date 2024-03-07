@@ -22,10 +22,15 @@ public class Result implements Serializable {
 		super();
 	}
 
-	public Result(Integer status, String name) {
+	public Result(Integer status) {
 		this();
 
 		this.status = status;
+	}
+
+	public Result(Integer status, String name) {
+		this(status);
+
 		this.name = name;
 	}
 
